@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/origin_txt"
+                    android:layout_width="110dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/invoice_lv_dbl"
+                    android:fontFamily="@font/lato_regular"
+                    android:padding="4dp"
+                    android:text="Lorem ipsum Lorem Ipsum Lorem Ipsum" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/product_txt"
+                    android:layout_width="112dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/invoice_lv_dbl"
+                    android:fontFamily="@font/lato_regular"
+                    android:padding="4dp"
+                    android:text="Lorem ipsum Lorem Ipsum Lorem Ipsum" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/product_to_location_qty"
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/invoice_lv_dbl"
+                    android:fontFamily="@font/lato_regular"
+                    android:padding="4dp"
+                    android:text="Ubicacion" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/location_txt"
+                    android:layout_width="90dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/invoice_lv_dbl"
+                    android:fontFamily="@font/lato_regular"
+                    android:padding="4dp"
+                    android:text="TextView" />
+            </TableRow>
+        </TableRow>
+
+    </TableLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.morsaapp">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_morsa_icon"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+        android:usesCleartextTraffic="true">
+        <activity android:name=".RoutesOrdersActivity"></activity>
+        <activity android:name=".CountActivity" />
+        <activity android:name=".RoutesActivity" />
+        <activity android:name=".PdfActivity" />
+        <activity
+            android:name=".PickingMovesActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".PickingActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".ReStockActivity" />
+        <activity android:name=".MainMenuActivity" />
+        <activity android:name=".ProductsToLocationActivity" />
+        <activity android:name=".LocationActivity" />
+        <activity android:name=".LoginActivity"/>
+        <activity android:name=".SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".OrderRevisionActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden" />
+        <activity android:name=".RevisionActivity" />
+        <activity
+            android:name=".InvoiceActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".ReceptionActivity" />
+        <activity android:name=".Scanner" />
+
+        <receiver
+            android:name=".LoginActivity"
+            android:enabled="true"
+            android:exported="false" />
+        <receiver
+            android:name=".NotificationReceiver"
+            android:enabled="true"
+            android:exported="false" />
+    </application>
+
+</manifest>

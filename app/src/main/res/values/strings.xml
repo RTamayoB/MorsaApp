@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">MorsaApp</string>
+    <string name="activity_intent_filter_action_order">com.morsaapp.ACTIONORDER</string>
+    <string name="activity_intent_filter_action_route">com.morsaapp.ACTIONROUTE</string>
+    <string name="activity_intent_filter_action_product_to_location">com.morsaapp.ACTIONPTL</string>
+    <string name="activity_intent_filter_action_re_stock">com.morsaapp.ACTIONRESTOCK</string>
+    <string name="activity_intent_filter_action_picking">com.morsaapp.ACTIONPICKING</string>
+    <string name="activity_intent_filter_action_count">com.morsaapp.ACTIONCOUNT</string>
+    <string name="datawedge_intent_key_source">com.symbol.datawedge.source</string>
+    <string name="datawedge_intent_key_label_type">com.symbol.datawedge.label_type</string>
+    <string name="datawedge_intent_key_data">com.symbol.datawedge.data_string</string>
+    <string name="username_hint">Nombre</string>
+    <string name="password_hint">Contraseña</string>
+    <string name="default_issue">0</string>
+    <string name="product_lv_lbl">Producto</string>
+    <string name="import_lv_lbl">Importe</string>
+    <string name="confirm_btn_str">CONFIRMAR</string>
+</resources>

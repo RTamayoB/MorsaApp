@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/re_stock_origin_txt"
+                    android:layout_width="110dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/invoice_lv_dbl"
+                    android:fontFamily="@font/lato_regular"
+                    android:padding="4dp"
+                    android:text="TextView"
+                    android:textSize="12sp" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/re_stock_product_txt"
+                    android:layout_width="116dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/invoice_lv_dbl"
+                    android:fontFamily="@font/lato_regular"
+                    android:padding="4dp"
+                    android:text="Machine Machine Machine"
+                    android:textSize="12sp" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/re_stock_qty_txt"
+                    android:layout_width="36dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/invoice_lv_dbl"
+                    android:fontFamily="@font/lato_regular"
+                    android:padding="4dp"
+                    android:text="TextView"
+                    android:textSize="12sp" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/re_stock_destiny_txt"
+                    android:layout_width="90dp"
+                    android:padding="4dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/invoice_lv_dbl"
+                    android:fontFamily="@font/lato_regular"
+                    android:text="TextView"
+                    android:textSize="12sp" />
+            </TableRow>
+
+        </TableRow>
+
+    </TableLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

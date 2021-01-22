@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    tools:context=".MainMenuActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/main_menu_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#2f3983"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:titleTextColor="#FFFFFF" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="1dp"
+        app:layout_constraintBottom_toTopOf="@+id/imageView3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/main_menu_toolbar">
+
+        <TableLayout
+            android:id="@+id/menuLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center">
+
+                <ImageButton
+                    android:id="@+id/reception_btn"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:background="#FFFFFF"
+                    android:paddingLeft="6dp"
+                    android:paddingRight="6dp"
+                    android:paddingBottom="6dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/reception" />
+
+                <ImageButton
+                    android:id="@+id/revision_btn"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:background="#FFFFFF"
+                    android:paddingLeft="6dp"
+                    android:paddingRight="6dp"
+                    android:paddingBottom="6dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/inspection" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center">
+
+                <ImageButton
+                    android:id="@+id/transfer_btn"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:padding="6dp"
+                    android:background="#FFFFFF"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/acomodo" />
+
+                <ImageButton
+                    android:id="@+id/re_stock_btn"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:background="#FFFFFF"
+                    android:padding="6dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/restock" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center">
+
+                <ImageButton
+                    android:id="@+id/picking_btn"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:background="#FFFFFF"
+                    android:padding="6dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/picking" />
+
+                <ImageButton
+                    android:id="@+id/count_btn"
+                    android:layout_width="150dp"
+                    android:padding="6dp"
+                    android:layout_height="150dp"
+                    android:background="#FFFFFF"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/count" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center">
+
+                <ImageButton
+                    android:id="@+id/routes_btn"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:padding="6dp"
+                    android:background="#FFFFFF"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/routes" />
+
+                <ImageButton
+                    android:id="@+id/settings_btn"
+                    android:layout_width="130dp"
+                    android:layout_height="130dp"
+                    android:background="#ffffff"
+                    android:padding="6dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/settings_img" />
+            </TableRow>
+        </TableLayout>
+    </ScrollView>
+
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="200dp"
+        android:layout_height="80dp"
+        android:background="@drawable/company_name"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
