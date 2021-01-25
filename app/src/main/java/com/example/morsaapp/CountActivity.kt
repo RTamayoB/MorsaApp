@@ -155,9 +155,6 @@ class CountActivity : AppCompatActivity() {
             refreshData()
         }
 
-        swipeRefreshLayout.isRefreshing = true
-        refreshData()
-
         countLv.setOnItemClickListener { parent, view, position, id ->
             val model : CountDataModel = countLv.getItemAtPosition(position) as CountDataModel
             val builder = AlertDialog.Builder(this)
@@ -307,9 +304,7 @@ class CountActivity : AppCompatActivity() {
             items.lineId = cursor.getInt(3)
             val locRaw = cursor.getString(0)
             val realLoc = locRaw.substring(locRaw.indexOf("/")+1, locRaw.indexOf("\"]"))
-            Log.d("BORUTO",realLoc)
             val realLoc2 = realLoc.substring(realLoc.indexOf("/")+1, realLoc.lastIndex+1)
-            Log.d("NARUTO",realLoc2)
             items.realLocation = cursor.getString(0)
             items.location = realLoc2
             items.code = cursor.getString(cursor.getColumnIndex("product_name")) //Was 1 (product_code)

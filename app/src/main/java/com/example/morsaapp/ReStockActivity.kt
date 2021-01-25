@@ -343,7 +343,7 @@ class ReStockActivity : AppCompatActivity() {
                 Toast.makeText(applicationContext, "Escanee la ubicación destino", Toast.LENGTH_SHORT).show()
             }
 
-            //Check of Origin and Product have already been scanned
+            //Check of Origin and Product have already been scanned - added last check because of error
             if (scan3 == item.reOrigin && scan2 == item.reProductId && scan1 != item.reDestiny) {
                 scan3 = ""
                 scan2 = ""
@@ -376,7 +376,7 @@ class ReStockActivity : AppCompatActivity() {
                 builder.show()
             }
 
-            if (scan1 == item.reDestiny && scan2 == item.reProductId) {
+            if (scan1 == item.reDestiny && scan2 == item.reProductId && scan3 == item.reOrigin) {
                 scan1 = ""
                 scan2 = ""
                 scan3 = ""
