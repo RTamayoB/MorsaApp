@@ -135,8 +135,16 @@ class ReStockActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         super.onBackPressed()
-        val goBackintent = Intent(this, MainMenuActivity::class.java)
-        startActivity(goBackintent)
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Salir")
+        builder.setMessage("¿Desea salir del proceso?")
+        builder.setPositiveButton("Si") { dialog, which ->
+            val goBackintent = Intent(this, MainMenuActivity::class.java)
+            startActivity(goBackintent)
+        }
+        builder.setNegativeButton("No") { dialog, which ->
+            dialog.dismiss()
+        }
     }
 
     private fun refreshData(){

@@ -435,7 +435,6 @@ class CountActivity : AppCompatActivity() {
                         adap.notifyDataSetChanged()
                         builder.setCancelable(false)
                         builder.setTitle("Especifica cantidad")
-                        builder.setMessage("Cantidad Esperada: " + deferredTheoriticalQty.await()[1] as Double)
                         val input = EditText(applicationContext)
                         input.width = 10
                         input.inputType = InputType.TYPE_CLASS_NUMBER
