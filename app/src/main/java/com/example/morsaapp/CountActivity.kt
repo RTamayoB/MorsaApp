@@ -482,11 +482,14 @@ class CountActivity : AppCompatActivity() {
             }
         }
         else if (checkProduct.count == 0 && isCode){
-            Toast.makeText(
-                applicationContext,
-                "Producto '$decodedString' no correspondiente a ubicacion",
-                Toast.LENGTH_SHORT
-            ).show()
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Producto inexistente")
+            builder.setMessage("Producto '$decodedString' no correspondiente a ubicacion")
+            builder.setPositiveButton("Entendido") { dialog, which ->
+                val goBackintent = Intent(this, MainMenuActivity::class.java)
+                startActivity(goBackintent)
+            }
+            builder.show()
         }
         else if(!showMessage && !isCode){
             Toast.makeText(

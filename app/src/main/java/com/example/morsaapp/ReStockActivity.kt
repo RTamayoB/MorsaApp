@@ -118,15 +118,35 @@ class ReStockActivity : AppCompatActivity() {
         val resyncFAB  = findViewById<FloatingActionButton>(R.id.sync_fab)
         //Reload the Listview
         resyncFAB.setOnClickListener {
-            swipeRefreshLayout.isRefreshing = true
-            refreshData()
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Actualizar")
+            builder.setMessage("¿Seguro que desea refrescar su pantalla?")
+            builder.setPositiveButton("Si") { dialog, which ->
+                swipeRefreshLayout.isRefreshing = true
+                refreshData()
+            }
+            builder.setNegativeButton("No") { dialog, which ->
+                swipeRefreshLayout.isRefreshing = false
+                dialog.dismiss()
+            }
+            builder.show()
         }
 
         val intent : Intent = intent
         pickingId = intent.getIntExtra("pickingId", 0)
 
         swipeRefreshLayout.setOnRefreshListener {
-            refreshData()
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Actualizar")
+            builder.setMessage("¿Seguro que desea refrescar su pantalla?")
+            builder.setPositiveButton("Si") { dialog, which ->
+                refreshData()
+            }
+            builder.setNegativeButton("No") { dialog, which ->
+                swipeRefreshLayout.isRefreshing = false
+                dialog.dismiss()
+            }
+            builder.show()
         }
 
         swipeRefreshLayout.isRefreshing = true
@@ -134,7 +154,6 @@ class ReStockActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Salir")
         builder.setMessage("¿Desea salir del proceso?")
@@ -145,6 +164,7 @@ class ReStockActivity : AppCompatActivity() {
         builder.setNegativeButton("No") { dialog, which ->
             dialog.dismiss()
         }
+        builder.show()
     }
 
     private fun refreshData(){
