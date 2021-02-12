@@ -158,7 +158,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         registerReceiver(mScanReceiver, filter)
     }
 
-    /*
+    /*Unitech piece
     private val myBroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
