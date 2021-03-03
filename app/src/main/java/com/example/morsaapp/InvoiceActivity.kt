@@ -248,14 +248,14 @@ class InvoiceActivity : AppCompatActivity() {
     }
 
     private fun confirmInvoice(id: Int): List<Any> {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.confirmInvoice(id,"") as List<Any>
     }
 
     //Returns the purchases lines
     fun syncInvoiceLines(invoiceId : Int) : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odoo.authenticateOdoo()
         val invoiceLine = odoo.reloadInvoiceLines(invoiceId)
         return invoiceLine

@@ -72,8 +72,8 @@
                     android:id="@+id/transfer_btn"
                     android:layout_width="150dp"
                     android:layout_height="150dp"
-                    android:padding="6dp"
                     android:background="#FFFFFF"
+                    android:padding="6dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/acomodo" />
 
@@ -104,35 +104,36 @@
                 <ImageButton
                     android:id="@+id/count_btn"
                     android:layout_width="150dp"
-                    android:padding="6dp"
                     android:layout_height="150dp"
                     android:background="#FFFFFF"
+                    android:padding="6dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/count" />
             </TableRow>
 
             <TableRow
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="282dp"
                 android:gravity="center">
 
                 <ImageButton
                     android:id="@+id/routes_btn"
                     android:layout_width="150dp"
                     android:layout_height="150dp"
-                    android:padding="6dp"
                     android:background="#FFFFFF"
+                    android:padding="6dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/routes" />
 
                 <ImageButton
                     android:id="@+id/settings_btn"
-                    android:layout_width="130dp"
-                    android:layout_height="130dp"
-                    android:background="#ffffff"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:background="#FFFFFF"
                     android:padding="6dp"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/settings_img" />
+                    android:src="@drawable/routes" />
+
             </TableRow>
         </TableLayout>
     </ScrollView>

@@ -249,7 +249,7 @@ class ReceptionActivity : AppCompatActivity() {
 
     //Returns the purchases
     fun syncInvoice(/*idList : List<Int>*/) : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odoo.authenticateOdoo()
         val invoice = odoo.getInvoice(/*idList*/)
         Log.d("OrderList", invoice)

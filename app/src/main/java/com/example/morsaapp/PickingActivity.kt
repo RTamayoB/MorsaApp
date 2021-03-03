@@ -172,14 +172,14 @@ class PickingActivity : AppCompatActivity() {
     }
 
     private fun testReStock(): String{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         val prefs = applicationContext.getSharedPreferences("startupPreferences", 0)
         return odooConn.testReStock(prefs.getInt("activeUser",0))
     }
 
     fun syncRacks() : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odoo.authenticateOdoo()
         val stockRacks = odoo.getStockRack(prefs.getInt("activeUser",1))
         Log.d("OrderList", stockRacks)

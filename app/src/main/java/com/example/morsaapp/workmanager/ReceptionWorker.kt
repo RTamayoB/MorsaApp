@@ -13,6 +13,7 @@ import kotlinx.coroutines.*
 import java.lang.Exception
 
 class ReceptionWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
+    val context = ctx;
     override fun doWork(): Result {
 
         val id = inputData.getInt("Id", 0)
@@ -22,7 +23,7 @@ class ReceptionWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, para
 
         Log.d("Data Received", "Id: $id, User: $user, Pass: $pass")
         try {
-            val sendConfirm: List<Any> = confirmInvoice(id, number, user, pass)
+            val sendConfirm: List<Any> = confirmInvoice(id, number, user, pass, context)
             if (sendConfirm[0] as Boolean) {
                 val bool: Boolean = sendConfirm[0] as Boolean
 
@@ -48,8 +49,8 @@ class ReceptionWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, para
         }
     }
 
-    private fun confirmInvoice(id: Int, number: String?, user: String?, pass: String?): List<Any> {
-        val odooConn = OdooConn(user, pass)
+    private fun confirmInvoice(id: Int, number: String?, user: String?, pass: String?, context: Context): List<Any> {
+        val odooConn = OdooConn(user, pass,context)
         odooConn.authenticateOdoo()
         return odooConn.confirmInvoice(id, number) as List<Any>
     }

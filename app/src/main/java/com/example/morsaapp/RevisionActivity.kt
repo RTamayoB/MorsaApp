@@ -226,7 +226,7 @@ class RevisionActivity : AppCompatActivity() {
     }
 
     fun syncInspections() : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odoo.authenticateOdoo()
         val stockPicking = odoo.inspections
         Log.d("OrderList", stockPicking)

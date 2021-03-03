@@ -179,7 +179,7 @@ class LocationActivity : AppCompatActivity() {
     }
 
     fun syncLocations() : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odoo.authenticateOdoo()
         val stockPicking = odoo.locations
         Log.d("OrderList", stockPicking)

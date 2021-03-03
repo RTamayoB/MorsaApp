@@ -13,6 +13,7 @@ import android.util.Log
 import android.view.Menu
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import kotlinx.coroutines.Deferred
@@ -63,6 +64,7 @@ class LoginActivity : AppCompatActivity() {
         val userNameTxt = findViewById<EditText>(R.id.username_txt)
         val passwordTxt = findViewById<EditText>(R.id.password_txt)
         val loginBtn = findViewById<Button>(R.id.login_btn)
+        val serverData = findViewById<TextView>(R.id.serverData_txt)
 
         loginBtn.setOnClickListener {
 
@@ -103,6 +105,11 @@ class LoginActivity : AppCompatActivity() {
 
         }
 
+        serverData.setOnClickListener {
+            val intent = Intent(applicationContext, SettingsActivity::class.java)
+            startActivity(intent)
+        }
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -117,7 +124,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun checkLogin(user:String, pass:String) : Boolean
     {
-        val odooConn = OdooConn(user, pass)
+        val odooConn = OdooConn(user, pass,this)
         val isConnected = odooConn.authenticateOdoo()
         if(isConnected){
 
@@ -150,7 +157,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun sequence(): String{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         val noIds = emptyList<Int>()
         return odooConn.getSequence(noIds)

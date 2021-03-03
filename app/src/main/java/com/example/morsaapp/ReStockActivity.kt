@@ -490,20 +490,20 @@ class ReStockActivity : AppCompatActivity() {
 
     private fun reStock(username : String) : String
     {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         val prefs = applicationContext.getSharedPreferences("startupPreferences", 0)
         return odooConn.reStock(username, prefs.getInt("activeUser",0))
     }
 
     private fun sendReStock(moveId: Int, moveQty: Int): List<Any>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.setMovesQty(moveId, moveQty)
     }
 
     private fun searchProduct(product_id : String): String {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.searchProduct(product_id)
     }

@@ -42,6 +42,7 @@ class MainMenuActivity : AppCompatActivity() {
         val pickingBtn = findViewById<ImageButton>(R.id.picking_btn)
         val countBtn = findViewById<ImageButton>(R.id.count_btn)
         val routeBtn = findViewById<ImageButton>(R.id.routes_btn)
+        val settingsBtn = findViewById<ImageButton>(R.id.settings_btn)
 
         receptionBtn.setOnClickListener {
             val intent = Intent(applicationContext, ReceptionActivity::class.java)
@@ -89,6 +90,15 @@ class MainMenuActivity : AppCompatActivity() {
             val intent = Intent(applicationContext, RoutesActivity::class.java)
             startActivity(intent)
             finish()
+            }catch (e : Exception){
+                Log.d("Error", e.toString())
+            }
+        }
+
+        settingsBtn.setOnClickListener {
+            try{
+                val intent = Intent(applicationContext, SettingsActivity::class.java)
+                startActivity(intent)
             }catch (e : Exception){
                 Log.d("Error", e.toString())
             }
@@ -162,7 +172,7 @@ class MainMenuActivity : AppCompatActivity() {
 
     private fun getPermissions(user: String?) : String
     {
-        val odooConn = OdooConn("contacto@exinnotech.com","1411")
+        val odooConn = OdooConn("contacto@exinnotech.com","1411",this)
         odooConn.authenticateOdoo()
         val noIds = emptyList<Int>()
         return odooConn.getPermissions(user)

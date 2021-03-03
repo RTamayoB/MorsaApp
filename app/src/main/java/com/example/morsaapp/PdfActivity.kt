@@ -66,7 +66,7 @@ class PdfActivity : AppCompatActivity() {
 
 
     private fun getPdf(sessionId: String, routeId: String): List<String>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.getPdf(sessionId, routeId)
     }

@@ -480,7 +480,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                         Log.d("ReturnId", returnID.toString())
                                         val finishProcess =
                                             Intent(applicationContext, MainMenuActivity::class.java)
-                                        if (error) {
+                                        if (!error) {
                                             if (returnID) {
                                                 Log.d("Has return id", "true")
                                                 var rawReturnId = ""
@@ -808,7 +808,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
     }
 
     fun syncInspectionItems(pickingId: Int) : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odoo.authenticateOdoo()
         val stockPicking = odoo.getInspectionItems(pickingId)
         Log.d("OrderList", stockPicking)
@@ -838,7 +838,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
 
     private fun movesTest(location: String, pickingId : Int) : String
     {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.movesTest(location, pickingId)
     }
@@ -1227,19 +1227,19 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
 
 
     private fun confirmIssues(id: Int, issues : HashMap<Int,HashMap<String,Any>>): List<List<String>> {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.confirmIssues(id,issues) as List<List<String>>
     }
 
     private fun actionClose(returnId: Int): String {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.actionClose(returnId) as String
     }
 
     private fun actionRejected(returnId: Int): String {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.actionRejected(returnId) as String
     }
@@ -1281,14 +1281,14 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
     }
 
     private fun searchProduct(product_id : String): String {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.searchProduct(product_id)
     }
 
     private fun getStockMoveIssue() : String
     {
-        val odooConn = OdooConn("contacto@exinnotech.com","1411")
+        val odooConn = OdooConn("contacto@exinnotech.com","1411",this)
         odooConn.authenticateOdoo()
         val noIds = emptyList<Int>()
         return odooConn.stockMoveIssue

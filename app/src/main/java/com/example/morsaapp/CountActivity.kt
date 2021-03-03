@@ -502,14 +502,14 @@ class CountActivity : AppCompatActivity() {
 
     //Function that conects to Odoo and sends the qty as a hashmap
     private fun sendCount(products : HashMap<Int, Int>): String{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.sendCount(products)
     }
 
     //Function that returns you the theoretical qty of a line
     private fun computeTheoreticalQty(id : Int): List<Any>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.computeTheoreticalQty(id)
     }
@@ -517,14 +517,14 @@ class CountActivity : AppCompatActivity() {
     //Returns the inventoryLines corresponding to that user
     private fun getInventoryLine() : String
     {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         val noIds = emptyList<Int>()
         return odooConn.getStockInventoryLine(prefs.getInt("activeUser",1))
     }
 
     private fun searchProduct(product_id : String): String {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""), this)
         odooConn.authenticateOdoo()
         return odooConn.searchProductName(product_id)
     }

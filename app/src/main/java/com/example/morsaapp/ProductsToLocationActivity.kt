@@ -406,21 +406,21 @@ class ProductsToLocationActivity : AppCompatActivity() {
 
     private fun movesTest(location: String, pickingId : Int) : String
     {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.movesTest(location, pickingId)
     }
 
     private fun setMoves(moveId : Int, moveQty : Int) : List<Any>
     {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         val noIds = emptyList<Int>()
         return odooConn.setMovesQty(moveId,moveQty)
     }
 
     fun syncLocationItems(pickingOriginativeId: Int) : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odoo.authenticateOdoo()
         val stockPicking = odoo.getLocationsItems(pickingOriginativeId)
         Log.d("OrderList", stockPicking)
@@ -428,7 +428,7 @@ class ProductsToLocationActivity : AppCompatActivity() {
     }
 
     private fun searchProduct(product_id : String): String {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.searchProduct(product_id)
     }

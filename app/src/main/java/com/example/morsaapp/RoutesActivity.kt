@@ -213,7 +213,7 @@ class RoutesActivity : AppCompatActivity() {
     }
 
     fun syncRoutes() : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odoo.authenticateOdoo()
         val invoice = odoo.routes
         Log.d("OrderList", invoice)
@@ -386,19 +386,19 @@ class RoutesActivity : AppCompatActivity() {
     }
 
     private fun getRouteBoxes(sessionId: String, routeId: String): List<String>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.getPdf(sessionId, routeId)
     }
 
     private fun getStockBoxes(route: String): String{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.getRouteBoxes(route)
     }
 
     private fun sendPlates(routeId: String, plates : String): List<String>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.sendPlates(routeId,plates)
     }

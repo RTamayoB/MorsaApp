@@ -1,5 +1,7 @@
 package com.example.morsaapp;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -20,6 +22,10 @@ import static java.util.Collections.emptyMap;
 
 import static java.util.Arrays.asList;
 
+import android.content.SharedPreferences;
+
+import androidx.preference.PreferenceManager;
+
 public class OdooConn {
 
     //Declaration of variables
@@ -32,12 +38,18 @@ public class OdooConn {
         return uid;
     }
 
-    public OdooConn(String user, String pass) throws MalformedURLException {
+    public OdooConn(String user, String pass, Context context) throws MalformedURLException {
 
-        this.db = "MORSA";
+        SharedPreferences serverPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        //Check if data changed
+        Log.d("Server Data", serverPrefs.getString("url","URL")+"-"+serverPrefs.getString("db","DB"));
+
+        this.db = serverPrefs.getString("db","DB");
+        //this.db = "MORSA";
         this.user = user;
         this.pass = pass;
-            String url = "https://test.morsa.exinnotch.com";
+        String url = serverPrefs.getString("url","URL");
+        //String url = "https://test.morsa.exinnotch.com";
         this.url_common = url +"/xmlrpc/2/common";
         this.url_object = url +"/xmlrpc/2/object";
 

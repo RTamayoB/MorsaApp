@@ -280,7 +280,7 @@ class PickingMovesActivity : AppCompatActivity() {
     }
 
     fun syncInspections(id: String) : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odoo.authenticateOdoo()
         val stockPicking = odoo.getPickingFromRack(id)
         Log.d("OrderList", stockPicking)
@@ -288,7 +288,7 @@ class PickingMovesActivity : AppCompatActivity() {
     }
 
     fun syncInspectionItems(pickingId: Int) : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odoo.authenticateOdoo()
         val stockPicking = odoo.getInspectionItems(pickingId)
         Log.d("OrderList", stockPicking)
@@ -891,37 +891,37 @@ class PickingMovesActivity : AppCompatActivity() {
     }
 
     private fun sendReStock(moveId: Int, moveQty: Int): List<Any>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.setMovesQty(moveId, moveQty)
     }
 
     private fun sendtoCart(moveId: Int, moveQty: Int): List<String>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.sendToCart(moveId, moveQty)
     }
 
     private fun notifyMissing(stockRackId : Int, map : HashMap<Int, Int>): List<String>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.notifyMissing(stockRackId, map)
     }
 
     private fun sequence(moveList : ArrayList<Int>): String{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.getSequence(moveList)
     }
 
     private fun searchProduct(product_id : String): String {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.searchProduct(product_id)
     }
 
     private fun countPicking(moveId: Int, moveQty: Int): List<String>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.countPicking(moveId, moveQty)
     }
