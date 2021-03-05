@@ -116,6 +116,7 @@ class PickingMovesActivity : AppCompatActivity() {
 
         progressBar.isVisible = true
 
+        //THIS ALWAYS ON
         initScan()
 
         val noPieceMoves = findViewById<FloatingActionButton>(R.id.no_piece_btn)
@@ -481,8 +482,10 @@ class PickingMovesActivity : AppCompatActivity() {
                 Log.d("Origin", realOrigin)
                 orders.origin = realOrigin
                 val Name = cursor.getString(cursor.getColumnIndex("product_id"))
-                val realName = Name.substring(Name.indexOf(",\"")+2, Name.length -2)
-                orders.setStockMoveName(realName)
+                val description = cursor.getString(cursor.getColumnIndex("product_description"))
+                //val realName = Name.substring(Name.indexOf(",\"")+2, Name.length -2)
+                val realName = cursor.getString(cursor.getColumnIndex("name"))
+                orders.setStockMoveName("$realName: $description")
                 val locationUnparsed = cursor.getString(cursor.getColumnIndex("location_dest_id"))
                 var locationParsed = locationUnparsed
                 Log.d("BeforeParsed",locationParsed)

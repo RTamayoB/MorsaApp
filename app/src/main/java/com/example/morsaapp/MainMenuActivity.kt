@@ -172,7 +172,7 @@ class MainMenuActivity : AppCompatActivity() {
 
     private fun getPermissions(user: String?) : String
     {
-        val odooConn = OdooConn("contacto@exinnotech.com","1411",this)
+        val odooConn = OdooConn(prefs.getString("User",""),prefs.getString("Pass",""),this)
         odooConn.authenticateOdoo()
         val noIds = emptyList<Int>()
         return odooConn.getPermissions(user)

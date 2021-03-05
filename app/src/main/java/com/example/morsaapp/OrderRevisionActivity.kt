@@ -1288,7 +1288,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
 
     private fun getStockMoveIssue() : String
     {
-        val odooConn = OdooConn("contacto@exinnotech.com","1411",this)
+        val odooConn = OdooConn(prefs.getString("User",""),prefs.getString("Pass",""),this)
         odooConn.authenticateOdoo()
         val noIds = emptyList<Int>()
         return odooConn.stockMoveIssue

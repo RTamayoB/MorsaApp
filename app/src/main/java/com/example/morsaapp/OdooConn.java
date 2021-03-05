@@ -526,7 +526,10 @@ public class OdooConn {
                         asList("picking_id","=",pickingId)
                 )),
                 new HashMap() {{
-                    put("fields", asList("product_id", "remaining_qty", "total_qty", "location_dest_id", "quantity_done", "product_id", "id", "picking_id", "name", "price_unit", "product_qty", "state", "location_id", "is_completed", "picking_originative_id", "transfer_qty"));
+                    put("fields", asList("product_id", "remaining_qty", "total_qty", "location_dest_id", "quantity_done", "product_id", "id", "picking_id", "name", "price_unit", "product_qty", "state", "location_id", "is_completed", "picking_originative_id", "transfer_qty", "product_description"));
+                    HashMap context = new HashMap(){{
+                        put("display_default_code", false);
+                    }};
                 }}
         )));
         Log.d("STOCK MOVE", list.toString());
