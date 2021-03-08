@@ -647,7 +647,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                 Log.d("ReturnId", returnID.toString())
                                 val finishProcess =
                                     Intent(applicationContext, MainMenuActivity::class.java)
-                                if (error) {
+                                if (!error) {
                                     if (returnID) {
                                         Log.d("Has return id", "true")
                                         var rawReturnId = ""
