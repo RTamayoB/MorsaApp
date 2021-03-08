@@ -256,7 +256,7 @@ public class DBConnect extends SQLiteOpenHelper {
     public boolean reloadLocationLines(String pickingId){
         try {
             SQLiteDatabase db = this.getWritableDatabase();
-            db.delete(Utilities.TABLE_STOCK_ITEMS, "picking_originative_id = '"+pickingId+"'",null);
+            db.delete(Utilities.TABLE_STOCK_ITEMS, null,null);
             return true;
         }catch (Exception e) {
             Log.d("Error", e.toString());
@@ -313,7 +313,7 @@ public class DBConnect extends SQLiteOpenHelper {
     public Cursor getLocationMoves(String list){
         SQLiteDatabase db = this.getReadableDatabase();
 
-        return db.rawQuery("SELECT product_id, remaining_qty, total_qty, location_dest_id, quantity_done, product_id, id, picking_id, location_id FROM "+Utilities.TABLE_STOCK_ITEMS+" WHERE picking_originative_id = ? ORDER BY location_dest_id ASC",new String[]{list});
+        return db.rawQuery("SELECT product_id, remaining_qty, total_qty, location_dest_id, quantity_done, product_id, id, picking_id, location_id FROM "+Utilities.TABLE_STOCK_ITEMS+" /*WHERE picking_originative_id = ?*/ ORDER BY location_dest_id ASC",null);
     }
 
     public Cursor movesTestReStock(){

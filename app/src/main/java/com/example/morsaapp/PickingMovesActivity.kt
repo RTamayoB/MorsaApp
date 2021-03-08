@@ -482,10 +482,16 @@ class PickingMovesActivity : AppCompatActivity() {
                 Log.d("Origin", realOrigin)
                 orders.origin = realOrigin
                 val Name = cursor.getString(cursor.getColumnIndex("product_id"))
+                //Parse name
                 val description = cursor.getString(cursor.getColumnIndex("product_description"))
-                //val realName = Name.substring(Name.indexOf(",\"")+2, Name.length -2)
-                val realName = cursor.getString(cursor.getColumnIndex("name"))
-                orders.setStockMoveName("$realName: $description")
+                val mixedName  = cursor.getString(cursor.getColumnIndex("product_id"))
+                val separateName : Array<String> = mixedName.split(",").toTypedArray()
+                val arrayofNames : Array<String> = separateName[1].toString().split(" ").toTypedArray()
+                var name = arrayofNames[0]
+                name = name.replace("[","")
+                name = name.replace("]","")
+                name = name.replace("\"","")
+                orders.setStockMoveName("$name: $description")
                 val locationUnparsed = cursor.getString(cursor.getColumnIndex("location_dest_id"))
                 var locationParsed = locationUnparsed
                 Log.d("BeforeParsed",locationParsed)

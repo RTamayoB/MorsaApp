@@ -879,10 +879,12 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                     Log.d("Added",finalHashMap[pickingId.toInt()]?.get(items.Id)?.get("issues").toString())
                 }
                 val mixedName  = cursor.getString(cursor.getColumnIndex("product_id"))
-                val arrayOfName : Array<Any> = mixedName.split(",").toTypedArray()
-                val nameAsString = arrayOfName[1] as String
-                val rawName = nameAsString.replace("]","")
-                val name = rawName.replace("\"","")
+                val separateName : Array<String> = mixedName.split(",").toTypedArray()
+                val arrayofNames : Array<String> = separateName[1].toString().split(" ").toTypedArray()
+                var name = arrayofNames[0]
+                name = name.replace("[","")
+                name = name.replace("]","")
+                name = name.replace("\"","")
                 items.productName = name
                 items.qty = cursor.getInt(1)
                 val mixedId  = cursor.getString(cursor.getColumnIndex("product_id"))
