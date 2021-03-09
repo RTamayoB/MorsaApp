@@ -67,8 +67,6 @@ class LocationActivity : AppCompatActivity() {
             Log.d("Model Id", model.getId())
             pickingId = model.getId().toInt()
             intent.putExtra("pickingId",pickingId)
-            val name1 = model.getDate().replace("/","\\/")
-            intent.putExtra("name", name1)
             startActivity(intent)
         }
 
@@ -91,14 +89,14 @@ class LocationActivity : AppCompatActivity() {
 
     private fun refreshData(){
         val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
-        if(db.deleteDataOnTable(Utilities.TABLE_STOCK)){
+        if(db.deleteDataOnTable(Utilities.TABLE_STOCK_ARRANGEMENT)){
             thread {
                 try {
                     val deferredStockReSync: String = syncLocations()
                     Log.d("Returned Stock", deferredStockReSync)
                     val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
                     val stockJson = JSONArray(deferredStockReSync)
-                    val result = db.fillTable(stockJson, Utilities.TABLE_STOCK)
+                    val result = db.fillTable(stockJson, Utilities.TABLE_STOCK_ARRANGEMENT)
                     if (result) {
                         runOnUiThread {
                             swipeRefreshLayout.isRefreshing = false
@@ -153,16 +151,8 @@ class LocationActivity : AppCompatActivity() {
             orders =
                 ReceptionDataModel(this, "0", "q")
             orders.id = cursor.getString(0)
-            val numRaw = cursor.getString(2)
-            val numParsed = numRaw.substring(numRaw.indexOf(",")+2,numRaw.indexOf("]")-1)
-            orders.num = numParsed
-            orders.date = cursor.getString(1)
-            val id = cursor.getString(0)
-            val name = cursor.getString(1)
-            val relatedId = "[$id,\"$name\"]"
-            val correctId = relatedId.replace("/", "\\/")
-            val cursor2 = db.fillStockitemsListView(correctId)
-            orders.box = "Cajas: "+cursor2.count
+            orders.num = cursor.getString(cursor.getColumnIndex("name"))
+            orders.box = "Folio: "+cursor.getString(cursor.getColumnIndex("folio"))
 
             datamodels.add(orders)
         }
@@ -181,9 +171,9 @@ class LocationActivity : AppCompatActivity() {
     fun syncLocations() : String{
         val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odoo.authenticateOdoo()
-        val stockPicking = odoo.locations
-        Log.d("OrderList", stockPicking)
-        return stockPicking
+        val stockArr = odoo.locations
+        Log.d("OrderList", stockArr)
+        return stockArr
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

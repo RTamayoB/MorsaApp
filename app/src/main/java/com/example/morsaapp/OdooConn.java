@@ -444,19 +444,15 @@ public class OdooConn {
     {
         List list = asList((Object[])models.execute("execute_kw", asList(
                 db,uid,pass,
-                "stock.picking","search_read",
-                asList(asList(
-                        asList("group_id","!=",false),
-                        asList("move_arrangement_ids","!=",false),
-                        asList("state","!=","assigned")
-                )),
+                "stock.arrangement","search_read",
+                asList(),
                 new HashMap() {{
-                    put("fields", asList("id", "name", "group_id", "partner_id", "state", "issues_set", "date_done", "purchase_id", "sequence", "origin_invoice_purchase","move_arrangement_ids"));
+                    put("fields", asList("id", "supplier_id", "name", "folio", "num_products"));
                 }}
         )));
         int size = list.size();
         Log.d("LOCATIONS QTY", Integer.toString(size));
-        Log.d("STOCK PICKING LOCATIONS", list.toString());
+        Log.d("STOCK ARR LOCATIONS", list.toString());
         Gson gson = new Gson();
         String returned = gson.toJson(list);
 
@@ -539,15 +535,16 @@ public class OdooConn {
         return  returned;
     }
 
-    public String getLocationsItems(int pickingId) throws XmlRpcException
+    public String getLocationsItems(int supplierId) throws XmlRpcException
     {
         List list = asList((Object[])models.execute("execute_kw", asList(
                 db,uid,pass,
                 "stock.move","search_read",
                 asList(asList(
-                        asList("picking_orinative_id.group_id","!=",false),
-                        asList("picking_orinative_id","!=",false),
-                        asList("state","in",asList("confirmed", "assigned", "partially_available"))
+                        asList("picking_originative_id.group_id","!=",false),
+                        asList("picking_originative_id","!=",false),
+                        asList("state","in",asList("confirmed", "assigned", "partially_available")),
+                        asList("product_id.supplier_id","=",supplierId)
                 )),
                 new HashMap() {{
                     put("fields", asList("product_id", "remaining_qty", "total_qty", "location_dest_id", "quantity_done", "product_id", "id", "picking_id", "name", "price_unit", "product_qty", "state", "location_id", "is_completed", "picking_originative_id"));
@@ -697,7 +694,7 @@ public class OdooConn {
                         asList("is_scanned", "!=", true)) //Remember to change so doesnt use default x
                 ),
                 new HashMap() {{
-                    put("fields", asList("id", "location_id", "product_code", "theoretical_qty", "create_uid", "user_id","product_id,","product_name","is_scanned"));
+                    put("fields", asList("id", "location_id", "product_code", "theoretical_qty", "create_uid", "user_id","product_id,","product_name","is_scanned", "product_description"));
                 }}
         )));
         Log.d("STOCK INVENTORY LINE", list.toString());

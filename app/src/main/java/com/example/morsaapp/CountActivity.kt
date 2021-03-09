@@ -307,7 +307,7 @@ class CountActivity : AppCompatActivity() {
             val realLoc2 = realLoc.substring(realLoc.indexOf("/")+1, realLoc.lastIndex+1)
             items.realLocation = cursor.getString(0)
             items.location = realLoc2
-            items.code = cursor.getString(cursor.getColumnIndex("product_name")) //Was 1 (product_code)
+            items.code = cursor.getString(cursor.getColumnIndex("product_name"))+": "+cursor.getString(cursor.getColumnIndex("product_description")) //Was 1 (product_code)
             items.theoricalQty = cursor.getString(2)
             items.totalQty = "0"
 

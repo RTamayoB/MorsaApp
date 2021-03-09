@@ -113,7 +113,7 @@ class ProductsToLocationActivity : AppCompatActivity() {
 
         val intent : Intent = intent
         pickingId = intent.getIntExtra("pickingId",0)
-        name = intent.getStringExtra("name")
+        //name = intent.getStringExtra("name")
         Log.d("PickingId",pickingId.toString())
 
         try {

@@ -49,6 +49,7 @@ public class DBConnect extends SQLiteOpenHelper {
         db.execSQL(Utilities.CREATE_TABLE_INVENTORY_LINE);
         db.execSQL(Utilities.CREATE_TABLE_INVOICE);
         db.execSQL(Utilities.CREATE_TABLE_INVOICE_LINE);
+        db.execSQL(Utilities.CREATE_TABLE_STOCK_ARRANGEMENT);
         db.execSQL(Utilities.CREATE_TABLE_RES_USERS);
     }
 
@@ -68,6 +69,7 @@ public class DBConnect extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + Utilities.TABLE_INVENTORY_LINE);
         db.execSQL("DROP TABLE IF EXISTS " + Utilities.TABLE_INVOICE);
         db.execSQL("DROP TABLE IF EXISTS " + Utilities.TABLE_INVOICE_LINE);
+        db.execSQL("DROP TABLE IF EXISTS " + Utilities.TABLE_STOCK_ARRANGEMENT);
         db.execSQL("DROP TABLE IF EXISTS " + Utilities.TABLE_RES_USERS);
         onCreate(db);
     }
@@ -301,7 +303,7 @@ public class DBConnect extends SQLiteOpenHelper {
     public Cursor fillLocationsListView(){
         SQLiteDatabase db = this.getReadableDatabase();
 
-        return db.rawQuery("SELECT id, name, group_id, partner_id FROM "+Utilities.TABLE_STOCK+" WHERE /*state = 'done' AND*/group_id != 'false' AND move_arrangement_ids != '[]'",null);
+        return db.rawQuery("SELECT id, supplier_id, name, folio, num_products FROM "+Utilities.TABLE_STOCK_ARRANGEMENT,null);
     }
 
     public Cursor movesTest(String list){
@@ -399,7 +401,7 @@ public class DBConnect extends SQLiteOpenHelper {
 
     public Cursor getInventory(){
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT location_id, product_code, theoretical_qty, id, product_name, product_name FROM "+Utilities.TABLE_INVENTORY_LINE+" WHERE is_scanned = 'false' ORDER BY location_id ASC",null);
+        Cursor cursor = db.rawQuery("SELECT location_id, product_code, theoretical_qty, id, product_name, product_name, product_description FROM "+Utilities.TABLE_INVENTORY_LINE+" WHERE is_scanned = 'false' ORDER BY location_id ASC",null);
         return cursor;
     }
 

@@ -23,6 +23,7 @@ public class Utilities {
     public static final String TABLE_ROUTES = "routes";
     public static final String TABLE_STOCK_BOX = "stock_box";
     public static final String TABLE_INVENTORY_LINE = "stock_inventory_line";
+    public static final String TABLE_STOCK_ARRANGEMENT = "stock_arrangement";
     public static final String TABLE_RES_USERS = "res_users";
     public static final String TABLE_USERS = "users";
     public static final String FIELD_ID = "android_id";
@@ -40,7 +41,8 @@ public class Utilities {
     public static final String CREATE_TABLE_ROUTES = "CREATE TABLE "+TABLE_ROUTES+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, id TEXT, name TEXT)";
     public static final String CREATE_TABLE_STOCK_BOX = "CREATE TABLE "+TABLE_STOCK_BOX+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, id TEXT, route TEXT, invoices TEXT, box TEXT, scan_box TEXT, barcode TEXT, is_scanned TEXT)";
     public static final String CREATE_TABLE_RACK = "CREATE TABLE "+TABLE_RACK+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, done_picking TEXT, id TEXT, picking_ids TEXT, display_name TEXT, name TEXT, create_date TEXT)";
-    public static final String CREATE_TABLE_INVENTORY_LINE = "CREATE TABLE "+TABLE_INVENTORY_LINE+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, id TEXT, location_id TEXT, product_code TEXT, product_name TEXT, product_id TEXT, theoretical_qty TEXT, create_uid TEXT, user_id TEXT, is_scanned TEXT)";
+    public static final String CREATE_TABLE_INVENTORY_LINE = "CREATE TABLE "+TABLE_INVENTORY_LINE+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, id TEXT, location_id TEXT, product_code TEXT, product_name TEXT, product_id TEXT, theoretical_qty TEXT, create_uid TEXT, user_id TEXT, is_scanned TEXT, product_description TEXT)";
+    public static final String CREATE_TABLE_STOCK_ARRANGEMENT = "CREATE TABLE "+TABLE_STOCK_ARRANGEMENT+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, id TEXT, supplier_id TEXT, name TEXT, folio TEXT, num_products TEXT)";
     public static final String CREATE_TABLE_RES_USERS = "CREATE TABLE "+TABLE_RES_USERS+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, id TEXT, login TEXT, name TEXT, display_name TEXT, in_group_56 TEXT, in_group_57 TEXT, in_group_58 TEXT, in_group_59 TEXT, in_group_60 TEXT)";
     public static final String CREATE_TABLE_USERS = "CREATE TABLE "+TABLE_USERS+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, username TEXT, app_password TEXT, user_id TEXT)";
 

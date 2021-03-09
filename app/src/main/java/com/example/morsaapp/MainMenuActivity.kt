@@ -58,7 +58,7 @@ class MainMenuActivity : AppCompatActivity() {
 
         transferBtn.setOnClickListener {
 
-            val intent = Intent(applicationContext, ProductsToLocationActivity::class.java)
+            val intent = Intent(applicationContext, LocationActivity::class.java)
             startActivity(intent)
             finish()
         }
