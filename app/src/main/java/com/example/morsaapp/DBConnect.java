@@ -303,7 +303,7 @@ public class DBConnect extends SQLiteOpenHelper {
     public Cursor fillLocationsListView(){
         SQLiteDatabase db = this.getReadableDatabase();
 
-        return db.rawQuery("SELECT id, supplier_id, name, folio, num_products FROM "+Utilities.TABLE_STOCK_ARRANGEMENT,null);
+        return db.rawQuery("SELECT id, partner_id, name, folio, num_products FROM "+Utilities.TABLE_STOCK_ARRANGEMENT,null);
     }
 
     public Cursor movesTest(String list){
@@ -315,13 +315,13 @@ public class DBConnect extends SQLiteOpenHelper {
     public Cursor getLocationMoves(String list){
         SQLiteDatabase db = this.getReadableDatabase();
 
-        return db.rawQuery("SELECT product_id, remaining_qty, total_qty, location_dest_id, quantity_done, product_id, id, picking_id, location_id FROM "+Utilities.TABLE_STOCK_ITEMS+" /*WHERE picking_originative_id = ?*/ ORDER BY location_dest_id ASC",null);
+        return db.rawQuery("SELECT product_id, remaining_qty, total_qty, location_dest_id, quantity_done, product_id, id, picking_id, location_id, product_description FROM "+Utilities.TABLE_STOCK_ITEMS+" /*WHERE picking_originative_id = ?*/ ORDER BY location_dest_id ASC",null);
     }
 
     public Cursor movesTestReStock(){
         SQLiteDatabase db = this.getReadableDatabase();
 
-        return db.rawQuery("SELECT product_id, remaining_qty, total_qty, location_dest_id, quantity_done, product_id, id, picking_id, location_id FROM "+Utilities.TABLE_STOCK_ITEMS+" WHERE state != 'cancel'",null);
+        return db.rawQuery("SELECT product_id, remaining_qty, total_qty, location_dest_id, quantity_done, product_id, id, picking_id, location_id, product_description FROM "+Utilities.TABLE_STOCK_ITEMS+" WHERE state != 'cancel'",null);
     }
 
     public Cursor pickingMovesTest(String list){

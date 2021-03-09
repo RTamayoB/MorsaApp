@@ -362,9 +362,14 @@ class ProductsToLocationActivity : AppCompatActivity() {
             val originParsed = originUnparsed.substring(originUnparsed.indexOf("/")+1, originUnparsed.indexOf("]")-1)
             orders.origin = originParsed
             orders.productId = replaced
-            val nameUnparsed = cursor.getString(0)
-            val nameParsed = nameUnparsed.substring(nameUnparsed.indexOf(",")+2, nameUnparsed.indexOf("]")-1)
-            orders.setStockMoveName(nameParsed)
+            val mixedName  = cursor.getString(cursor.getColumnIndex("product_id"))
+            val separateName : Array<String> = mixedName.split(",").toTypedArray()
+            val arrayofNames : Array<String> = separateName[1].toString().split(" ").toTypedArray()
+            var name = arrayofNames[0]
+            name = name.replace("[","")
+            name = name.replace("]","")
+            name = name.replace("\"","")
+            orders.setStockMoveName(name)
             val locationUnparsed = cursor.getString(cursor.getColumnIndex("location_dest_id"))
             var locationParsed = locationUnparsed
             Log.d("BeforeParsed",locationParsed)

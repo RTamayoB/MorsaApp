@@ -544,7 +544,7 @@ public class OdooConn {
                         asList("picking_originative_id.group_id","!=",false),
                         asList("picking_originative_id","!=",false),
                         asList("state","in",asList("confirmed", "assigned", "partially_available")),
-                        asList("product_id.supplier_id","=",supplierId)
+                        asList("picking_originative_id.partner_id","=",supplierId)
                 )),
                 new HashMap() {{
                     put("fields", asList("product_id", "remaining_qty", "total_qty", "location_dest_id", "quantity_done", "product_id", "id", "picking_id", "name", "price_unit", "product_qty", "state", "location_id", "is_completed", "picking_originative_id"));

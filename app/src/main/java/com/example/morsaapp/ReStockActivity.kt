@@ -242,7 +242,14 @@ class ReStockActivity : AppCompatActivity() {
             val idAsString = arrayOfId[0] as String
             val replaced = idAsString.replace("[","")
             orders.reProductId = replaced
-            orders.reProduct = cursor.getString(0)
+            val mixedName  = cursor.getString(cursor.getColumnIndex("product_id"))
+            val separateName : Array<String> = mixedName.split(",").toTypedArray()
+            val arrayofNames : Array<String> = separateName[1].toString().split(" ").toTypedArray()
+            var name = arrayofNames[0]
+            name = name.replace("[","")
+            name = name.replace("]","")
+            name = name.replace("\"","")
+            orders.reProduct = name+": "+cursor.getString(cursor.getColumnIndex("product_description"))
             val originUnparsed = cursor.getString(cursor.getColumnIndex("location_id"))
             var originParsed = originUnparsed
             Log.d("BeforeOriginParsed",originParsed)
