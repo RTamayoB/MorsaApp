@@ -411,7 +411,7 @@ class ReStockActivity : AppCompatActivity() {
                 builder.show()
             }
 
-            if (scan1 == item.reDestiny && scan2 == item.reProductId && scan3 == item.reOrigin) {
+            if (scan1 == item.reDestiny && scan2 == item.reProductId && scan3 != item.reOrigin) {
                 scan1 = ""
                 scan2 = ""
                 scan3 = ""

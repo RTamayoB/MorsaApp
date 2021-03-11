@@ -1,14 +1,18 @@
 package com.example.morsaapp
 
+import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ListView
 import android.widget.SearchView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
@@ -145,11 +149,9 @@ class ReceptionActivity : AppCompatActivity() {
                                 populateListView()
                                 val adapter = pedidos_lv.adapter as ReceptionAdapter
                                 adapter.notifyDataSetChanged()
-                                Toast.makeText(
-                                    applicationContext,
-                                    "Lista Actualizada",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                //Add new Custom Toast method
+                                val customToast = CustomToast(this, this)
+                                customToast.show("Lista Actualizada", 24.0F, Toast.LENGTH_LONG)
                             }
                         } else {
                             runOnUiThread {
