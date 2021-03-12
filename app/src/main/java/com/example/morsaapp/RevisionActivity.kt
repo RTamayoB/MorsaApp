@@ -51,6 +51,7 @@ class RevisionActivity : AppCompatActivity() {
             Log.d("Stock Picking Id", id)
             intent.putExtra("Name", name)
             startActivity(intent)
+            finish()
         }
 
         swipeRefreshLayout.setOnRefreshListener {

@@ -106,6 +106,7 @@ class ReceptionActivity : AppCompatActivity() {
         super.onBackPressed()
         val goBackintent = Intent(this, MainMenuActivity::class.java)
         startActivity(goBackintent)
+        finish()
     }
 
 

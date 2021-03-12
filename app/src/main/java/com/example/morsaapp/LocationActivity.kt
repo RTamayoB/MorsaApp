@@ -68,6 +68,7 @@ class LocationActivity : AppCompatActivity() {
             pickingId = model.getId().toInt()
             intent.putExtra("pickingId",pickingId)
             startActivity(intent)
+            finish()
         }
 
         locationBtn.setOnClickListener {

@@ -460,6 +460,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                             Toast.LENGTH_LONG
                                                         ).show()
                                                     }
+                                                    error = false
                                                 }
                                                 val answer: String = movesTest("0", pickingId.toInt())
                                                 Log.d("Send Issues", sendIssues.toString())
@@ -475,86 +476,87 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                 }
                                                 error = true
                                             }
-                                        }
-                                        Log.d("Id", pickingId)
-                                        Log.d("ReturnId", returnID.toString())
-                                        val finishProcess =
-                                            Intent(applicationContext, MainMenuActivity::class.java)
-                                        if (!error) {
-                                            if (returnID) {
-                                                Log.d("Has return id", "true")
-                                                var rawReturnId = ""
-                                                val dbReturns = DBConnect(
-                                                    applicationContext,
-                                                    Utilities.DBNAME,
-                                                    null,
-                                                    1
-                                                ).readableDatabase
-                                                val cursorReturns = dbReturns.rawQuery(
-                                                    "SELECT return_id FROM " + Utilities.TABLE_STOCK + " WHERE id = " + pickingId.toInt(),
-                                                    null
-                                                )
-                                                while (cursorReturns.moveToNext()) {
-                                                    rawReturnId = cursorReturns.getString(0)
+                                            Log.d("Id", pickingId)
+                                            Log.d("ReturnId", returnID.toString())
+                                            val finishProcess =
+                                                Intent(applicationContext, MainMenuActivity::class.java)
+                                            if (!error) {
+                                                if (returnID) {
+                                                    Log.d("Has return id", "true")
+                                                    var rawReturnId = ""
+                                                    val dbReturns = DBConnect(
+                                                        applicationContext,
+                                                        Utilities.DBNAME,
+                                                        null,
+                                                        1
+                                                    ).readableDatabase
+                                                    val cursorReturns = dbReturns.rawQuery(
+                                                        "SELECT return_id FROM " + Utilities.TABLE_STOCK + " WHERE id = " + pickingId.toInt(),
+                                                        null
+                                                    )
+                                                    while (cursorReturns.moveToNext()) {
+                                                        rawReturnId = cursorReturns.getString(0)
+                                                    }
+                                                    cursorReturns.close()
+                                                    val realReturnId = rawReturnId.substring(
+                                                        rawReturnId.indexOf("[") + 1,
+                                                        rawReturnId.indexOf(",")
+                                                    )
+                                                    Log.d("Real Return Id", realReturnId)
+                                                    val builder2 = AlertDialog.Builder(this)
+                                                    builder2.setTitle("Proceso de Devolucion")
+                                                        .setMessage("Aceptar o rechazar la devolucion:")
+                                                        .setPositiveButton("Aceptar") { dialog2, which ->
+                                                            try {
+                                                                val actionClose =
+                                                                    GlobalScope.async { actionClose(realReturnId.toInt()) }
+                                                                runBlocking {
+                                                                    Log.d(
+                                                                        "Action Close Result",
+                                                                        actionClose.await()
+                                                                    )
+                                                                }
+                                                                finishProcess.putExtra(
+                                                                    "pickingId",
+                                                                    pickingId.toInt()
+                                                                )
+                                                                startActivity(finishProcess)
+                                                                finish()
+                                                            } catch (e: Exception) {
+                                                                Log.d("Error", e.toString())
+                                                            }
+                                                        }
+                                                        .setNegativeButton("Rechazar") { dialog2, which ->
+                                                            try {
+                                                                val actionRejected = GlobalScope.async {
+                                                                    actionRejected(realReturnId.toInt())
+                                                                }
+                                                                runBlocking {
+                                                                    Log.d(
+                                                                        "Action Close Result",
+                                                                        actionRejected.await()
+                                                                    )
+                                                                }
+                                                                finishProcess.putExtra(
+                                                                    "pickingId",
+                                                                    pickingId.toInt()
+                                                                )
+                                                                startActivity(finishProcess)
+                                                                finish()
+                                                            } catch (e: Exception) {
+                                                                Log.d("Error", e.toString())
+                                                            }
+                                                        }
+                                                    builder2.show()
+                                                } else {
+                                                    Log.d("Has return id", "true")
+                                                    finishProcess.putExtra("pickingId", pickingId.toInt())
+                                                    startActivity(finishProcess)
+                                                    finish()
                                                 }
-                                                cursorReturns.close()
-                                                val realReturnId = rawReturnId.substring(
-                                                    rawReturnId.indexOf("[") + 1,
-                                                    rawReturnId.indexOf(",")
-                                                )
-                                                Log.d("Real Return Id", realReturnId)
-                                                val builder2 = AlertDialog.Builder(this)
-                                                builder2.setTitle("Proceso de Devolucion")
-                                                    .setMessage("Aceptar o rechazar la devolucion:")
-                                                    .setPositiveButton("Aceptar") { dialog2, which ->
-                                                        try {
-                                                            val actionClose =
-                                                                GlobalScope.async { actionClose(realReturnId.toInt()) }
-                                                            runBlocking {
-                                                                Log.d(
-                                                                    "Action Close Result",
-                                                                    actionClose.await()
-                                                                )
-                                                            }
-                                                            finishProcess.putExtra(
-                                                                "pickingId",
-                                                                pickingId.toInt()
-                                                            )
-                                                            startActivity(finishProcess)
-                                                            finish()
-                                                        } catch (e: Exception) {
-                                                            Log.d("Error", e.toString())
-                                                        }
-                                                    }
-                                                    .setNegativeButton("Rechazar") { dialog2, which ->
-                                                        try {
-                                                            val actionRejected = GlobalScope.async {
-                                                                actionRejected(realReturnId.toInt())
-                                                            }
-                                                            runBlocking {
-                                                                Log.d(
-                                                                    "Action Close Result",
-                                                                    actionRejected.await()
-                                                                )
-                                                            }
-                                                            finishProcess.putExtra(
-                                                                "pickingId",
-                                                                pickingId.toInt()
-                                                            )
-                                                            startActivity(finishProcess)
-                                                            finish()
-                                                        } catch (e: Exception) {
-                                                            Log.d("Error", e.toString())
-                                                        }
-                                                    }
-                                                builder2.show()
-                                            } else {
-                                                Log.d("Has return id", "true")
-                                                finishProcess.putExtra("pickingId", pickingId.toInt())
-                                                startActivity(finishProcess)
-                                                finish()
                                             }
                                         }
+
                                     }
                                 } catch (e: XmlRpcException) {
                                     Log.d("XMLRPC ERROR", e.toString())
@@ -626,6 +628,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                     "Confirmado",
                                                     Toast.LENGTH_LONG
                                                 ).show()
+                                                error = false
                                             }
                                         }
                                         val answer: String = movesTest("0", pickingId.toInt())
@@ -642,84 +645,84 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                         }
                                         error = true
                                     }
-                                }
-                                Log.d("Id", pickingId)
-                                Log.d("ReturnId", returnID.toString())
-                                val finishProcess =
-                                    Intent(applicationContext, MainMenuActivity::class.java)
-                                if (!error) {
-                                    if (returnID) {
-                                        Log.d("Has return id", "true")
-                                        var rawReturnId = ""
-                                        val dbReturns = DBConnect(
-                                            applicationContext,
-                                            Utilities.DBNAME,
-                                            null,
-                                            1
-                                        ).readableDatabase
-                                        val cursorReturns = dbReturns.rawQuery(
-                                            "SELECT return_id FROM " + Utilities.TABLE_STOCK + " WHERE id = " + pickingId.toInt(),
-                                            null
-                                        )
-                                        while (cursorReturns.moveToNext()) {
-                                            rawReturnId = cursorReturns.getString(0)
+                                    Log.d("Id", pickingId)
+                                    Log.d("ReturnId", returnID.toString())
+                                    val finishProcess =
+                                        Intent(applicationContext, MainMenuActivity::class.java)
+                                    if (!error) {
+                                        if (returnID) {
+                                            Log.d("Has return id", "true")
+                                            var rawReturnId = ""
+                                            val dbReturns = DBConnect(
+                                                applicationContext,
+                                                Utilities.DBNAME,
+                                                null,
+                                                1
+                                            ).readableDatabase
+                                            val cursorReturns = dbReturns.rawQuery(
+                                                "SELECT return_id FROM " + Utilities.TABLE_STOCK + " WHERE id = " + pickingId.toInt(),
+                                                null
+                                            )
+                                            while (cursorReturns.moveToNext()) {
+                                                rawReturnId = cursorReturns.getString(0)
+                                            }
+                                            cursorReturns.close()
+                                            val realReturnId = rawReturnId.substring(
+                                                rawReturnId.indexOf("[") + 1,
+                                                rawReturnId.indexOf(",")
+                                            )
+                                            Log.d("Real Return Id", realReturnId)
+                                            val builder2 = AlertDialog.Builder(this)
+                                            builder2.setTitle("Proceso de Devolucion")
+                                                .setMessage("Aceptar o rechazar la devolucion:")
+                                                .setPositiveButton("Aceptar") { dialog2, which ->
+                                                    try {
+                                                        val actionClose =
+                                                            GlobalScope.async { actionClose(realReturnId.toInt()) }
+                                                        runBlocking {
+                                                            Log.d(
+                                                                "Action Close Result",
+                                                                actionClose.await()
+                                                            )
+                                                        }
+                                                        finishProcess.putExtra(
+                                                            "pickingId",
+                                                            pickingId.toInt()
+                                                        )
+                                                        startActivity(finishProcess)
+                                                        finish()
+                                                    } catch (e: Exception) {
+                                                        Log.d("Error", e.toString())
+                                                    }
+                                                }
+                                                .setNegativeButton("Rechazar") { dialog2, which ->
+                                                    try {
+                                                        val actionRejected = GlobalScope.async {
+                                                            actionRejected(realReturnId.toInt())
+                                                        }
+                                                        runBlocking {
+                                                            Log.d(
+                                                                "Action Close Result",
+                                                                actionRejected.await()
+                                                            )
+                                                        }
+                                                        finishProcess.putExtra(
+                                                            "pickingId",
+                                                            pickingId.toInt()
+                                                        )
+                                                        startActivity(finishProcess)
+                                                        finish()
+                                                    } catch (e: Exception) {
+                                                        Log.d("Error", e.toString())
+                                                    }
+                                                }
+                                            builder2.show()
+                                        } else {
+                                            Log.d("Has return id", "true")
+                                            finishProcess.putExtra("pickingId", pickingId.toInt())
+                                            startActivity(finishProcess)
+                                            finish()
                                         }
-                                        cursorReturns.close()
-                                        val realReturnId = rawReturnId.substring(
-                                            rawReturnId.indexOf("[") + 1,
-                                            rawReturnId.indexOf(",")
-                                        )
-                                        Log.d("Real Return Id", realReturnId)
-                                        val builder2 = AlertDialog.Builder(this)
-                                        builder2.setTitle("Proceso de Devolucion")
-                                            .setMessage("Aceptar o rechazar la devolucion:")
-                                            .setPositiveButton("Aceptar") { dialog2, which ->
-                                                try {
-                                                    val actionClose =
-                                                        GlobalScope.async { actionClose(realReturnId.toInt()) }
-                                                    runBlocking {
-                                                        Log.d(
-                                                            "Action Close Result",
-                                                            actionClose.await()
-                                                        )
-                                                    }
-                                                    finishProcess.putExtra(
-                                                        "pickingId",
-                                                        pickingId.toInt()
-                                                    )
-                                                    startActivity(finishProcess)
-                                                    finish()
-                                                } catch (e: Exception) {
-                                                    Log.d("Error", e.toString())
-                                                }
-                                            }
-                                            .setNegativeButton("Rechazar") { dialog2, which ->
-                                                try {
-                                                    val actionRejected = GlobalScope.async {
-                                                        actionRejected(realReturnId.toInt())
-                                                    }
-                                                    runBlocking {
-                                                        Log.d(
-                                                            "Action Close Result",
-                                                            actionRejected.await()
-                                                        )
-                                                    }
-                                                    finishProcess.putExtra(
-                                                        "pickingId",
-                                                        pickingId.toInt()
-                                                    )
-                                                    startActivity(finishProcess)
-                                                    finish()
-                                                } catch (e: Exception) {
-                                                    Log.d("Error", e.toString())
-                                                }
-                                            }
-                                        builder2.show()
-                                    } else {
-                                        Log.d("Has return id", "true")
-                                        finishProcess.putExtra("pickingId", pickingId.toInt())
-                                        startActivity(finishProcess)
-                                        finish()
                                     }
                                 }
                             }

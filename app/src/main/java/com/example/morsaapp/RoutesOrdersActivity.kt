@@ -289,6 +289,7 @@ class RoutesOrdersActivity : AppCompatActivity() {
     override fun onBackPressed() {
         super.onBackPressed()
         val returnIntent = Intent(applicationContext, RoutesActivity::class.java)
+        finish()
         startActivity(returnIntent)
         //unregisterReceiver(mScanReceiver) //This may stop the working of the scanner, shutdown in the meantime
     }

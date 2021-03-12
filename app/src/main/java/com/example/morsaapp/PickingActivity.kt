@@ -71,6 +71,7 @@ class PickingActivity : AppCompatActivity() {
         super.onBackPressed()
         val goBackintent = Intent(this, MainMenuActivity::class.java)
         startActivity(goBackintent)
+        finish()
     }
 
     private fun refreshData(){

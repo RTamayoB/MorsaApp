@@ -487,6 +487,7 @@ class CountActivity : AppCompatActivity() {
             builder.setMessage("Producto '$decodedString' no correspondiente a ubicacion")
             builder.setPositiveButton("Entendido") { dialog, which ->
                 val goBackintent = Intent(this, MainMenuActivity::class.java)
+                finish()
                 startActivity(goBackintent)
             }
             builder.show()
