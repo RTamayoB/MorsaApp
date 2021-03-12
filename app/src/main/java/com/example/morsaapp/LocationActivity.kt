@@ -105,32 +105,27 @@ class LocationActivity : AppCompatActivity() {
                             populateListView()
                             val adapter = locationsLv.adapter as ReceptionAdapter
                             adapter.notifyDataSetChanged()
-                            Toast.makeText(applicationContext, "Exito", Toast.LENGTH_SHORT).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Exito", 24.0F, Toast.LENGTH_LONG)
                             }
                         } else {
                             runOnUiThread {
                                 swipeRefreshLayout.isRefreshing = false
-                                Toast.makeText(applicationContext, "Sin Exito", Toast.LENGTH_SHORT)
-                                .show()
+
+
                             }
                         }
                 }catch (e: Exception){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error General: $e",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error General: $e", 24.0F, Toast.LENGTH_LONG)
                         swipeRefreshLayout.isRefreshing = false
                     }
                     Log.d("Error General",e.toString())
                 }catch (xml: XmlRpcException){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error de Red: $xml",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error de Red: $xml", 24.0F, Toast.LENGTH_LONG)
                         swipeRefreshLayout.isRefreshing = false
                     }
                     Log.d("Error de Red",xml.toString())

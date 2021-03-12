@@ -173,41 +173,33 @@ class RoutesActivity : AppCompatActivity() {
                             populateListView()
                             val adapter = routesLv.adapter as RoutesAdapter
                             adapter.notifyDataSetChanged()
-                            Toast.makeText(
-                                applicationContext,
-                                "Escanee una Ruta",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Escanee una ruta", 24.0F, Toast.LENGTH_LONG)
                         }
                     } else {
                         runOnUiThread {
-                            Toast.makeText(applicationContext, "Sin Exito", Toast.LENGTH_SHORT)
-                                .show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Sin Exito", 24.0F, Toast.LENGTH_LONG)
                         }
                     }
                 }catch (e: Exception){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error General: $e",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error General: $e", 24.0F, Toast.LENGTH_LONG)
                     }
                     Log.d("Error General",e.toString())
                 }catch (xml: XmlRpcException){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error de Red: $xml",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error de Red: $xml", 24.0F, Toast.LENGTH_LONG)
                     }
                     Log.d("Error de Red",xml.toString())
                 }
             }
         }
         else{
-            Toast.makeText(applicationContext,"Error al cargar",Toast.LENGTH_SHORT).show()
+            val customToast = CustomToast(this, this)
+            customToast.show("Error al cargar", 24.0F, Toast.LENGTH_LONG)
         }
 
     }
@@ -342,8 +334,8 @@ class RoutesActivity : AppCompatActivity() {
                 //Check if Route has boxes
                 Log.d("Stock Boxes from Route", deferredStockBoxes.await().toString())
                 if (deferredStockBoxes.await().equals("[]")) {
-                    Toast.makeText(applicationContext, "Ruta no tiene cajas", Toast.LENGTH_LONG)
-                        .show()
+                    val customToast = CustomToast(applicationContext, this@RoutesActivity)
+                    customToast.show("Ruta no tiene cajas", 24.0F, Toast.LENGTH_LONG)
                 }
                 //If not show list in new activity
                 else {
@@ -366,7 +358,8 @@ class RoutesActivity : AppCompatActivity() {
             .enableSwipe(true)
             .swipeHorizontal(true)
             .onError { t ->
-                Toast.makeText(applicationContext, "Error al abrir documento", Toast.LENGTH_LONG).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error al abrir documento", 24.0F, Toast.LENGTH_LONG)
                 Log.d("Error", t.toString())
             }
             .enableAntialiasing(true)

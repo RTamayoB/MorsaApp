@@ -165,7 +165,8 @@ class RoutesOrdersActivity : AppCompatActivity() {
                 val item = boxesLv.adapter.getItem(i) as StockBoxesDataModel
                 if (!item.isScanned){
                     allScanned = false
-                    Toast.makeText(applicationContext,"Escanee todos los productos",Toast.LENGTH_SHORT).show()
+                    val customToast = CustomToast(this, this)
+                    customToast.show("Escanee todos los productos", 24.0F, Toast.LENGTH_LONG)
                     break
                 }
             }
@@ -178,19 +179,13 @@ class RoutesOrdersActivity : AppCompatActivity() {
                         if (!(deferredRouteInfo[0] as Boolean)) {
                             if (!(deferredRouteInfo[0] as Boolean)) {
                                 runOnUiThread {
-                                    Toast.makeText(
-                                        applicationContext,
-                                        "Cajas pendientes",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    val customToast = CustomToast(this, this)
+                                    customToast.show("Cajas pendientes", 24.0F, Toast.LENGTH_LONG)
                                 }
                             } else {
                                 runOnUiThread {
-                                    Toast.makeText(
-                                        applicationContext,
-                                        "No hay paquetes para mover a ruta",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    val customToast = CustomToast(this, this)
+                                    customToast.show("No hay paquetes para mover a ruta", 24.0F, Toast.LENGTH_LONG)
                                 }
                             }
 
@@ -233,11 +228,8 @@ class RoutesOrdersActivity : AppCompatActivity() {
                                             sendPlates(routeId, input.text.toString())
 
                                         runOnUiThread {
-                                            Toast.makeText(
-                                                applicationContext,
-                                                deferredPlaques[1] as String,
-                                                Toast.LENGTH_SHORT
-                                            ).show()
+                                            val customToast = CustomToast(this, this)
+                                            customToast.show(deferredPlaques[1].toString() as String, 24.0F, Toast.LENGTH_LONG)
                                         }
                                         if ((deferredPlaques[0] as Boolean)) {
                                             val file1 = File(applicationContext.filesDir, pdfName)
@@ -245,11 +237,8 @@ class RoutesOrdersActivity : AppCompatActivity() {
                                         } else {
                                             runOnUiThread {
                                                 dialog.dismiss()
-                                                Toast.makeText(
-                                                    applicationContext,
-                                                    "No se pudieron enviar las placas, intente de nuevo",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
+                                                val customToast = CustomToast(this, this)
+                                                customToast.show("No se pudieron enviar las placas, intente de nuevo", 24.0F, Toast.LENGTH_LONG)
                                             }
                                         }
                                     }catch (e: Exception){

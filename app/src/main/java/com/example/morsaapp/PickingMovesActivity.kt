@@ -131,7 +131,8 @@ class PickingMovesActivity : AppCompatActivity() {
         pickingIds = intent.getStringExtra("pickingIds")
         rackId = intent.getStringExtra("rackId")
 
-        Toast.makeText(applicationContext,"Escanee la Ubicacion Origen", Toast.LENGTH_SHORT).show()
+        val customToast = CustomToast(this, this)
+        customToast.show("Escanee la ubicacion origen", 24.0F, Toast.LENGTH_LONG)
 
         noPieceMoves.setOnClickListener {
             showMissingPopup()
@@ -328,11 +329,8 @@ class PickingMovesActivity : AppCompatActivity() {
                         GlobalScope.async { notifyMissing(rackId.toInt(), missingProducts) }
                     runBlocking {
                         Log.d("Result from Notify", deferredNofity.await().toString())
-                        Toast.makeText(
-                            applicationContext,
-                            deferredNofity.await()[1].toString(),
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(applicationContext, this@PickingMovesActivity)
+                        customToast.show(deferredNofity.await()[1], 24.0F, Toast.LENGTH_LONG)
                     }
                 }catch (e: Exception) {
                     Log.d("Error General", e.toString())
@@ -340,10 +338,12 @@ class PickingMovesActivity : AppCompatActivity() {
                 popupWindow.dismiss()
             }catch (e : XmlRpcException){
                 Log.d("XMLRPC ERROR", e.toString())
-                Toast.makeText(this, "Error en Odoo: $e",Toast.LENGTH_SHORT).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error en Odoo: $e", 24.0F, Toast.LENGTH_LONG)
             }catch (e : Exception){
                 Log.d("ERROR", e.toString())
-                Toast.makeText(this, "Error en peticion",Toast.LENGTH_SHORT).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error en peticion: $e", 24.0F, Toast.LENGTH_LONG)
             }
         }
 
@@ -449,11 +449,8 @@ class PickingMovesActivity : AppCompatActivity() {
             }
         }catch (e: Exception) {
             runOnUiThread {
-                Toast.makeText(
-                    applicationContext,
-                    "Error: $e",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error: $e", 24.0F, Toast.LENGTH_LONG)
             }
             Log.d("Error General", e.toString())
         }
@@ -560,20 +557,14 @@ class PickingMovesActivity : AppCompatActivity() {
             }
         }catch (e: Exception){
             runOnUiThread {
-                Toast.makeText(
-                    applicationContext,
-                    "Error General: $e",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error General: $e", 24.0F, Toast.LENGTH_LONG)
             }
             Log.d("Error General",e.toString())
         }catch (xml: XmlRpcException){
             runOnUiThread {
-                Toast.makeText(
-                    applicationContext,
-                    "Error encontrando Producto",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error encontrando producto", 24.0F, Toast.LENGTH_LONG)
             }
             Log.d("Error de Red",xml.toString())
         }
@@ -595,7 +586,8 @@ class PickingMovesActivity : AppCompatActivity() {
                 currentOrigin = decodedString
                 val adapterModifier = pickingMovesLv.adapter as ProductsToLocationAdapter
                 adapterModifier.notifyDataSetChanged()
-                Toast.makeText(this, "Escanee un Producto", Toast.LENGTH_SHORT).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Escanee un producto", 24.0F, Toast.LENGTH_LONG)
                 break
             }
             else if(scannedProductIdSearch == item.productId){
@@ -680,7 +672,8 @@ class PickingMovesActivity : AppCompatActivity() {
                                 //val deferredToCart: Deferred<List<String>> = GlobalScope.async { sendtoCart(item.id, item.qty) }
 
                             } else {
-                                Toast.makeText(applicationContext, "Excediste la cantidad total", Toast.LENGTH_LONG).show()
+                                val customToast = CustomToast(this, this)
+                                customToast.show("Excediste la cantidad total", 24.0F, Toast.LENGTH_LONG)
                                 dialog.dismiss()
                             }
 
@@ -696,15 +689,18 @@ class PickingMovesActivity : AppCompatActivity() {
                             }
 
                             if(scanDestiny){
-                                Toast.makeText(applicationContext, "Picking completado, escanee ubicacion - $destiny", Toast.LENGTH_LONG).show()
+                                val customToast = CustomToast(this, this)
+                                customToast.show("Picking completado, escanee ubicación - $destiny", 24.0F, Toast.LENGTH_LONG)
                             }
 
                         }catch (e : XmlRpcException){
                             Log.d("XMLRPC ERROR", e.toString())
-                            Toast.makeText(this, "Error en Odoo: $e",Toast.LENGTH_SHORT).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Error en Odoo: $e", 24.0F, Toast.LENGTH_LONG)
                         }catch (e : Exception){
                             Log.d("ERROR", e.toString())
-                            Toast.makeText(this, "Error en peticion",Toast.LENGTH_SHORT).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Error en peticion: $e", 24.0F, Toast.LENGTH_LONG)
                         }
                     }
                     builder.setNegativeButton("Cancelar") { dialog, which ->
@@ -713,7 +709,8 @@ class PickingMovesActivity : AppCompatActivity() {
                     builder.show()
                 }
                 else{
-                    Toast.makeText(applicationContext, "Ubicacion origen incorrecta, actual es - $currentOrigin", Toast.LENGTH_SHORT).show()
+                    val customToast = CustomToast(this, this)
+                    customToast.show("Ubicación incorrecta, actual es - $currentOrigin", 24.0F, Toast.LENGTH_LONG)
                     break
                 }
                 break
@@ -757,7 +754,8 @@ class PickingMovesActivity : AppCompatActivity() {
                                         finish()
                                     }
                                     else{
-                                        Toast.makeText(applicationContext,"Error al finalizar Picking",Toast.LENGTH_LONG).show()
+                                        val customToast = CustomToast(this, this)
+                                        customToast.show("Error al finalizar Picking", 24.0F, Toast.LENGTH_LONG)
                                     }
                                 } else {
                                     Log.d("Exceeded", "Excedio cantidad total")
@@ -767,10 +765,12 @@ class PickingMovesActivity : AppCompatActivity() {
 
                         }catch (e : XmlRpcException){
                             Log.d("XMLRPC ERROR", e.toString())
-                            Toast.makeText(this, "Error en Odoo: $e",Toast.LENGTH_SHORT).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Error en Odoo: $e", 24.0F, Toast.LENGTH_LONG)
                         }catch (e : Exception){
                             Log.d("ERROR", e.toString())
-                            Toast.makeText(this, "Error en peticion",Toast.LENGTH_SHORT).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Error en peticion: $e", 24.0F, Toast.LENGTH_LONG)
                         }
                     }
                     builder.setNegativeButton("Cancelar") { dialog, which ->
@@ -794,7 +794,8 @@ class PickingMovesActivity : AppCompatActivity() {
 
         //Show message acording to result
         if(!scanResult){
-            Toast.makeText(applicationContext, "Codigo de barras invalido, se escaneo - $decodedString", Toast.LENGTH_SHORT).show()
+            val customToast = CustomToast(this, this)
+            customToast.show("Codigo de barras inválido, se escaneo - $decodedString", 24.0F, Toast.LENGTH_LONG)
         }
 
         //val db = DBConnect(this, Utilities.DBNAME, null, 1).readableDatabase

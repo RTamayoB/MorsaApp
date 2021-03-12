@@ -129,11 +129,8 @@ class ProductsToLocationActivity : AppCompatActivity() {
             }
         }catch (e: Exception) {
             runOnUiThread {
-                Toast.makeText(
-                    applicationContext,
-                    "Error: $e",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error: $e", 24.0F, Toast.LENGTH_LONG)
             }
             Log.d("Error General", e.toString())
         }
@@ -157,33 +154,28 @@ class ProductsToLocationActivity : AppCompatActivity() {
                             populateListView(completeName)
                             val adapter = productToLocationLv.adapter as ProductsToLocationAdapter
                             adapter.notifyDataSetChanged()
-                            Toast.makeText(applicationContext, "Exito", Toast.LENGTH_SHORT).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Exito", 24.0F, Toast.LENGTH_LONG)
                         }
 
                     } else {
                         runOnUiThread {
                             progressBar.isVisible = false
-                            Toast.makeText(applicationContext, "Sin Exito", Toast.LENGTH_SHORT)
-                                .show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Sin Exito", 24.0F, Toast.LENGTH_LONG)
                         }
                     }
                 }catch (e: Exception){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error General: $e",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error General: $e", 24.0F, Toast.LENGTH_LONG)
                         progressBar.isVisible = false
                     }
                     Log.d("Error General",e.toString())
                 }catch (xml: XmlRpcException){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error de Red: $xml",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error de Red: $xml", 24.0F, Toast.LENGTH_LONG)
                         progressBar.isVisible = false
                     }
                     Log.d("Error de Red",xml.toString())
@@ -192,7 +184,8 @@ class ProductsToLocationActivity : AppCompatActivity() {
             }
         }
 
-        Toast.makeText(applicationContext,"Escanee la Ubicacion",Toast.LENGTH_SHORT).show()
+        val customToast = CustomToast(this, this)
+        customToast.show("Escanee la ubicación", 24.0F, Toast.LENGTH_LONG)
     }
 
     /*
@@ -244,20 +237,14 @@ class ProductsToLocationActivity : AppCompatActivity() {
             }
         }catch (e: Exception){
             runOnUiThread {
-                Toast.makeText(
-                    applicationContext,
-                    "Error General: $e",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error General: $e", 24.0F, Toast.LENGTH_LONG)
             }
             Log.d("Error General",e.toString())
         }catch (xml: XmlRpcException){
             runOnUiThread {
-                Toast.makeText(
-                    applicationContext,
-                    "Error encontrando producto",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error encontrando producto", 24.0F, Toast.LENGTH_LONG)
             }
             Log.d("Error de Red",xml.toString())
         }
@@ -267,12 +254,14 @@ class ProductsToLocationActivity : AppCompatActivity() {
             Log.d("Item Id", item.productId)
             if(decodedString == item.location){
                 scan1 = decodedString
-                Toast.makeText(applicationContext,"Escanee un producto",Toast.LENGTH_SHORT).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Escanee un Producto", 24.0F, Toast.LENGTH_LONG)
             }
 
             if (scannedProductIdSearch == item.productId){
                 scan2 = item.productId
-                Toast.makeText(applicationContext,"Escanee una ubicación",Toast.LENGTH_SHORT).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Escanee una Ubicación", 24.0F, Toast.LENGTH_LONG)
             }
 
             if(scan1 == item.location && scan2 == item.productId){
@@ -305,19 +294,13 @@ class ProductsToLocationActivity : AppCompatActivity() {
                                 val moves: List<Any> = setMoves(item.id, item.qty)
                                 Log.d("Final Result", moves.toString())
                                 runOnUiThread {
-                                    Toast.makeText(
-                                        applicationContext,
-                                        moves[1].toString(),
-                                        Toast.LENGTH_LONG
-                                    ).show()
+                                    val customToast = CustomToast(this, this)
+                                    customToast.show(moves[1].toString(), 24.0F, Toast.LENGTH_LONG)
                                 }
                             }catch (e: Exception) {
                                 runOnUiThread {
-                                    Toast.makeText(
-                                        applicationContext,
-                                        "Error: $e",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    val customToast = CustomToast(this, this)
+                                    customToast.show("Error: $e", 24.0F, Toast.LENGTH_LONG)
                                 }
                                 Log.d("Error General", e.toString())
                             }
@@ -328,7 +311,8 @@ class ProductsToLocationActivity : AppCompatActivity() {
                         adapterModifier.notifyDataSetChanged()
                     }
                     else{
-                        Toast.makeText(applicationContext, "Excediste la cantidad total", Toast.LENGTH_SHORT).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Excediste la cantidad total", 24.0F, Toast.LENGTH_LONG)
                         item.qty = 0
                     }
                 }

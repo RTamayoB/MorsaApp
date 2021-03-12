@@ -428,11 +428,8 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                    }
                                    */
                                     if (!allChecked) {
-                                        Toast.makeText(
-                                            this,
-                                            "Confirma todas las incidencias",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                        val customToast = CustomToast(this, this)
+                                        customToast.show("Confirma todas la incidencias", 24.0F, Toast.LENGTH_LONG)
                                     } else {
                                         var error = false
                                         //val issuesToSend: HashMap<Int, HashMap<Int, Int>> = parseIssues()
@@ -446,19 +443,13 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                 )
                                                 if (sendIssues.isEmpty()) {
                                                     runOnUiThread {
-                                                        Toast.makeText(
-                                                            applicationContext,
-                                                            "IsEmpty",
-                                                            Toast.LENGTH_LONG
-                                                        ).show()
+                                                        val customToast = CustomToast(this, this)
+                                                        customToast.show("Is Empty", 24.0F, Toast.LENGTH_LONG)
                                                     }
                                                 } else {
                                                     runOnUiThread {
-                                                        Toast.makeText(
-                                                            applicationContext,
-                                                            "Confirmado",
-                                                            Toast.LENGTH_LONG
-                                                        ).show()
+                                                        val customToast = CustomToast(this, this)
+                                                        customToast.show("Confirmado", 24.0F, Toast.LENGTH_LONG)
                                                     }
                                                     error = false
                                                 }
@@ -468,11 +459,8 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                             } catch (e: Exception) {
                                                 Log.d("Error", e.toString())
                                                 runOnUiThread {
-                                                    Toast.makeText(
-                                                        applicationContext,
-                                                        e.toString(),
-                                                        Toast.LENGTH_LONG
-                                                    ).show()
+                                                    val customToast = CustomToast(this, this)
+                                                    customToast.show(e.toString(), 24.0F, Toast.LENGTH_LONG)
                                                 }
                                                 error = true
                                             }
@@ -560,10 +548,12 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                     }
                                 } catch (e: XmlRpcException) {
                                     Log.d("XMLRPC ERROR", e.toString())
-                                    Toast.makeText(this, "Error en Odoo: $e", Toast.LENGTH_SHORT).show()
+                                    val customToast = CustomToast(this, this)
+                                    customToast.show("Error en Odoo: $e", 24.0F, Toast.LENGTH_LONG)
                                 } catch (e: Exception) {
                                     Log.d("ERROR", e.toString())
-                                    Toast.makeText(this, "Error en peticion", Toast.LENGTH_SHORT).show()
+                                    val customToast = CustomToast(this, this)
+                                    customToast.show("Error en Peticion: $e", 24.0F, Toast.LENGTH_LONG)
                                 }
                             }
                             .setNegativeButton("Cancelar") { dialog, which ->
@@ -597,11 +587,8 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                            }
                            */
                             if (!allChecked) {
-                                Toast.makeText(
-                                    this,
-                                    "Confirma todas las incidencias",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                val customToast = CustomToast(this, this)
+                                customToast.show("Confirma todas las incidencias", 24.0F, Toast.LENGTH_LONG)
                             } else {
                                 var error = false
                                 //val issuesToSend: HashMap<Int, HashMap<Int, Int>> = parseIssues()
@@ -615,19 +602,13 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                         )
                                         if (sendIssues.isEmpty()) {
                                             runOnUiThread {
-                                                Toast.makeText(
-                                                    applicationContext,
-                                                    "IsEmpty",
-                                                    Toast.LENGTH_LONG
-                                                ).show()
+                                                val customToast = CustomToast(this, this)
+                                                customToast.show("Is Empty", 24.0F, Toast.LENGTH_LONG)
                                             }
                                         } else {
                                             runOnUiThread {
-                                                Toast.makeText(
-                                                    applicationContext,
-                                                    "Confirmado",
-                                                    Toast.LENGTH_LONG
-                                                ).show()
+                                                val customToast = CustomToast(this, this)
+                                                customToast.show("Confirmado", 24.0F, Toast.LENGTH_LONG)
                                                 error = false
                                             }
                                         }
@@ -637,11 +618,8 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                     } catch (e: Exception) {
                                         Log.d("Error", e.toString())
                                         runOnUiThread {
-                                            Toast.makeText(
-                                                applicationContext,
-                                                e.toString(),
-                                                Toast.LENGTH_LONG
-                                            ).show()
+                                            val customToast = CustomToast(this, this)
+                                            customToast.show(e.toString(), 24.0F, Toast.LENGTH_LONG)
                                         }
                                         error = true
                                     }
@@ -728,10 +706,12 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                             }
                         } catch (e: XmlRpcException) {
                             Log.d("XMLRPC ERROR", e.toString())
-                            Toast.makeText(this, "Error en Odoo: $e", Toast.LENGTH_SHORT).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Error en Odoo: $e", 24.0F, Toast.LENGTH_LONG)
                         } catch (e: Exception) {
                             Log.d("ERROR", e.toString())
-                            Toast.makeText(this, "Error en peticion", Toast.LENGTH_SHORT).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Error en Peticion: $e", 24.0F, Toast.LENGTH_LONG)
                         }
                     }
                     .setNegativeButton("Cancelar") { dialog, _ ->
@@ -758,20 +738,14 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                 }
                 }catch (e: Exception){
                     runOnUiThread {
-                        Toast.makeText(
-                             applicationContext,
-                            "Error General: $e",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error General", 24.0F, Toast.LENGTH_LONG)
                     }
                 Log.d("Error General",e.toString())
                 }catch (xml: XmlRpcException){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error de Red: $xml",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error de Red: $xml", 24.0F, Toast.LENGTH_LONG)
                     }
                     Log.d("Error de Red",xml.toString())
                 }
@@ -798,13 +772,15 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                             populateListView(relatedId)
                             val adapter = orderRevisionLv.adapter as OrderRevisionAdapter
                             adapter.notifyDataSetChanged()
-                            Toast.makeText(applicationContext, "Exito", Toast.LENGTH_SHORT).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Exito", 24.0F, Toast.LENGTH_LONG)
                         }
 
                     } else
                         runOnUiThread {
                             progressBar.isVisible = false
-                            Toast.makeText(applicationContext, "Sin Exito", Toast.LENGTH_SHORT).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Sin Exito", 24.0F, Toast.LENGTH_LONG)
                         }
             }
         }
@@ -1058,25 +1034,20 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                     Log.d("Scanned Product", scannedProductIdSearch.toString())
                 }
                 else{
-                    Toast.makeText(applicationContext, "Producto no encontrado", Toast.LENGTH_SHORT).show()
+                    val customToast = CustomToast(applicationContext, this@OrderRevisionActivity)
+                    customToast.show("Producto no encontrado", 24.0F, Toast.LENGTH_LONG)
                 }
             }
         }catch (e: Exception){
             runOnUiThread {
-                Toast.makeText(
-                    applicationContext,
-                    "Error General: $e",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error General", 24.0F, Toast.LENGTH_LONG)
             }
             Log.d("Error General",e.toString())
         }catch (xml: XmlRpcException){
             runOnUiThread {
-                Toast.makeText(
-                    applicationContext,
-                    "Error Encontrando Producto",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error encontrando Producto", 24.0F, Toast.LENGTH_LONG)
             }
             Log.d("Error de Red",xml.toString())
         }

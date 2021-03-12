@@ -19,9 +19,10 @@ class CustomToast(context: Context, activity: Activity) {
         val text = layout.findViewById<TextView>(R.id.custom_toast_layout_text)
         text.text = message // Lista actualizada
         text.textSize = textSize
+        text.gravity = Gravity.CENTER
 
         val toast = Toast(mContext)
-        toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0)
+        toast.setGravity(Gravity.BOTTOM, 0, 0)
         toast.duration = duration
         toast.view = layout
         toast.show()

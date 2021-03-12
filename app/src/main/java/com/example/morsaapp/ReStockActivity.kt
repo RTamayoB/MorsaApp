@@ -186,36 +186,27 @@ class ReStockActivity : AppCompatActivity() {
                             populateListView()
                             val adapter = reStockLv.adapter as ReStockAdapter
                             adapter.notifyDataSetChanged()
-                            Toast.makeText(
-                                applicationContext,
-                                "Lista Actualizada",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Lista Actualizada", 24.0F, Toast.LENGTH_LONG)
                         }
                     } else {
                         runOnUiThread {
                             swipeRefreshLayout.isRefreshing = false
-                            Toast.makeText(applicationContext, "Sin Exito", Toast.LENGTH_SHORT)
-                                .show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Sin Exito", 24.0F, Toast.LENGTH_LONG)
                         }
                     }
                 }catch (e: Exception){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error General: $e",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error General $e", 24.0F, Toast.LENGTH_LONG)
                         swipeRefreshLayout.isRefreshing = false
                     }
                     Log.d("Error General",e.toString())
                 }catch (xml: XmlRpcException){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error de Red: $xml",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error de Red $xml", 24.0F, Toast.LENGTH_LONG)
                         swipeRefreshLayout.isRefreshing = false
                     }
                     Log.d("Error de Red",xml.toString())
@@ -223,7 +214,8 @@ class ReStockActivity : AppCompatActivity() {
             }
         }
         else{
-            Toast.makeText(applicationContext,"Error al cargar",Toast.LENGTH_SHORT).show()
+            val customToast = CustomToast(this, this)
+            customToast.show("Error al cargar", 24.0F, Toast.LENGTH_LONG)
         }
     }
 
@@ -345,20 +337,14 @@ class ReStockActivity : AppCompatActivity() {
             }
         }catch (e: Exception){
             runOnUiThread {
-                Toast.makeText(
-                    applicationContext,
-                    "Error General: $e",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error General $e", 24.0F, Toast.LENGTH_LONG)
             }
             Log.d("Error General",e.toString())
         }catch (xml: XmlRpcException){
             runOnUiThread {
-                Toast.makeText(
-                    applicationContext,
-                    "Error Encontrando Producto: $xml",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error encontrando Productos $xml", 24.0F, Toast.LENGTH_LONG)
             }
             Log.d("Error de Red",xml.toString())
         }
@@ -368,15 +354,18 @@ class ReStockActivity : AppCompatActivity() {
             Log.d("Item Id", item.reProductId)
             if (decodedData == item.reOrigin) {
                 scan3 = decodedData
-                Toast.makeText(applicationContext, "Escanee un producto", Toast.LENGTH_SHORT).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Escanee un producto", 24.0F, Toast.LENGTH_LONG)
             }
             if (decodedData == item.reDestiny) {
                 scan1 = decodedData
-                Toast.makeText(applicationContext, "Escanee el producto ha abastecer", Toast.LENGTH_SHORT).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Escanee el producto ha abastecer", 24.0F, Toast.LENGTH_LONG)
             }
             if (scannedProductIdSearch == item.reProductId) {
                 scan2 = item.reProductId
-                Toast.makeText(applicationContext, "Escanee la ubicación destino", Toast.LENGTH_SHORT).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Escanee la ubicación destino", 24.0F, Toast.LENGTH_LONG)
             }
 
             //Check of Origin and Product have already been scanned - added last check because of error
@@ -401,9 +390,11 @@ class ReStockActivity : AppCompatActivity() {
                         item.reQty = num.toInt()
                         val adapt = reStockLv.adapter as ReStockAdapter
                         adapt.notifyDataSetChanged()
-                        Toast.makeText(applicationContext, "Escanee la ubicación destino", Toast.LENGTH_SHORT).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Escanee la ubicación destino", 24.0F, Toast.LENGTH_LONG)
                     } else {
-                        Toast.makeText(applicationContext, "Excediste la cantidad total", Toast.LENGTH_SHORT).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Excediste la cantidad total", 24.0F, Toast.LENGTH_LONG)
                     }
                 }
                 builder.setNegativeButton("Cancelar") { dialog, which ->
@@ -432,31 +423,22 @@ class ReStockActivity : AppCompatActivity() {
                                     Log.d("Final Result", deferredReStock.toString())
                                     if (deferredReStock[1] == "Movimiento exitoso" as String) {
                                         runOnUiThread {
-                                            Toast.makeText(
-                                                applicationContext,
-                                                deferredReStock[1].toString(),
-                                                Toast.LENGTH_LONG
-                                            ).show()
+                                            val customToast = CustomToast(this, this)
+                                            customToast.show(deferredReStock[1].toString(), 24.0F, Toast.LENGTH_LONG)
                                             item.isCounted = 2
                                             val adapt = reStockLv.adapter as ReStockAdapter
                                             adapt.notifyDataSetChanged()
                                         }
                                     } else {
                                         runOnUiThread {
-                                            Toast.makeText(
-                                                applicationContext,
-                                                "No se logro enviar la cantidad",
-                                                Toast.LENGTH_LONG
-                                            ).show()
+                                            val customToast = CustomToast(this, this)
+                                            customToast.show("No se logro enviar la cantidad", 24.0F, Toast.LENGTH_LONG)
                                         }
                                     }
                                 }catch (e: Exception) {
                                     runOnUiThread {
-                                        Toast.makeText(
-                                            applicationContext,
-                                            "Error: $e",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                        val customToast = CustomToast(this, this)
+                                        customToast.show("Error $e", 24.0F, Toast.LENGTH_LONG)
                                     }
                                     Log.d("Error General", e.toString())
                                 }

@@ -130,10 +130,12 @@ class InvoiceActivity : AppCompatActivity() {
                         finish()
                     }catch (e : XmlRpcException){
                         Log.d("XMLRPC ERROR", e.toString())
-                        Toast.makeText(this, "Error en Odoo: $e",Toast.LENGTH_SHORT).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error en Odoo $e", 24.0F, Toast.LENGTH_LONG)
                     }catch (e : Exception){
                         Log.d("ERROR", e.toString())
-                        Toast.makeText(this, "Error en peticion:$e",Toast.LENGTH_SHORT).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error en Petición $e", 24.0F, Toast.LENGTH_LONG)
                     }
                 }
                 .setNegativeButton("Cancelar"){ dialog, _ ->
@@ -181,36 +183,27 @@ class InvoiceActivity : AppCompatActivity() {
                             populateListView(relatedId)
                             val adapter = invoiceLv.adapter as InvoiceAdapter
                             adapter.notifyDataSetChanged()
-                            Toast.makeText(
-                                applicationContext,
-                                "Lista Actualizada",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Lista Actualizada", 24.0F, Toast.LENGTH_LONG)
                         }
                     } else{
                         runOnUiThread {
                             progressBar.isVisible = false
-                            Toast.makeText(applicationContext, "Sin Exito", Toast.LENGTH_SHORT)
-                                .show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Sin Exito", 24.0F, Toast.LENGTH_LONG)
                         }
                     }
                 }catch (e: Exception){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error General: $e",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Sin General $e", 24.0F, Toast.LENGTH_LONG)
                         progressBar.isVisible = false
                     }
                     Log.d("Error General",e.toString())
                 }catch (xml: XmlRpcException){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error de Red: $xml",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error de Red $xml", 24.0F, Toast.LENGTH_LONG)
                         progressBar.isVisible = false
                     }
                     Log.d("Error de Red",xml.toString())

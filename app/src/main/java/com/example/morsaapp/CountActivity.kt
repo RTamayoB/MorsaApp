@@ -167,19 +167,17 @@ class CountActivity : AppCompatActivity() {
                             reportHashMap[model.lineId] = 0
                             val deferredSendCount = sendCount(reportHashMap)
                             runOnUiThread {
-                                Toast.makeText(
-                                    applicationContext,
-                                    "Reportado",
-                                    Toast.LENGTH_SHORT
-                                )
-                                    .show()
+                                val customToast = CustomToast(this, this)
+                                customToast.show("Reportado", 24.0F, Toast.LENGTH_LONG)
                                 Log.d("Result of count", deferredSendCount)
                             }
                         }catch (e: XmlRpcException){
-                            Toast.makeText(applicationContext,e.toString(), Toast.LENGTH_LONG).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("$e", 24.0F, Toast.LENGTH_LONG)
                         }
                         catch (c: Exception){
-                            Toast.makeText(applicationContext,c.toString(), Toast.LENGTH_LONG).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("$c", 24.0F, Toast.LENGTH_LONG)
                         }
                     }
             }
@@ -247,36 +245,27 @@ class CountActivity : AppCompatActivity() {
                             populateListView()
                             val adapter = countLv.adapter as CountAdapter
                             adapter.notifyDataSetChanged()
-                            Toast.makeText(
-                                applicationContext,
-                                "Lista Actualizada",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Lista actualizada", 24.0F, Toast.LENGTH_LONG)
                         }
                     } else {
                         runOnUiThread {
                             swipeRefreshLayout.isRefreshing = false
-                            Toast.makeText(applicationContext, "Sin Exito", Toast.LENGTH_SHORT)
-                                .show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Sin Exito", 24.0F, Toast.LENGTH_LONG)
                         }
                     }
                 }catch (e: Exception){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error General: $e",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error General: $e", 24.0F, Toast.LENGTH_LONG)
                         swipeRefreshLayout.isRefreshing = false
                     }
                     Log.d("Error General",e.toString())
                 }catch (xml: XmlRpcException){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error de Red: $xml",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error de Red $xml", 24.0F, Toast.LENGTH_LONG)
                         swipeRefreshLayout.isRefreshing = false
                     }
                     Log.d("Error de Red",xml.toString())
@@ -284,7 +273,8 @@ class CountActivity : AppCompatActivity() {
             }
         }
         else{
-            Toast.makeText(applicationContext,"Error al cargar",Toast.LENGTH_SHORT).show()
+            val customToast = CustomToast(this, this)
+            customToast.show("Error al cargar", 24.0F, Toast.LENGTH_LONG)
         }
     }
 
@@ -362,21 +352,15 @@ class CountActivity : AppCompatActivity() {
             }
         }catch (e: Exception){
             runOnUiThread {
-                Toast.makeText(
-                    applicationContext,
-                    "Error General: $e",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error General: $e", 24.0F, Toast.LENGTH_LONG)
                 swipeRefreshLayout.isRefreshing = false
             }
             Log.d("Error General",e.toString())
         }catch (xml: XmlRpcException){
             runOnUiThread {
-                Toast.makeText(
-                    applicationContext,
-                    "Error encontrando Producto",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error encontrando producto", 24.0F, Toast.LENGTH_LONG)
                 swipeRefreshLayout.isRefreshing = false
             }
             Log.d("Error de Red",xml.toString())
@@ -394,7 +378,8 @@ class CountActivity : AppCompatActivity() {
 
         if(showMessage){
             Log.d("Showing Message","True")
-            Toast.makeText(applicationContext,"Escanee el producto", Toast.LENGTH_LONG).show()
+            val customToast = CustomToast(this, this)
+            customToast.show("Escanee el producto", 24.0F, Toast.LENGTH_LONG)
         }
 
         Log.d("You Scanned", decodedString)
@@ -452,12 +437,8 @@ class CountActivity : AppCompatActivity() {
                                 try {
                                     val deferredSendCount = sendCount(product)
                                     runOnUiThread {
-                                        Toast.makeText(
-                                            applicationContext,
-                                            "Enviado ",
-                                            Toast.LENGTH_SHORT
-                                        )
-                                            .show()
+                                        val customToast = CustomToast(applicationContext,this@CountActivity)
+                                        customToast.show("Enviado", 24.0F, Toast.LENGTH_LONG)
                                         Log.d("Result of count", deferredSendCount)
                                     }
                                 }catch (e: Exception){
@@ -469,11 +450,8 @@ class CountActivity : AppCompatActivity() {
 
                     } else {
                         runOnUiThread {
-                            Toast.makeText(
-                                applicationContext,
-                                "Error obteninedo cantidad",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            val customToast = CustomToast(applicationContext, this@CountActivity)
+                            customToast.show("Error obteniendo cantidad", 24.0F, Toast.LENGTH_LONG)
                         }
                     }
                 }
@@ -493,11 +471,8 @@ class CountActivity : AppCompatActivity() {
             builder.show()
         }
         else if(!showMessage && !isCode){
-            Toast.makeText(
-                applicationContext,
-                "Codigo '$decodedString' no es producto ni ubicacion",
-                Toast.LENGTH_SHORT
-            ).show()
+            val customToast = CustomToast(this, this)
+            customToast.show("Codigo $decodedString no es producto ni ubicación", 24.0F, Toast.LENGTH_LONG)
         }
     }
 
