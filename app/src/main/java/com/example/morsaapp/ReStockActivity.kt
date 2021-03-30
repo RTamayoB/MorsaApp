@@ -55,8 +55,8 @@ class ReStockActivity : AppCompatActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
 
-            if(action == "android.intent.ACTION_DECODE_DATA"){
-                soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
+            if(action == resources.getString(R.string.activity_intent_action)){
+                /*soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
                 mVibrator.vibrate(100)
 
                 val barcode  = intent!!.getByteArrayExtra(ScanManager.DECODE_DATA_TAG)
@@ -64,9 +64,10 @@ class ReStockActivity : AppCompatActivity() {
                 val temp = intent.getByteExtra(ScanManager.BARCODE_TYPE_TAG, 0.toByte())
                 Log.i("debug", "----codetype--$temp")
                 barcodeStr = String(barcode, 0, barcodelen)
-                Log.d("Result", barcodeStr)
-                displayScanResult(barcodeStr)
-                mScanManager.stopDecode()
+                Log.d("Result", barcodeStr)*/
+                    val value = intent.getStringExtra("barcode_string")
+                displayScanResult(value)
+                //mScanManager.stopDecode()
             }
         }
     }
@@ -110,7 +111,10 @@ class ReStockActivity : AppCompatActivity() {
         registerReceiver(myBroadcastReceiver, filter)
         */
 
-        initScan()
+        //initScan()
+        val filter = IntentFilter()
+        filter.addAction(resources.getString(R.string.activity_intent_action))
+        registerReceiver(mScanReceiver, filter)
 
         reStockLv = findViewById(R.id.re_stock_lv)
 
@@ -159,6 +163,7 @@ class ReStockActivity : AppCompatActivity() {
         builder.setMessage("¿Desea salir del proceso?")
         builder.setPositiveButton("Si") { dialog, which ->
             val goBackintent = Intent(this, MainMenuActivity::class.java)
+            unregisterReceiver(mScanReceiver)
             finish()
             startActivity(goBackintent)
         }
@@ -451,6 +456,9 @@ class ReStockActivity : AppCompatActivity() {
                 }
                 builder.show()
             }
+
+            
+
             /*
             if (scan1 == item.reDestiny && scan2 == item.reProductId && scan3 == item.reOrigin) {
                 scan1 = ""

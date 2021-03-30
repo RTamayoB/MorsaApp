@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.view.ViewParent
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
@@ -42,7 +43,8 @@ class MainMenuActivity : AppCompatActivity() {
         val pickingBtn = findViewById<ImageButton>(R.id.picking_btn)
         val countBtn = findViewById<ImageButton>(R.id.count_btn)
         val routeBtn = findViewById<ImageButton>(R.id.routes_btn)
-        val settingsBtn = findViewById<ImageButton>(R.id.settings_btn)
+        val settingsBtn = findViewById<Button>(R.id.settings_btn)
+        val refundsBtn = findViewById<Button>(R.id.refunds_btn)
 
         receptionBtn.setOnClickListener {
             val intent = Intent(applicationContext, ReceptionActivity::class.java)
@@ -90,6 +92,16 @@ class MainMenuActivity : AppCompatActivity() {
             val intent = Intent(applicationContext, RoutesActivity::class.java)
             startActivity(intent)
             finish()
+            }catch (e : Exception){
+                Log.d("Error", e.toString())
+            }
+        }
+
+        refundsBtn.setOnClickListener {
+            try{
+                val intent = Intent(applicationContext, RefundsActivity::class.java)
+                startActivity(intent)
+                finish()
             }catch (e : Exception){
                 Log.d("Error", e.toString())
             }

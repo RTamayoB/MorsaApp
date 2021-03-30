@@ -50,6 +50,8 @@ public class DBConnect extends SQLiteOpenHelper {
         db.execSQL(Utilities.CREATE_TABLE_INVOICE);
         db.execSQL(Utilities.CREATE_TABLE_INVOICE_LINE);
         db.execSQL(Utilities.CREATE_TABLE_STOCK_ARRANGEMENT);
+        db.execSQL(Utilities.CREATE_TABLE_STOCK_RETURN);
+        db.execSQL(Utilities.CREATE_TABLE_STOCK_RETURN_LINE);
         db.execSQL(Utilities.CREATE_TABLE_RES_USERS);
     }
 
@@ -70,6 +72,8 @@ public class DBConnect extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + Utilities.TABLE_INVOICE);
         db.execSQL("DROP TABLE IF EXISTS " + Utilities.TABLE_INVOICE_LINE);
         db.execSQL("DROP TABLE IF EXISTS " + Utilities.TABLE_STOCK_ARRANGEMENT);
+        db.execSQL("DROP TABLE IF EXISTS " + Utilities.TABLE_STOCK_RETURN);
+        db.execSQL("DROP TABLE IF EXISTS " + Utilities.TABLE_STOCK_RETURN_LINE);
         db.execSQL("DROP TABLE IF EXISTS " + Utilities.TABLE_RES_USERS);
         onCreate(db);
     }
@@ -173,6 +177,11 @@ public class DBConnect extends SQLiteOpenHelper {
         return db.rawQuery("SELECT id, display_name, number, datetime_invoice, partner_id, amount_total, origin, purchase_id FROM "+Utilities.TABLE_INVOICE+" WHERE state = 'open'",null);
     }
 
+    public Cursor fillRefundListView(){
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT id, name, type_id, partner_id, date, state, amount_total FROM "+Utilities.TABLE_STOCK_RETURN,null);
+    }
+
     public Cursor getRoutes(){
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery("SELECT id, name FROM "+Utilities.TABLE_ROUTES+"",null);
@@ -202,6 +211,12 @@ public class DBConnect extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
 
         return db.rawQuery("SELECT display_name, quantity, price_unit, price_subtotal FROM "+Utilities.TABLE_INVOICE_LINE+" WHERE invoice_id ='"+subId+"'",null);
+    }
+
+    public Cursor fillRefundItemsListView(String subId){
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        return db.rawQuery("SELECT name, id , product_id , price_unit , qty, return_id FROM "+Utilities.TABLE_STOCK_RETURN_LINE+" WHERE return_id ='"+subId+"'",null);
     }
 
     public Cursor fillStockListView(){

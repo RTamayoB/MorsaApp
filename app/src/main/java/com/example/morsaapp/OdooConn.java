@@ -728,6 +728,27 @@ public class OdooConn {
         return  returned;
     }
 
+    public String getStockReturn(/*List<Integer> idList*/) throws XmlRpcException
+    {
+
+        List list = asList((Object[])models.execute("execute_kw", asList(
+                db,uid,pass,
+                "stock.return","search_read",
+                asList(asList(
+                        asList("state", "=", "draft"),
+                        asList("line_ids","!=", false)
+                )),
+                new HashMap(){{
+                    put("fields", asList("id", "name", "type_id", "partner_id", "date", "state", "amount_total"));
+                }}
+        )));
+        Log.d("STOCK RETURN", list.toString());
+        Gson gson = new Gson();
+        String returned = gson.toJson(list);
+
+        return  returned;
+    }
+
     public String getInvoiceLine() throws XmlRpcException
     {
 
@@ -804,6 +825,26 @@ public class OdooConn {
         return  returned;
     }
 
+    public String reloadStockReturnLines(int return_id) throws XmlRpcException
+    {
+
+        List list = asList((Object[])models.execute("execute_kw", asList(
+                db,uid,pass,
+                "stock.return.line","search_read",
+                asList(asList(
+                        asList("return_id","=",return_id)
+                )),
+                new HashMap(){{
+                    put("fields", asList("id", "product_id", "price_unit", "qty", "name", "return_id"));
+                }}
+        )));
+        Log.d("STOCK RETURN LINE", list.toString());
+        Gson gson = new Gson();
+        String returned = gson.toJson(list);
+
+        return  returned;
+    }
+
     //----------------------------
 
     public String getPickingIdsRack(List<Integer> idList) throws XmlRpcException
@@ -867,6 +908,23 @@ public class OdooConn {
                         )
                 )
             )
+        );
+        Log.d("RawData", list.toString());
+
+        return  list;
+    }
+
+    public List confirmStockReturn(Integer id) throws XmlRpcException
+    {
+        List list = asList(
+                (Object[])models.execute("execute_kw", asList(
+                        db,uid,pass,
+                        "stock.return","action_received",
+                        asList(
+                                id
+                        )
+                        )
+                )
         );
         Log.d("RawData", list.toString());
 
@@ -959,6 +1017,24 @@ public class OdooConn {
         Log.d("Send Count Result", list.toString());
 
         return  list.toString();
+    }
+
+    public List addCount(String productName, Integer qty) throws XmlRpcException
+    {
+        List list = asList(
+                (Object[])models.execute("execute_kw", asList(
+                        db,uid,pass,
+                        "stock.inventory.line","create_new_product",
+                        asList(
+                                productName,
+                                qty
+                        )
+                        )
+                )
+        );
+        Log.d("Send Count Result", list.toString());
+
+        return  list;
     }
 
     public List<Object> computeTheoreticalQty(Integer id) throws XmlRpcException

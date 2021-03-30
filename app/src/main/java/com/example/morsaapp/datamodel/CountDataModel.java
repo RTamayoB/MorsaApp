@@ -9,6 +9,7 @@ public class CountDataModel /*implements Comparable<CountDataModel>*/ {
     public String theoricalQty;
     public String totalQty;
     public boolean isCounted;
+    public boolean isReported;
 
     public Integer getLineId() {
         return lineId;
@@ -64,6 +65,14 @@ public class CountDataModel /*implements Comparable<CountDataModel>*/ {
 
     public void setIsCounted(boolean isCounted) {
         this.isCounted = isCounted;
+    }
+
+    public boolean isReported() {
+        return isReported;
+    }
+
+    public void setReported(boolean reported) {
+        isReported = reported;
     }
 
     /*

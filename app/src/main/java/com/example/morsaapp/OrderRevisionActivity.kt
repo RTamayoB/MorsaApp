@@ -63,6 +63,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
             super.onBackPressed()
             val intent = Intent(applicationContext, RevisionActivity::class.java)
             startActivity(intent)
+            unregisterReceiver(mScanReceiver)
             finish()
         }
         builder.show()
@@ -113,24 +114,26 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
     lateinit var mScanManager: ScanManager
     lateinit var soundPool: SoundPool
     var soundid : Int = 0
-    lateinit var barcodeStr : String
+    //lateinit var barcodeStr : String
 
     val mScanReceiver = object : BroadcastReceiver(){
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
 
-            if(action == "android.intent.ACTION_DECODE_DATA"){
-                soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
-                mVibrator.vibrate(100)
+            if(action == resources.getString(R.string.activity_intent_action)){
+                //soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
+                //mVibrator.vibrate(100)
 
-                val barcode  = intent!!.getByteArrayExtra(ScanManager.DECODE_DATA_TAG)
-                val barcodelen = intent?.getIntExtra(ScanManager.BARCODE_LENGTH_TAG, 0)
-                val temp = intent.getByteExtra(ScanManager.BARCODE_TYPE_TAG, 0.toByte())
-                Log.i("debug", "----codetype--$temp")
-                barcodeStr = String(barcode, 0, barcodelen)
-                Log.d("Result", barcodeStr)
-                displayScanResult(barcodeStr, temp.toString())
-                mScanManager.stopDecode()
+                //val barcode  = intent!!.getByteArrayExtra(ScanManager.DECODE_DATA_TAG)
+                //val barcodelen = intent?.getIntExtra(ScanManager.BARCODE_LENGTH_TAG, 0)
+                //val temp = intent.getByteExtra(ScanManager.BARCODE_TYPE_TAG, 0.toByte())
+                //Log.i("debug", "----codetype--$temp")
+                //barcodeStr = String(barcode, 0, barcodelen)
+                //Log.d("Result", barcodeStr)
+                    val value = intent.getStringExtra("barcode_string")
+                    Log.d("INTENT VALUE", value)
+                displayScanResult(value, "")
+                //mScanManager.stopDecode()
             }
         }
     }
@@ -148,13 +151,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
 
         //Set IntentFilter
         val filter = IntentFilter()
-        val idbuf : IntArray= intArrayOf(PropertyID.WEDGE_INTENT_ACTION_NAME, PropertyID.WEDGE_INTENT_DATA_STRING_TAG)
-        val value_buf = mScanManager.getParameterString(idbuf)
-        if(value_buf != null && value_buf[0] != null && !value_buf[0].equals("")) {
-            filter.addAction(value_buf[0])
-        } else {
-            filter.addAction(SCAN_ACTION)
-        }
+        filter.addAction(resources.getString(R.string.activity_intent_action))
         registerReceiver(mScanReceiver, filter)
     }
 
@@ -354,7 +351,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         registerReceiver(myBroadcastReceiver, filter)
         */
 
-        initScan()
+        //initScan()
 
         val intent : Intent = intent
         pickingId = intent.getStringExtra("ID")
@@ -509,6 +506,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                                     pickingId.toInt()
                                                                 )
                                                                 startActivity(finishProcess)
+                                                                unregisterReceiver(mScanReceiver)
                                                                 finish()
                                                             } catch (e: Exception) {
                                                                 Log.d("Error", e.toString())
@@ -530,6 +528,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                                     pickingId.toInt()
                                                                 )
                                                                 startActivity(finishProcess)
+                                                                unregisterReceiver(mScanReceiver)
                                                                 finish()
                                                             } catch (e: Exception) {
                                                                 Log.d("Error", e.toString())
@@ -540,6 +539,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                     Log.d("Has return id", "true")
                                                     finishProcess.putExtra("pickingId", pickingId.toInt())
                                                     startActivity(finishProcess)
+                                                    unregisterReceiver(mScanReceiver)
                                                     finish()
                                                 }
                                             }
@@ -668,6 +668,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                             pickingId.toInt()
                                                         )
                                                         startActivity(finishProcess)
+                                                        unregisterReceiver(mScanReceiver)
                                                         finish()
                                                     } catch (e: Exception) {
                                                         Log.d("Error", e.toString())
@@ -689,6 +690,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                             pickingId.toInt()
                                                         )
                                                         startActivity(finishProcess)
+                                                        unregisterReceiver(mScanReceiver)
                                                         finish()
                                                     } catch (e: Exception) {
                                                         Log.d("Error", e.toString())
@@ -699,6 +701,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                             Log.d("Has return id", "true")
                                             finishProcess.putExtra("pickingId", pickingId.toInt())
                                             startActivity(finishProcess)
+                                            unregisterReceiver(mScanReceiver)
                                             finish()
                                         }
                                     }
@@ -784,6 +787,10 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                         }
             }
         }
+
+        val filter = IntentFilter()
+        filter.addAction("android.intent.ACTION_DECODE_DATA")
+        registerReceiver(mScanReceiver, filter)
     }
 
     fun syncInspectionItems(pickingId: Int) : String{

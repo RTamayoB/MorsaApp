@@ -60,8 +60,8 @@ class RoutesOrdersActivity : AppCompatActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
 
-            if(action == "android.intent.ACTION_DECODE_DATA"){
-                soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
+            if(action == resources.getString(R.string.activity_intent_action)){
+                /*soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
                 mVibrator.vibrate(100)
 
                 val barcode  = intent!!.getByteArrayExtra(ScanManager.DECODE_DATA_TAG)
@@ -69,9 +69,10 @@ class RoutesOrdersActivity : AppCompatActivity() {
                 val temp = intent.getByteExtra(ScanManager.BARCODE_TYPE_TAG, 0.toByte())
                 Log.i("debug", "----codetype--$temp")
                 barcodeStr = String(barcode, 0, barcodelen)
-                Log.d("Result", barcodeStr)
-                displayScanResult(barcodeStr, temp.toString())
-                mScanManager.stopDecode()
+                Log.d("Result", barcodeStr)*/
+                    val value = intent.getStringExtra("barcode_string")
+                displayScanResult(value, "")
+                //mScanManager.stopDecode()
             }
         }
     }
@@ -102,7 +103,10 @@ class RoutesOrdersActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_routes_orders)
 
-        initScan()
+        //initScan()
+        val filter = IntentFilter()
+        filter.addAction(resources.getString(R.string.activity_intent_action))
+        registerReceiver(mScanReceiver, filter)
 
         val file = File(applicationContext.filesDir,"examplePDF")
         val pdfAsBytes = Base64.decode(Utilities.examplePDF, 0)
@@ -279,6 +283,7 @@ class RoutesOrdersActivity : AppCompatActivity() {
         super.onBackPressed()
         val returnIntent = Intent(applicationContext, RoutesActivity::class.java)
         finish()
+        unregisterReceiver(mScanReceiver)
         startActivity(returnIntent)
         //unregisterReceiver(mScanReceiver) //This may stop the working of the scanner, shutdown in the meantime
     }

@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">MorsaApp</string>
+    <string name="activity_intent_action">android.intent.ACTION_DECODE_DATA</string>
     <string name="activity_intent_filter_action_scan">com.morsaapp.SCANNER</string>
     <string name="activity_intent_filter_action_order">com.morsaapp.ACTIONORDER</string>
     <string name="activity_intent_filter_action_route">com.morsaapp.ACTIONROUTE</string>

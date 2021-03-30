@@ -64,8 +64,8 @@ class PickingMovesActivity : AppCompatActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
 
-            if(action == "android.intent.ACTION_DECODE_DATA"){
-                soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
+            if(action == resources.getString(R.string.activity_intent_action)){
+                /*soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
                 //mVibrator.vibrate(100)
 
                 val barcode  = intent!!.getByteArrayExtra(ScanManager.DECODE_DATA_TAG)
@@ -73,9 +73,10 @@ class PickingMovesActivity : AppCompatActivity() {
                 val temp = intent.getByteExtra(ScanManager.BARCODE_TYPE_TAG, 0.toByte())
                 Log.i("debug", "----codetype--$temp")
                 barcodeStr = String(barcode, 0, barcodelen)
-                Log.d("Result", barcodeStr)
-                displayScanResult(barcodeStr, temp.toString())
-                mScanManager.stopDecode()
+                Log.d("Result", barcodeStr)*/
+                    val value = intent.getStringExtra("barcode_string")
+                displayScanResult(value, "")
+                //mScanManager.stopDecode()
             }
         }
     }
@@ -116,17 +117,12 @@ class PickingMovesActivity : AppCompatActivity() {
 
         progressBar.isVisible = true
 
-        //THIS ALWAYS ON
-        initScan()
+        //initScan()
+        val filter = IntentFilter()
+        filter.addAction(resources.getString(R.string.activity_intent_action))
+        registerReceiver(mScanReceiver, filter)
 
         val noPieceMoves = findViewById<FloatingActionButton>(R.id.no_piece_btn)
-
-        /*
-        val filter = IntentFilter()
-        filter.addCategory(Intent.CATEGORY_DEFAULT)
-        filter.addAction(resources.getString(R.string.activity_intent_filter_action_picking))
-        registerReceiver(myBroadcastReceiver, filter)
-        */
 
         pickingIds = intent.getStringExtra("pickingIds")
         rackId = intent.getStringExtra("rackId")
@@ -302,6 +298,7 @@ class PickingMovesActivity : AppCompatActivity() {
         finish()
         val intent  = Intent(this, PickingActivity::class.java)
         startActivity(intent)
+        unregisterReceiver(mScanReceiver)
     }
 
     fun showMissingPopup(){
@@ -615,10 +612,11 @@ class PickingMovesActivity : AppCompatActivity() {
                                 var isCountPicking = false
                                 try {
                                     runBlocking {
+                                        Log.d("Send to Cart Data",item.id.toString()+"-"+item.qty.toString())
                                         val deferredSendToCart: Deferred<List<Any>> =
                                             GlobalScope.async { sendtoCart(item.id, item.qty) }
 
-                                        Log.d("Result from deferred", deferredSendToCart.toString())
+                                        Log.d("Result from deferred", deferredSendToCart.await().toString())
                                         isCountPicking = deferredSendToCart.await()[1] as Boolean
 
                                     }
@@ -734,10 +732,12 @@ class PickingMovesActivity : AppCompatActivity() {
                                     Log.d("Done picking process", donePickingProcess.toString())
                                     try {
                                         runBlocking {
+
+                                            Log.d("Product",product.key.toString()+" - "+qty.toString())
                                             val deferredReStock: Deferred<List<Any>> =
                                                 GlobalScope.async { sendReStock(product.key, qty) }
 
-                                            Log.d("Final Result", deferredReStock.toString())
+                                            Log.d("Final Result", deferredReStock.await().toString())
 
                                             if ((deferredReStock.await()[1].toString()) != "Movimento exitoso") {
                                                 countingDone = false
@@ -750,8 +750,9 @@ class PickingMovesActivity : AppCompatActivity() {
                                     }
                                     if(!countingDone){
                                         val goBackToMenuIntent = Intent(this, PickingActivity::class.java)
-                                        startActivity(goBackToMenuIntent)
+                                        unregisterReceiver(mScanReceiver)
                                         finish()
+                                        startActivity(goBackToMenuIntent)
                                     }
                                     else{
                                         val customToast = CustomToast(this, this)

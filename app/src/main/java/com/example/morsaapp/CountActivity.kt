@@ -59,8 +59,8 @@ class CountActivity : AppCompatActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
 
-            if(action == "android.intent.ACTION_DECODE_DATA"){
-                soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
+            if(action == resources.getString(R.string.activity_intent_action)){
+                /*soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
                 mVibrator.vibrate(100)
 
                 val barcode  = intent!!.getByteArrayExtra(ScanManager.DECODE_DATA_TAG)
@@ -68,9 +68,10 @@ class CountActivity : AppCompatActivity() {
                 val temp = intent.getByteExtra(ScanManager.BARCODE_TYPE_TAG, 0.toByte())
                 Log.i("debug", "----codetype--$temp")
                 barcodeStr = String(barcode, 0, barcodelen)
-                Log.d("Result", barcodeStr)
-                displayScanResult(barcodeStr, temp.toString())
-                mScanManager.stopDecode()
+                Log.d("Result", barcodeStr)*/
+                    val value = intent.getStringExtra("barcode_string")
+                displayScanResult(value, "")
+                //mScanManager.stopDecode()
             }
         }
     }
@@ -102,16 +103,15 @@ class CountActivity : AppCompatActivity() {
         setContentView(R.layout.activity_count)
         setSupportActionBar(findViewById(R.id.count_tb))
 
-        initScan()
+        //initScan()
 
 
         prefs = this.getSharedPreferences("startupPreferences", 0)
-        /*
+
         val filter = IntentFilter()
-        filter.addCategory(Intent.CATEGORY_DEFAULT)
-        filter.addAction(resources.getString(R.string.activity_intent_filter_action_count))
-        registerReceiver(myBroadcastReceiver, filter)
-        */
+        filter.addAction(resources.getString(R.string.activity_intent_action))
+        registerReceiver(mScanReceiver, filter)
+
 
         products = HashMap() //Instantiate the product hashmap
         countLv = findViewById(R.id.count_lv) //Instantiate Listview
@@ -140,6 +140,7 @@ class CountActivity : AppCompatActivity() {
             }
             builder.setPositiveButton("Si") {dialog, which ->
                 val intent = Intent(applicationContext, MainMenuActivity::class.java)
+                unregisterReceiver(mScanReceiver)
                 startActivity(intent)
                 finish()
             }
@@ -167,17 +168,24 @@ class CountActivity : AppCompatActivity() {
                             reportHashMap[model.lineId] = 0
                             val deferredSendCount = sendCount(reportHashMap)
                             runOnUiThread {
+                                model.isReported = true
+                                val adapter = countLv.adapter as CountAdapter
+                                adapter.notifyDataSetChanged()
                                 val customToast = CustomToast(this, this)
                                 customToast.show("Reportado", 24.0F, Toast.LENGTH_LONG)
                                 Log.d("Result of count", deferredSendCount)
                             }
                         }catch (e: XmlRpcException){
-                            val customToast = CustomToast(this, this)
-                            customToast.show("$e", 24.0F, Toast.LENGTH_LONG)
+                            runOnUiThread {
+                                val customToast = CustomToast(this, this)
+                                customToast.show("$e", 24.0F, Toast.LENGTH_LONG)
+                            }
                         }
                         catch (c: Exception){
-                            val customToast = CustomToast(this, this)
-                            customToast.show("$c", 24.0F, Toast.LENGTH_LONG)
+                            runOnUiThread {
+                                val customToast = CustomToast(this, this)
+                                customToast.show("$c", 24.0F, Toast.LENGTH_LONG)
+                            }
                         }
                     }
             }
@@ -461,15 +469,44 @@ class CountActivity : AppCompatActivity() {
         }
         else if (checkProduct.count == 0 && isCode){
             val builder = AlertDialog.Builder(this)
-            builder.setTitle("Producto inexistente")
-            builder.setMessage("Producto '$decodedString' no correspondiente a ubicacion")
-            builder.setPositiveButton("Entendido") { dialog, which ->
+            val qtyInput = EditText(this)
+            qtyInput.inputType = InputType.TYPE_CLASS_NUMBER
+            qtyInput.hint = "Cantidad"
+            builder.setView(qtyInput)
+            // TODO: Add validation, when product exits but is not on count list, add option to upload it with qty (addCount)
+            builder.setTitle("Producto no encontrado en lista")
+            builder.setMessage("¿Añadir '$decodedString' a conteo?")
+            builder.setPositiveButton("Añadir") { dialog, which ->
+                thread {
+                    val deferredAddCount = addCount(decodedString, qtyInput.text.toString().toInt())
+                    if(deferredAddCount[0] as Boolean){
+                        runOnUiThread {
+                            val customToast = CustomToast(applicationContext, this@CountActivity)
+                            customToast.show(deferredAddCount[1] as String, 24.0F, Toast.LENGTH_LONG)
+                        }
+                    }
+                    else{
+                        runOnUiThread {
+                            val customToast = CustomToast(applicationContext, this@CountActivity)
+                            customToast.show(deferredAddCount[1] as String, 24.0F, Toast.LENGTH_LONG
+                            )
+                        }
+                    }
+                }
+                /*
                 val goBackintent = Intent(this, MainMenuActivity::class.java)
                 finish()
+                unregisterReceiver(mScanReceiver)
                 startActivity(goBackintent)
+                */
+            }
+            builder.setNegativeButton("Cancelar"){ dialog, which ->
+                dialog.dismiss()
             }
             builder.show()
         }
+
+
         else if(!showMessage && !isCode){
             val customToast = CustomToast(this, this)
             customToast.show("Codigo $decodedString no es producto ni ubicación", 24.0F, Toast.LENGTH_LONG)
@@ -481,6 +518,12 @@ class CountActivity : AppCompatActivity() {
         val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.sendCount(products)
+    }
+
+    private fun addCount(productName : String, qty : Int): List<Any>{
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        odooConn.authenticateOdoo()
+        return odooConn.addCount(productName,qty) as List<Any>
     }
 
     //Function that returns you the theoretical qty of a line
