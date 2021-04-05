@@ -511,6 +511,8 @@ class PickingMovesActivity : AppCompatActivity() {
                     orders.lineScanned = 2
                 }
                 datamodels.add(orders)
+
+                productsHashMap[orders.id] = listOf(orders.qty, orders.total_qty)
             }
         }
 
@@ -722,6 +724,7 @@ class PickingMovesActivity : AppCompatActivity() {
                     builder.setPositiveButton("Ok") { dialog, which ->
                         try {
                             //Iterar por Hashmap para enviar los datos de el picking
+                                Log.d("Map", productsHashMap.toString())
                             var countingDone = false
                             for (product in productsHashMap) {
                                 val list = product.value

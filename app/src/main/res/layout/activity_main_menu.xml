@@ -123,15 +123,15 @@
                     android:background="#FFFFFF"
                     android:padding="6dp"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/routes" />
+                    android:src="@drawable/enbarques" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/refunds_btn"
                     android:layout_width="150dp"
                     android:layout_height="150dp"
                     android:background="#FFFFFF"
                     android:padding="6dp"
-                    android:text="Devoluciones"
+                    android:src="@drawable/refunds"
                     android:scaleType="fitCenter" />
 
             </TableRow>
@@ -141,14 +141,14 @@
                 android:layout_height="match_parent"
                 android:gravity="center">
 
-                <Button
+                <ImageButton
                     android:id="@+id/settings_btn"
                     android:layout_width="150dp"
                     android:layout_height="150dp"
                     android:background="#FFFFFF"
                     android:padding="6dp"
                     android:scaleType="fitCenter"
-                    android:text="Ajustes"/>
+                    android:src="@drawable/settings"/>
 
                 <Button
                     android:id="@+id/mockup_btn"

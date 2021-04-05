@@ -43,8 +43,8 @@ class MainMenuActivity : AppCompatActivity() {
         val pickingBtn = findViewById<ImageButton>(R.id.picking_btn)
         val countBtn = findViewById<ImageButton>(R.id.count_btn)
         val routeBtn = findViewById<ImageButton>(R.id.routes_btn)
-        val settingsBtn = findViewById<Button>(R.id.settings_btn)
-        val refundsBtn = findViewById<Button>(R.id.refunds_btn)
+        val settingsBtn = findViewById<ImageButton>(R.id.settings_btn)
+        val refundsBtn = findViewById<ImageButton>(R.id.refunds_btn)
 
         receptionBtn.setOnClickListener {
             val intent = Intent(applicationContext, ReceptionActivity::class.java)

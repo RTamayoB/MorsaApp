@@ -79,14 +79,14 @@ class RefundDetailsActivity : AppCompatActivity() {
             val prefs = this.getSharedPreferences("backlogPrefs", 0)
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Recibir Productos")
-                .setMessage("Recibir Orden de Compra?")
+                .setMessage("Recibir Garantia/Devolución?")
                 .setPositiveButton("Aceptar"){ _, _ ->
                     try {
                         Log.d("Id", invoiceId.toString())
                         val deferredTest: Deferred<List<Any>> = GlobalScope.async { confirmStockReturn(invoiceId.toString().toInt()) }
                         var result = ""
                         runBlocking {
-                            result = deferredTest.await().toString()
+                            result = deferredTest.await()[1].toString()
                             Log.d("Result Stock Return", result)
                         }
                         runOnUiThread {
