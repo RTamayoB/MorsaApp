@@ -55,8 +55,8 @@ class ReStockActivity : AppCompatActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
 
-            if(action == "android.intent.ACTION_DECODE_DATA"){
-                soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
+            if(action == resources.getString(R.string.activity_intent_action)){
+                /*soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
                 mVibrator.vibrate(100)
 
                 val barcode  = intent!!.getByteArrayExtra(ScanManager.DECODE_DATA_TAG)
@@ -64,9 +64,10 @@ class ReStockActivity : AppCompatActivity() {
                 val temp = intent.getByteExtra(ScanManager.BARCODE_TYPE_TAG, 0.toByte())
                 Log.i("debug", "----codetype--$temp")
                 barcodeStr = String(barcode, 0, barcodelen)
-                Log.d("Result", barcodeStr)
-                displayScanResult(barcodeStr)
-                mScanManager.stopDecode()
+                Log.d("Result", barcodeStr)*/
+                    val value = intent.getStringExtra("barcode_string")
+                displayScanResult(value)
+                //mScanManager.stopDecode()
             }
         }
     }
@@ -110,7 +111,10 @@ class ReStockActivity : AppCompatActivity() {
         registerReceiver(myBroadcastReceiver, filter)
         */
 
-        initScan()
+        //initScan()
+        val filter = IntentFilter()
+        filter.addAction(resources.getString(R.string.activity_intent_action))
+        registerReceiver(mScanReceiver, filter)
 
         reStockLv = findViewById(R.id.re_stock_lv)
 
@@ -118,15 +122,35 @@ class ReStockActivity : AppCompatActivity() {
         val resyncFAB  = findViewById<FloatingActionButton>(R.id.sync_fab)
         //Reload the Listview
         resyncFAB.setOnClickListener {
-            swipeRefreshLayout.isRefreshing = true
-            refreshData()
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Actualizar")
+            builder.setMessage("¿Seguro que desea refrescar su pantalla?")
+            builder.setPositiveButton("Si") { dialog, which ->
+                swipeRefreshLayout.isRefreshing = true
+                refreshData()
+            }
+            builder.setNegativeButton("No") { dialog, which ->
+                swipeRefreshLayout.isRefreshing = false
+                dialog.dismiss()
+            }
+            builder.show()
         }
 
         val intent : Intent = intent
         pickingId = intent.getIntExtra("pickingId", 0)
 
         swipeRefreshLayout.setOnRefreshListener {
-            refreshData()
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Actualizar")
+            builder.setMessage("¿Seguro que desea refrescar su pantalla?")
+            builder.setPositiveButton("Si") { dialog, which ->
+                refreshData()
+            }
+            builder.setNegativeButton("No") { dialog, which ->
+                swipeRefreshLayout.isRefreshing = false
+                dialog.dismiss()
+            }
+            builder.show()
         }
 
         swipeRefreshLayout.isRefreshing = true
@@ -134,9 +158,19 @@ class ReStockActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
-        val goBackintent = Intent(this, MainMenuActivity::class.java)
-        startActivity(goBackintent)
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Salir")
+        builder.setMessage("¿Desea salir del proceso?")
+        builder.setPositiveButton("Si") { dialog, which ->
+            val goBackintent = Intent(this, MainMenuActivity::class.java)
+            unregisterReceiver(mScanReceiver)
+            finish()
+            startActivity(goBackintent)
+        }
+        builder.setNegativeButton("No") { dialog, which ->
+            dialog.dismiss()
+        }
+        builder.show()
     }
 
     private fun refreshData(){
@@ -157,36 +191,27 @@ class ReStockActivity : AppCompatActivity() {
                             populateListView()
                             val adapter = reStockLv.adapter as ReStockAdapter
                             adapter.notifyDataSetChanged()
-                            Toast.makeText(
-                                applicationContext,
-                                "Lista Actualizada",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Lista Actualizada", 24.0F, Toast.LENGTH_LONG)
                         }
                     } else {
                         runOnUiThread {
                             swipeRefreshLayout.isRefreshing = false
-                            Toast.makeText(applicationContext, "Sin Exito", Toast.LENGTH_SHORT)
-                                .show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Sin Exito", 24.0F, Toast.LENGTH_LONG)
                         }
                     }
                 }catch (e: Exception){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error General: $e",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error General $e", 24.0F, Toast.LENGTH_LONG)
                         swipeRefreshLayout.isRefreshing = false
                     }
                     Log.d("Error General",e.toString())
                 }catch (xml: XmlRpcException){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error de Red: $xml",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error de Red $xml", 24.0F, Toast.LENGTH_LONG)
                         swipeRefreshLayout.isRefreshing = false
                     }
                     Log.d("Error de Red",xml.toString())
@@ -194,7 +219,8 @@ class ReStockActivity : AppCompatActivity() {
             }
         }
         else{
-            Toast.makeText(applicationContext,"Error al cargar",Toast.LENGTH_SHORT).show()
+            val customToast = CustomToast(this, this)
+            customToast.show("Error al cargar", 24.0F, Toast.LENGTH_LONG)
         }
     }
 
@@ -214,7 +240,14 @@ class ReStockActivity : AppCompatActivity() {
             val idAsString = arrayOfId[0] as String
             val replaced = idAsString.replace("[","")
             orders.reProductId = replaced
-            orders.reProduct = cursor.getString(0)
+            val mixedName  = cursor.getString(cursor.getColumnIndex("product_id"))
+            val separateName : Array<String> = mixedName.split(",").toTypedArray()
+            val arrayofNames : Array<String> = separateName[1].toString().split(" ").toTypedArray()
+            var name = arrayofNames[0]
+            name = name.replace("[","")
+            name = name.replace("]","")
+            name = name.replace("\"","")
+            orders.reProduct = name+": "+cursor.getString(cursor.getColumnIndex("product_description"))
             val originUnparsed = cursor.getString(cursor.getColumnIndex("location_id"))
             var originParsed = originUnparsed
             Log.d("BeforeOriginParsed",originParsed)
@@ -309,20 +342,14 @@ class ReStockActivity : AppCompatActivity() {
             }
         }catch (e: Exception){
             runOnUiThread {
-                Toast.makeText(
-                    applicationContext,
-                    "Error General: $e",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error General $e", 24.0F, Toast.LENGTH_LONG)
             }
             Log.d("Error General",e.toString())
         }catch (xml: XmlRpcException){
             runOnUiThread {
-                Toast.makeText(
-                    applicationContext,
-                    "Error Encontrando Producto: $xml",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error encontrando Productos $xml", 24.0F, Toast.LENGTH_LONG)
             }
             Log.d("Error de Red",xml.toString())
         }
@@ -332,18 +359,21 @@ class ReStockActivity : AppCompatActivity() {
             Log.d("Item Id", item.reProductId)
             if (decodedData == item.reOrigin) {
                 scan3 = decodedData
-                Toast.makeText(applicationContext, "Escanee un producto", Toast.LENGTH_SHORT).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Escanee un producto", 24.0F, Toast.LENGTH_LONG)
             }
             if (decodedData == item.reDestiny) {
                 scan1 = decodedData
-                Toast.makeText(applicationContext, "Escanee el producto ha abastecer", Toast.LENGTH_SHORT).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Escanee el producto ha abastecer", 24.0F, Toast.LENGTH_LONG)
             }
             if (scannedProductIdSearch == item.reProductId) {
                 scan2 = item.reProductId
-                Toast.makeText(applicationContext, "Escanee la ubicación destino", Toast.LENGTH_SHORT).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Escanee la ubicación destino", 24.0F, Toast.LENGTH_LONG)
             }
 
-            //Check of Origin and Product have already been scanned
+            //Check of Origin and Product have already been scanned - added last check because of error
             if (scan3 == item.reOrigin && scan2 == item.reProductId && scan1 != item.reDestiny) {
                 scan3 = ""
                 scan2 = ""
@@ -365,9 +395,11 @@ class ReStockActivity : AppCompatActivity() {
                         item.reQty = num.toInt()
                         val adapt = reStockLv.adapter as ReStockAdapter
                         adapt.notifyDataSetChanged()
-                        Toast.makeText(applicationContext, "Escanee la ubicación destino", Toast.LENGTH_SHORT).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Escanee la ubicación destino", 24.0F, Toast.LENGTH_LONG)
                     } else {
-                        Toast.makeText(applicationContext, "Excediste la cantidad total", Toast.LENGTH_SHORT).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Excediste la cantidad total", 24.0F, Toast.LENGTH_LONG)
                     }
                 }
                 builder.setNegativeButton("Cancelar") { dialog, which ->
@@ -376,7 +408,7 @@ class ReStockActivity : AppCompatActivity() {
                 builder.show()
             }
 
-            if (scan1 == item.reDestiny && scan2 == item.reProductId) {
+            if (scan1 == item.reDestiny && scan2 == item.reProductId && scan3 != item.reOrigin) {
                 scan1 = ""
                 scan2 = ""
                 scan3 = ""
@@ -396,31 +428,22 @@ class ReStockActivity : AppCompatActivity() {
                                     Log.d("Final Result", deferredReStock.toString())
                                     if (deferredReStock[1] == "Movimiento exitoso" as String) {
                                         runOnUiThread {
-                                            Toast.makeText(
-                                                applicationContext,
-                                                deferredReStock[1].toString(),
-                                                Toast.LENGTH_LONG
-                                            ).show()
+                                            val customToast = CustomToast(this, this)
+                                            customToast.show(deferredReStock[1].toString(), 24.0F, Toast.LENGTH_LONG)
                                             item.isCounted = 2
                                             val adapt = reStockLv.adapter as ReStockAdapter
                                             adapt.notifyDataSetChanged()
                                         }
                                     } else {
                                         runOnUiThread {
-                                            Toast.makeText(
-                                                applicationContext,
-                                                "No se logro enviar la cantidad",
-                                                Toast.LENGTH_LONG
-                                            ).show()
+                                            val customToast = CustomToast(this, this)
+                                            customToast.show("No se logro enviar la cantidad", 24.0F, Toast.LENGTH_LONG)
                                         }
                                     }
                                 }catch (e: Exception) {
                                     runOnUiThread {
-                                        Toast.makeText(
-                                            applicationContext,
-                                            "Error: $e",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                        val customToast = CustomToast(this, this)
+                                        customToast.show("Error $e", 24.0F, Toast.LENGTH_LONG)
                                     }
                                     Log.d("Error General", e.toString())
                                 }
@@ -433,6 +456,9 @@ class ReStockActivity : AppCompatActivity() {
                 }
                 builder.show()
             }
+
+            
+
             /*
             if (scan1 == item.reDestiny && scan2 == item.reProductId && scan3 == item.reOrigin) {
                 scan1 = ""
@@ -462,20 +488,20 @@ class ReStockActivity : AppCompatActivity() {
 
     private fun reStock(username : String) : String
     {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         val prefs = applicationContext.getSharedPreferences("startupPreferences", 0)
         return odooConn.reStock(username, prefs.getInt("activeUser",0))
     }
 
     private fun sendReStock(moveId: Int, moveQty: Int): List<Any>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.setMovesQty(moveId, moveQty)
     }
 
     private fun searchProduct(product_id : String): String {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.searchProduct(product_id)
     }

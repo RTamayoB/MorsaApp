@@ -49,6 +49,9 @@ public class DBConnect extends SQLiteOpenHelper {
         db.execSQL(Utilities.CREATE_TABLE_INVENTORY_LINE);
         db.execSQL(Utilities.CREATE_TABLE_INVOICE);
         db.execSQL(Utilities.CREATE_TABLE_INVOICE_LINE);
+        db.execSQL(Utilities.CREATE_TABLE_STOCK_ARRANGEMENT);
+        db.execSQL(Utilities.CREATE_TABLE_STOCK_RETURN);
+        db.execSQL(Utilities.CREATE_TABLE_STOCK_RETURN_LINE);
         db.execSQL(Utilities.CREATE_TABLE_RES_USERS);
     }
 
@@ -68,6 +71,9 @@ public class DBConnect extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + Utilities.TABLE_INVENTORY_LINE);
         db.execSQL("DROP TABLE IF EXISTS " + Utilities.TABLE_INVOICE);
         db.execSQL("DROP TABLE IF EXISTS " + Utilities.TABLE_INVOICE_LINE);
+        db.execSQL("DROP TABLE IF EXISTS " + Utilities.TABLE_STOCK_ARRANGEMENT);
+        db.execSQL("DROP TABLE IF EXISTS " + Utilities.TABLE_STOCK_RETURN);
+        db.execSQL("DROP TABLE IF EXISTS " + Utilities.TABLE_STOCK_RETURN_LINE);
         db.execSQL("DROP TABLE IF EXISTS " + Utilities.TABLE_RES_USERS);
         onCreate(db);
     }
@@ -171,6 +177,11 @@ public class DBConnect extends SQLiteOpenHelper {
         return db.rawQuery("SELECT id, display_name, number, datetime_invoice, partner_id, amount_total, origin, purchase_id FROM "+Utilities.TABLE_INVOICE+" WHERE state = 'open'",null);
     }
 
+    public Cursor fillRefundListView(){
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT id, name, type_id, partner_id, date, state, amount_total FROM "+Utilities.TABLE_STOCK_RETURN,null);
+    }
+
     public Cursor getRoutes(){
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery("SELECT id, name FROM "+Utilities.TABLE_ROUTES+"",null);
@@ -200,6 +211,12 @@ public class DBConnect extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
 
         return db.rawQuery("SELECT display_name, quantity, price_unit, price_subtotal FROM "+Utilities.TABLE_INVOICE_LINE+" WHERE invoice_id ='"+subId+"'",null);
+    }
+
+    public Cursor fillRefundItemsListView(String subId){
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        return db.rawQuery("SELECT name, id , product_id , price_unit , qty, return_id FROM "+Utilities.TABLE_STOCK_RETURN_LINE+" WHERE return_id ='"+subId+"'",null);
     }
 
     public Cursor fillStockListView(){
@@ -256,7 +273,7 @@ public class DBConnect extends SQLiteOpenHelper {
     public boolean reloadLocationLines(String pickingId){
         try {
             SQLiteDatabase db = this.getWritableDatabase();
-            db.delete(Utilities.TABLE_STOCK_ITEMS, "picking_originative_id = '"+pickingId+"'",null);
+            db.delete(Utilities.TABLE_STOCK_ITEMS, null,null);
             return true;
         }catch (Exception e) {
             Log.d("Error", e.toString());
@@ -301,7 +318,7 @@ public class DBConnect extends SQLiteOpenHelper {
     public Cursor fillLocationsListView(){
         SQLiteDatabase db = this.getReadableDatabase();
 
-        return db.rawQuery("SELECT id, name, group_id, partner_id FROM "+Utilities.TABLE_STOCK+" WHERE /*state = 'done' AND*/group_id != 'false' AND move_arrangement_ids != '[]'",null);
+        return db.rawQuery("SELECT id, partner_id, name, folio, num_products FROM "+Utilities.TABLE_STOCK_ARRANGEMENT,null);
     }
 
     public Cursor movesTest(String list){
@@ -313,13 +330,13 @@ public class DBConnect extends SQLiteOpenHelper {
     public Cursor getLocationMoves(String list){
         SQLiteDatabase db = this.getReadableDatabase();
 
-        return db.rawQuery("SELECT product_id, remaining_qty, total_qty, location_dest_id, quantity_done, product_id, id, picking_id, location_id FROM "+Utilities.TABLE_STOCK_ITEMS+" WHERE picking_originative_id = ? ORDER BY location_dest_id ASC",new String[]{list});
+        return db.rawQuery("SELECT product_id, remaining_qty, total_qty, location_dest_id, quantity_done, product_id, id, picking_id, location_id, product_description FROM "+Utilities.TABLE_STOCK_ITEMS+" /*WHERE picking_originative_id = ?*/ ORDER BY location_dest_id ASC",null);
     }
 
     public Cursor movesTestReStock(){
         SQLiteDatabase db = this.getReadableDatabase();
 
-        return db.rawQuery("SELECT product_id, remaining_qty, total_qty, location_dest_id, quantity_done, product_id, id, picking_id, location_id FROM "+Utilities.TABLE_STOCK_ITEMS+" WHERE state != 'cancel'",null);
+        return db.rawQuery("SELECT product_id, remaining_qty, total_qty, location_dest_id, quantity_done, product_id, id, picking_id, location_id, product_description FROM "+Utilities.TABLE_STOCK_ITEMS+" WHERE state != 'cancel'",null);
     }
 
     public Cursor pickingMovesTest(String list){
@@ -331,7 +348,7 @@ public class DBConnect extends SQLiteOpenHelper {
     public Cursor pickingMovesById(String list){
         SQLiteDatabase db = this.getReadableDatabase();
 
-        return db.rawQuery("SELECT product_id, remaining_qty, total_qty, location_dest_id, transfer_qty, product_id, id, picking_id, location_id FROM "+Utilities.TABLE_STOCK_ITEMS+" WHERE id = '"+list+"'",null);
+        return db.rawQuery("SELECT product_id, remaining_qty, total_qty, location_dest_id, transfer_qty, product_id, id, picking_id, location_id, product_description, name FROM "+Utilities.TABLE_STOCK_ITEMS+" WHERE id = '"+list+"'",null);
     }
 
     public Cursor getPickingMoveIds(String list){
@@ -399,7 +416,7 @@ public class DBConnect extends SQLiteOpenHelper {
 
     public Cursor getInventory(){
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT location_id, product_code, theoretical_qty, id, product_name, product_name FROM "+Utilities.TABLE_INVENTORY_LINE+" WHERE is_scanned = 'false' ORDER BY location_id ASC",null);
+        Cursor cursor = db.rawQuery("SELECT location_id, product_code, theoretical_qty, id, product_name, product_name, product_description FROM "+Utilities.TABLE_INVENTORY_LINE+" WHERE is_scanned = 'false' ORDER BY location_id ASC",null);
         return cursor;
     }
 

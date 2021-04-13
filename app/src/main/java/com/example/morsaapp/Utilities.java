@@ -23,6 +23,9 @@ public class Utilities {
     public static final String TABLE_ROUTES = "routes";
     public static final String TABLE_STOCK_BOX = "stock_box";
     public static final String TABLE_INVENTORY_LINE = "stock_inventory_line";
+    public static final String TABLE_STOCK_ARRANGEMENT = "stock_arrangement";
+    public static final String TABLE_STOCK_RETURN = "stock_return";
+    public static final String TABLE_STOCK_RETURN_LINE = "stock_return_line";
     public static final String TABLE_RES_USERS = "res_users";
     public static final String TABLE_USERS = "users";
     public static final String FIELD_ID = "android_id";
@@ -33,14 +36,17 @@ public class Utilities {
     public static final String CREATE_TABLE_INVOICE = "CREATE TABLE "+TABLE_INVOICE+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, id TEXT, name TEXT, display_name TEXT, number TEXT, datetime_invoice TEXT, partner_id TEXT, amount_total TEXT, origin TEXT, purchase_id TEXT, state TEXT)";
     public static final String CREATE_TABLE_INVOICE_LINE = "CREATE TABLE "+TABLE_INVOICE_LINE+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, id TEXT, name TEXT, display_name TEXT, product_id TEXT, quantity TEXT, price_unit TEXT, price_subtotal TEXT, invoice_id TEXT)";
     public static final String CREATE_TABLE_STOCK = "CREATE TABLE "+TABLE_STOCK+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, id TEXT, name TEXT, group_id TEXT, partner_id TEXT, state TEXT, issues_set TEXT, date_done TEXT, purchase_id TEXT, sequence TEXT, origin_invoice_purchase TEXT, move_arrangement_ids TEXT, return_id TEXT, origin TEXT)";
-    public static final String CREATE_TABLE_STOCK_ITEMS = "CREATE TABLE "+TABLE_STOCK_ITEMS+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, id TEXT, name TEXT, product_qty TEXT, remaining_qty TEXT, total_qty TEXT, location_dest_id TEXT, quantity_done TEXT, product_id TEXT, picking_id TEXT, location_id TEXT, state TEXT, price_unit TEXT, is_completed TEXT, revision_qty INTEGER, issues TEXT, picking_originative_id TEXT, transfer_qty TEXT)";
+    public static final String CREATE_TABLE_STOCK_ITEMS = "CREATE TABLE "+TABLE_STOCK_ITEMS+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, id TEXT, name TEXT, product_qty TEXT, remaining_qty TEXT, total_qty TEXT, location_dest_id TEXT, quantity_done TEXT, product_id TEXT, picking_id TEXT, location_id TEXT, state TEXT, price_unit TEXT, is_completed TEXT, revision_qty INTEGER, issues TEXT, picking_originative_id TEXT, transfer_qty TEXT, product_description TEXT)";
     public static final String CREATE_TABLE_STOCK_ISSUES = "CREATE TABLE "+TABLE_STOCK_ISSUES+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "+FIELD_SYNC+" TEXT, id TEXT, name TEXT, issue TEXT, devolution TEXT)";
     public static final String CREATE_TABLE_ISSUES_LIST = "CREATE TABLE "+TABLE_ISSUES_LIST+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, issues BLOB, user_id TEXT, picking_id TEXT)";
     public static final String CREATE_TABLE_PRODUCT_PRODUCT = "CREATE TABLE "+TABLE_PRODUCT_PRODUCT+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, id TEXT, name TEXT, display_name TEXT, barcode TEXT, default_code TEXT)";
     public static final String CREATE_TABLE_ROUTES = "CREATE TABLE "+TABLE_ROUTES+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, id TEXT, name TEXT)";
     public static final String CREATE_TABLE_STOCK_BOX = "CREATE TABLE "+TABLE_STOCK_BOX+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, id TEXT, route TEXT, invoices TEXT, box TEXT, scan_box TEXT, barcode TEXT, is_scanned TEXT)";
     public static final String CREATE_TABLE_RACK = "CREATE TABLE "+TABLE_RACK+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, done_picking TEXT, id TEXT, picking_ids TEXT, display_name TEXT, name TEXT, create_date TEXT)";
-    public static final String CREATE_TABLE_INVENTORY_LINE = "CREATE TABLE "+TABLE_INVENTORY_LINE+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, id TEXT, location_id TEXT, product_code TEXT, product_name TEXT, product_id TEXT, theoretical_qty TEXT, create_uid TEXT, user_id TEXT, is_scanned TEXT)";
+    public static final String CREATE_TABLE_INVENTORY_LINE = "CREATE TABLE "+TABLE_INVENTORY_LINE+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, id TEXT, location_id TEXT, product_code TEXT, product_name TEXT, product_id TEXT, theoretical_qty TEXT, create_uid TEXT, user_id TEXT, is_scanned TEXT, product_description TEXT)";
+    public static final String CREATE_TABLE_STOCK_ARRANGEMENT = "CREATE TABLE "+TABLE_STOCK_ARRANGEMENT+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, id TEXT, partner_id TEXT, name TEXT, folio TEXT, num_products TEXT)";
+    public static final String CREATE_TABLE_STOCK_RETURN = "CREATE TABLE "+TABLE_STOCK_RETURN+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, id TEXT, name TEXT, type_id TEXT, partner_id TEXT, date TEXT, state TEXT, amount_total TEXT)";
+    public static final String CREATE_TABLE_STOCK_RETURN_LINE = "CREATE TABLE "+TABLE_STOCK_RETURN_LINE+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, id TEXT, product_id TEXT, price_unit TEXT, qty TEXT, name TEXT, return_id TEXT)";
     public static final String CREATE_TABLE_RES_USERS = "CREATE TABLE "+TABLE_RES_USERS+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, id TEXT, login TEXT, name TEXT, display_name TEXT, in_group_56 TEXT, in_group_57 TEXT, in_group_58 TEXT, in_group_59 TEXT, in_group_60 TEXT)";
     public static final String CREATE_TABLE_USERS = "CREATE TABLE "+TABLE_USERS+" ("+FIELD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, username TEXT, app_password TEXT, user_id TEXT)";
 

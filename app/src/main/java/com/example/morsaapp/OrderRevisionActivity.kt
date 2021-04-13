@@ -63,6 +63,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
             super.onBackPressed()
             val intent = Intent(applicationContext, RevisionActivity::class.java)
             startActivity(intent)
+            unregisterReceiver(mScanReceiver)
             finish()
         }
         builder.show()
@@ -113,24 +114,26 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
     lateinit var mScanManager: ScanManager
     lateinit var soundPool: SoundPool
     var soundid : Int = 0
-    lateinit var barcodeStr : String
+    //lateinit var barcodeStr : String
 
     val mScanReceiver = object : BroadcastReceiver(){
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
 
-            if(action == "android.intent.ACTION_DECODE_DATA"){
-                soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
-                mVibrator.vibrate(100)
+            if(action == resources.getString(R.string.activity_intent_action)){
+                //soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
+                //mVibrator.vibrate(100)
 
-                val barcode  = intent!!.getByteArrayExtra(ScanManager.DECODE_DATA_TAG)
-                val barcodelen = intent?.getIntExtra(ScanManager.BARCODE_LENGTH_TAG, 0)
-                val temp = intent.getByteExtra(ScanManager.BARCODE_TYPE_TAG, 0.toByte())
-                Log.i("debug", "----codetype--$temp")
-                barcodeStr = String(barcode, 0, barcodelen)
-                Log.d("Result", barcodeStr)
-                displayScanResult(barcodeStr, temp.toString())
-                mScanManager.stopDecode()
+                //val barcode  = intent!!.getByteArrayExtra(ScanManager.DECODE_DATA_TAG)
+                //val barcodelen = intent?.getIntExtra(ScanManager.BARCODE_LENGTH_TAG, 0)
+                //val temp = intent.getByteExtra(ScanManager.BARCODE_TYPE_TAG, 0.toByte())
+                //Log.i("debug", "----codetype--$temp")
+                //barcodeStr = String(barcode, 0, barcodelen)
+                //Log.d("Result", barcodeStr)
+                    val value = intent.getStringExtra("barcode_string")
+                    Log.d("INTENT VALUE", value)
+                displayScanResult(value, "")
+                //mScanManager.stopDecode()
             }
         }
     }
@@ -148,17 +151,11 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
 
         //Set IntentFilter
         val filter = IntentFilter()
-        val idbuf : IntArray= intArrayOf(PropertyID.WEDGE_INTENT_ACTION_NAME, PropertyID.WEDGE_INTENT_DATA_STRING_TAG)
-        val value_buf = mScanManager.getParameterString(idbuf)
-        if(value_buf != null && value_buf[0] != null && !value_buf[0].equals("")) {
-            filter.addAction(value_buf[0])
-        } else {
-            filter.addAction(SCAN_ACTION)
-        }
+        filter.addAction(resources.getString(R.string.activity_intent_action))
         registerReceiver(mScanReceiver, filter)
     }
 
-    /*
+    /*Unitech piece
     private val myBroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
@@ -354,7 +351,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         registerReceiver(myBroadcastReceiver, filter)
         */
 
-        initScan()
+        //initScan()
 
         val intent : Intent = intent
         pickingId = intent.getStringExtra("ID")
@@ -428,11 +425,8 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                    }
                                    */
                                     if (!allChecked) {
-                                        Toast.makeText(
-                                            this,
-                                            "Confirma todas las incidencias",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                        val customToast = CustomToast(this, this)
+                                        customToast.show("Confirma todas la incidencias", 24.0F, Toast.LENGTH_LONG)
                                     } else {
                                         var error = false
                                         //val issuesToSend: HashMap<Int, HashMap<Int, Int>> = parseIssues()
@@ -446,20 +440,15 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                 )
                                                 if (sendIssues.isEmpty()) {
                                                     runOnUiThread {
-                                                        Toast.makeText(
-                                                            applicationContext,
-                                                            "IsEmpty",
-                                                            Toast.LENGTH_LONG
-                                                        ).show()
+                                                        val customToast = CustomToast(this, this)
+                                                        customToast.show("Is Empty", 24.0F, Toast.LENGTH_LONG)
                                                     }
                                                 } else {
                                                     runOnUiThread {
-                                                        Toast.makeText(
-                                                            applicationContext,
-                                                            "Confirmado",
-                                                            Toast.LENGTH_LONG
-                                                        ).show()
+                                                        val customToast = CustomToast(this, this)
+                                                        customToast.show("Confirmado", 24.0F, Toast.LENGTH_LONG)
                                                     }
+                                                    error = false
                                                 }
                                                 val answer: String = movesTest("0", pickingId.toInt())
                                                 Log.d("Send Issues", sendIssues.toString())
@@ -467,101 +456,104 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                             } catch (e: Exception) {
                                                 Log.d("Error", e.toString())
                                                 runOnUiThread {
-                                                    Toast.makeText(
-                                                        applicationContext,
-                                                        e.toString(),
-                                                        Toast.LENGTH_LONG
-                                                    ).show()
+                                                    val customToast = CustomToast(this, this)
+                                                    customToast.show(e.toString(), 24.0F, Toast.LENGTH_LONG)
                                                 }
                                                 error = true
                                             }
-                                        }
-                                        Log.d("Id", pickingId)
-                                        Log.d("ReturnId", returnID.toString())
-                                        val finishProcess =
-                                            Intent(applicationContext, MainMenuActivity::class.java)
-                                        if (error) {
-                                            if (returnID) {
-                                                Log.d("Has return id", "true")
-                                                var rawReturnId = ""
-                                                val dbReturns = DBConnect(
-                                                    applicationContext,
-                                                    Utilities.DBNAME,
-                                                    null,
-                                                    1
-                                                ).readableDatabase
-                                                val cursorReturns = dbReturns.rawQuery(
-                                                    "SELECT return_id FROM " + Utilities.TABLE_STOCK + " WHERE id = " + pickingId.toInt(),
-                                                    null
-                                                )
-                                                while (cursorReturns.moveToNext()) {
-                                                    rawReturnId = cursorReturns.getString(0)
+                                            Log.d("Id", pickingId)
+                                            Log.d("ReturnId", returnID.toString())
+                                            val finishProcess =
+                                                Intent(applicationContext, MainMenuActivity::class.java)
+                                            if (!error) {
+                                                if (returnID) {
+                                                    Log.d("Has return id", "true")
+                                                    var rawReturnId = ""
+                                                    val dbReturns = DBConnect(
+                                                        applicationContext,
+                                                        Utilities.DBNAME,
+                                                        null,
+                                                        1
+                                                    ).readableDatabase
+                                                    val cursorReturns = dbReturns.rawQuery(
+                                                        "SELECT return_id FROM " + Utilities.TABLE_STOCK + " WHERE id = " + pickingId.toInt(),
+                                                        null
+                                                    )
+                                                    while (cursorReturns.moveToNext()) {
+                                                        rawReturnId = cursorReturns.getString(0)
+                                                    }
+                                                    cursorReturns.close()
+                                                    val realReturnId = rawReturnId.substring(
+                                                        rawReturnId.indexOf("[") + 1,
+                                                        rawReturnId.indexOf(",")
+                                                    )
+                                                    Log.d("Real Return Id", realReturnId)
+                                                    val builder2 = AlertDialog.Builder(this)
+                                                    builder2.setTitle("Proceso de Devolucion")
+                                                        .setMessage("Aceptar o rechazar la devolucion:")
+                                                        .setPositiveButton("Aceptar") { dialog2, which ->
+                                                            try {
+                                                                val actionClose =
+                                                                    GlobalScope.async { actionClose(realReturnId.toInt()) }
+                                                                runBlocking {
+                                                                    Log.d(
+                                                                        "Action Close Result",
+                                                                        actionClose.await()
+                                                                    )
+                                                                }
+                                                                finishProcess.putExtra(
+                                                                    "pickingId",
+                                                                    pickingId.toInt()
+                                                                )
+                                                                startActivity(finishProcess)
+                                                                unregisterReceiver(mScanReceiver)
+                                                                finish()
+                                                            } catch (e: Exception) {
+                                                                Log.d("Error", e.toString())
+                                                            }
+                                                        }
+                                                        .setNegativeButton("Rechazar") { dialog2, which ->
+                                                            try {
+                                                                val actionRejected = GlobalScope.async {
+                                                                    actionRejected(realReturnId.toInt())
+                                                                }
+                                                                runBlocking {
+                                                                    Log.d(
+                                                                        "Action Close Result",
+                                                                        actionRejected.await()
+                                                                    )
+                                                                }
+                                                                finishProcess.putExtra(
+                                                                    "pickingId",
+                                                                    pickingId.toInt()
+                                                                )
+                                                                startActivity(finishProcess)
+                                                                unregisterReceiver(mScanReceiver)
+                                                                finish()
+                                                            } catch (e: Exception) {
+                                                                Log.d("Error", e.toString())
+                                                            }
+                                                        }
+                                                    builder2.show()
+                                                } else {
+                                                    Log.d("Has return id", "true")
+                                                    finishProcess.putExtra("pickingId", pickingId.toInt())
+                                                    startActivity(finishProcess)
+                                                    unregisterReceiver(mScanReceiver)
+                                                    finish()
                                                 }
-                                                cursorReturns.close()
-                                                val realReturnId = rawReturnId.substring(
-                                                    rawReturnId.indexOf("[") + 1,
-                                                    rawReturnId.indexOf(",")
-                                                )
-                                                Log.d("Real Return Id", realReturnId)
-                                                val builder2 = AlertDialog.Builder(this)
-                                                builder2.setTitle("Proceso de Devolucion")
-                                                    .setMessage("Aceptar o rechazar la devolucion:")
-                                                    .setPositiveButton("Aceptar") { dialog2, which ->
-                                                        try {
-                                                            val actionClose =
-                                                                GlobalScope.async { actionClose(realReturnId.toInt()) }
-                                                            runBlocking {
-                                                                Log.d(
-                                                                    "Action Close Result",
-                                                                    actionClose.await()
-                                                                )
-                                                            }
-                                                            finishProcess.putExtra(
-                                                                "pickingId",
-                                                                pickingId.toInt()
-                                                            )
-                                                            startActivity(finishProcess)
-                                                            finish()
-                                                        } catch (e: Exception) {
-                                                            Log.d("Error", e.toString())
-                                                        }
-                                                    }
-                                                    .setNegativeButton("Rechazar") { dialog2, which ->
-                                                        try {
-                                                            val actionRejected = GlobalScope.async {
-                                                                actionRejected(realReturnId.toInt())
-                                                            }
-                                                            runBlocking {
-                                                                Log.d(
-                                                                    "Action Close Result",
-                                                                    actionRejected.await()
-                                                                )
-                                                            }
-                                                            finishProcess.putExtra(
-                                                                "pickingId",
-                                                                pickingId.toInt()
-                                                            )
-                                                            startActivity(finishProcess)
-                                                            finish()
-                                                        } catch (e: Exception) {
-                                                            Log.d("Error", e.toString())
-                                                        }
-                                                    }
-                                                builder2.show()
-                                            } else {
-                                                Log.d("Has return id", "true")
-                                                finishProcess.putExtra("pickingId", pickingId.toInt())
-                                                startActivity(finishProcess)
-                                                finish()
                                             }
                                         }
+
                                     }
                                 } catch (e: XmlRpcException) {
                                     Log.d("XMLRPC ERROR", e.toString())
-                                    Toast.makeText(this, "Error en Odoo: $e", Toast.LENGTH_SHORT).show()
+                                    val customToast = CustomToast(this, this)
+                                    customToast.show("Error en Odoo: $e", 24.0F, Toast.LENGTH_LONG)
                                 } catch (e: Exception) {
                                     Log.d("ERROR", e.toString())
-                                    Toast.makeText(this, "Error en peticion", Toast.LENGTH_SHORT).show()
+                                    val customToast = CustomToast(this, this)
+                                    customToast.show("Error en Peticion: $e", 24.0F, Toast.LENGTH_LONG)
                                 }
                             }
                             .setNegativeButton("Cancelar") { dialog, which ->
@@ -595,11 +587,8 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                            }
                            */
                             if (!allChecked) {
-                                Toast.makeText(
-                                    this,
-                                    "Confirma todas las incidencias",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                val customToast = CustomToast(this, this)
+                                customToast.show("Confirma todas las incidencias", 24.0F, Toast.LENGTH_LONG)
                             } else {
                                 var error = false
                                 //val issuesToSend: HashMap<Int, HashMap<Int, Int>> = parseIssues()
@@ -613,19 +602,14 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                         )
                                         if (sendIssues.isEmpty()) {
                                             runOnUiThread {
-                                                Toast.makeText(
-                                                    applicationContext,
-                                                    "IsEmpty",
-                                                    Toast.LENGTH_LONG
-                                                ).show()
+                                                val customToast = CustomToast(this, this)
+                                                customToast.show("Is Empty", 24.0F, Toast.LENGTH_LONG)
                                             }
                                         } else {
                                             runOnUiThread {
-                                                Toast.makeText(
-                                                    applicationContext,
-                                                    "Confirmado",
-                                                    Toast.LENGTH_LONG
-                                                ).show()
+                                                val customToast = CustomToast(this, this)
+                                                customToast.show("Confirmado", 24.0F, Toast.LENGTH_LONG)
+                                                error = false
                                             }
                                         }
                                         val answer: String = movesTest("0", pickingId.toInt())
@@ -634,101 +618,103 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                     } catch (e: Exception) {
                                         Log.d("Error", e.toString())
                                         runOnUiThread {
-                                            Toast.makeText(
-                                                applicationContext,
-                                                e.toString(),
-                                                Toast.LENGTH_LONG
-                                            ).show()
+                                            val customToast = CustomToast(this, this)
+                                            customToast.show(e.toString(), 24.0F, Toast.LENGTH_LONG)
                                         }
                                         error = true
                                     }
-                                }
-                                Log.d("Id", pickingId)
-                                Log.d("ReturnId", returnID.toString())
-                                val finishProcess =
-                                    Intent(applicationContext, MainMenuActivity::class.java)
-                                if (error) {
-                                    if (returnID) {
-                                        Log.d("Has return id", "true")
-                                        var rawReturnId = ""
-                                        val dbReturns = DBConnect(
-                                            applicationContext,
-                                            Utilities.DBNAME,
-                                            null,
-                                            1
-                                        ).readableDatabase
-                                        val cursorReturns = dbReturns.rawQuery(
-                                            "SELECT return_id FROM " + Utilities.TABLE_STOCK + " WHERE id = " + pickingId.toInt(),
-                                            null
-                                        )
-                                        while (cursorReturns.moveToNext()) {
-                                            rawReturnId = cursorReturns.getString(0)
+                                    Log.d("Id", pickingId)
+                                    Log.d("ReturnId", returnID.toString())
+                                    val finishProcess =
+                                        Intent(applicationContext, MainMenuActivity::class.java)
+                                    if (!error) {
+                                        if (returnID) {
+                                            Log.d("Has return id", "true")
+                                            var rawReturnId = ""
+                                            val dbReturns = DBConnect(
+                                                applicationContext,
+                                                Utilities.DBNAME,
+                                                null,
+                                                1
+                                            ).readableDatabase
+                                            val cursorReturns = dbReturns.rawQuery(
+                                                "SELECT return_id FROM " + Utilities.TABLE_STOCK + " WHERE id = " + pickingId.toInt(),
+                                                null
+                                            )
+                                            while (cursorReturns.moveToNext()) {
+                                                rawReturnId = cursorReturns.getString(0)
+                                            }
+                                            cursorReturns.close()
+                                            val realReturnId = rawReturnId.substring(
+                                                rawReturnId.indexOf("[") + 1,
+                                                rawReturnId.indexOf(",")
+                                            )
+                                            Log.d("Real Return Id", realReturnId)
+                                            val builder2 = AlertDialog.Builder(this)
+                                            builder2.setTitle("Proceso de Devolucion")
+                                                .setMessage("Aceptar o rechazar la devolucion:")
+                                                .setPositiveButton("Aceptar") { dialog2, which ->
+                                                    try {
+                                                        val actionClose =
+                                                            GlobalScope.async { actionClose(realReturnId.toInt()) }
+                                                        runBlocking {
+                                                            Log.d(
+                                                                "Action Close Result",
+                                                                actionClose.await()
+                                                            )
+                                                        }
+                                                        finishProcess.putExtra(
+                                                            "pickingId",
+                                                            pickingId.toInt()
+                                                        )
+                                                        startActivity(finishProcess)
+                                                        unregisterReceiver(mScanReceiver)
+                                                        finish()
+                                                    } catch (e: Exception) {
+                                                        Log.d("Error", e.toString())
+                                                    }
+                                                }
+                                                .setNegativeButton("Rechazar") { dialog2, which ->
+                                                    try {
+                                                        val actionRejected = GlobalScope.async {
+                                                            actionRejected(realReturnId.toInt())
+                                                        }
+                                                        runBlocking {
+                                                            Log.d(
+                                                                "Action Close Result",
+                                                                actionRejected.await()
+                                                            )
+                                                        }
+                                                        finishProcess.putExtra(
+                                                            "pickingId",
+                                                            pickingId.toInt()
+                                                        )
+                                                        startActivity(finishProcess)
+                                                        unregisterReceiver(mScanReceiver)
+                                                        finish()
+                                                    } catch (e: Exception) {
+                                                        Log.d("Error", e.toString())
+                                                    }
+                                                }
+                                            builder2.show()
+                                        } else {
+                                            Log.d("Has return id", "true")
+                                            finishProcess.putExtra("pickingId", pickingId.toInt())
+                                            startActivity(finishProcess)
+                                            unregisterReceiver(mScanReceiver)
+                                            finish()
                                         }
-                                        cursorReturns.close()
-                                        val realReturnId = rawReturnId.substring(
-                                            rawReturnId.indexOf("[") + 1,
-                                            rawReturnId.indexOf(",")
-                                        )
-                                        Log.d("Real Return Id", realReturnId)
-                                        val builder2 = AlertDialog.Builder(this)
-                                        builder2.setTitle("Proceso de Devolucion")
-                                            .setMessage("Aceptar o rechazar la devolucion:")
-                                            .setPositiveButton("Aceptar") { dialog2, which ->
-                                                try {
-                                                    val actionClose =
-                                                        GlobalScope.async { actionClose(realReturnId.toInt()) }
-                                                    runBlocking {
-                                                        Log.d(
-                                                            "Action Close Result",
-                                                            actionClose.await()
-                                                        )
-                                                    }
-                                                    finishProcess.putExtra(
-                                                        "pickingId",
-                                                        pickingId.toInt()
-                                                    )
-                                                    startActivity(finishProcess)
-                                                    finish()
-                                                } catch (e: Exception) {
-                                                    Log.d("Error", e.toString())
-                                                }
-                                            }
-                                            .setNegativeButton("Rechazar") { dialog2, which ->
-                                                try {
-                                                    val actionRejected = GlobalScope.async {
-                                                        actionRejected(realReturnId.toInt())
-                                                    }
-                                                    runBlocking {
-                                                        Log.d(
-                                                            "Action Close Result",
-                                                            actionRejected.await()
-                                                        )
-                                                    }
-                                                    finishProcess.putExtra(
-                                                        "pickingId",
-                                                        pickingId.toInt()
-                                                    )
-                                                    startActivity(finishProcess)
-                                                    finish()
-                                                } catch (e: Exception) {
-                                                    Log.d("Error", e.toString())
-                                                }
-                                            }
-                                        builder2.show()
-                                    } else {
-                                        Log.d("Has return id", "true")
-                                        finishProcess.putExtra("pickingId", pickingId.toInt())
-                                        startActivity(finishProcess)
-                                        finish()
                                     }
                                 }
                             }
                         } catch (e: XmlRpcException) {
                             Log.d("XMLRPC ERROR", e.toString())
-                            Toast.makeText(this, "Error en Odoo: $e", Toast.LENGTH_SHORT).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Error en Odoo: $e", 24.0F, Toast.LENGTH_LONG)
                         } catch (e: Exception) {
                             Log.d("ERROR", e.toString())
-                            Toast.makeText(this, "Error en peticion", Toast.LENGTH_SHORT).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Error en Peticion: $e", 24.0F, Toast.LENGTH_LONG)
                         }
                     }
                     .setNegativeButton("Cancelar") { dialog, _ ->
@@ -755,20 +741,14 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                 }
                 }catch (e: Exception){
                     runOnUiThread {
-                        Toast.makeText(
-                             applicationContext,
-                            "Error General: $e",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error General", 24.0F, Toast.LENGTH_LONG)
                     }
                 Log.d("Error General",e.toString())
                 }catch (xml: XmlRpcException){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error de Red: $xml",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error de Red: $xml", 24.0F, Toast.LENGTH_LONG)
                     }
                     Log.d("Error de Red",xml.toString())
                 }
@@ -795,20 +775,26 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                             populateListView(relatedId)
                             val adapter = orderRevisionLv.adapter as OrderRevisionAdapter
                             adapter.notifyDataSetChanged()
-                            Toast.makeText(applicationContext, "Exito", Toast.LENGTH_SHORT).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Exito", 24.0F, Toast.LENGTH_LONG)
                         }
 
                     } else
                         runOnUiThread {
                             progressBar.isVisible = false
-                            Toast.makeText(applicationContext, "Sin Exito", Toast.LENGTH_SHORT).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Sin Exito", 24.0F, Toast.LENGTH_LONG)
                         }
             }
         }
+
+        val filter = IntentFilter()
+        filter.addAction("android.intent.ACTION_DECODE_DATA")
+        registerReceiver(mScanReceiver, filter)
     }
 
     fun syncInspectionItems(pickingId: Int) : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odoo.authenticateOdoo()
         val stockPicking = odoo.getInspectionItems(pickingId)
         Log.d("OrderList", stockPicking)
@@ -838,7 +824,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
 
     private fun movesTest(location: String, pickingId : Int) : String
     {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.movesTest(location, pickingId)
     }
@@ -879,10 +865,12 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                     Log.d("Added",finalHashMap[pickingId.toInt()]?.get(items.Id)?.get("issues").toString())
                 }
                 val mixedName  = cursor.getString(cursor.getColumnIndex("product_id"))
-                val arrayOfName : Array<Any> = mixedName.split(",").toTypedArray()
-                val nameAsString = arrayOfName[1] as String
-                val rawName = nameAsString.replace("]","")
-                val name = rawName.replace("\"","")
+                val separateName : Array<String> = mixedName.split(",").toTypedArray()
+                val arrayofNames : Array<String> = separateName[1].toString().split(" ").toTypedArray()
+                var name = arrayofNames[0]
+                name = name.replace("[","")
+                name = name.replace("]","")
+                name = name.replace("\"","")
                 items.productName = name
                 items.qty = cursor.getInt(1)
                 val mixedId  = cursor.getString(cursor.getColumnIndex("product_id"))
@@ -1053,25 +1041,20 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                     Log.d("Scanned Product", scannedProductIdSearch.toString())
                 }
                 else{
-                    Toast.makeText(applicationContext, "Producto no encontrado", Toast.LENGTH_SHORT).show()
+                    val customToast = CustomToast(applicationContext, this@OrderRevisionActivity)
+                    customToast.show("Producto no encontrado", 24.0F, Toast.LENGTH_LONG)
                 }
             }
         }catch (e: Exception){
             runOnUiThread {
-                Toast.makeText(
-                    applicationContext,
-                    "Error General: $e",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error General", 24.0F, Toast.LENGTH_LONG)
             }
             Log.d("Error General",e.toString())
         }catch (xml: XmlRpcException){
             runOnUiThread {
-                Toast.makeText(
-                    applicationContext,
-                    "Error Encontrando Producto",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error encontrando Producto", 24.0F, Toast.LENGTH_LONG)
             }
             Log.d("Error de Red",xml.toString())
         }
@@ -1227,19 +1210,19 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
 
 
     private fun confirmIssues(id: Int, issues : HashMap<Int,HashMap<String,Any>>): List<List<String>> {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.confirmIssues(id,issues) as List<List<String>>
     }
 
     private fun actionClose(returnId: Int): String {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.actionClose(returnId) as String
     }
 
     private fun actionRejected(returnId: Int): String {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.actionRejected(returnId) as String
     }
@@ -1281,14 +1264,14 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
     }
 
     private fun searchProduct(product_id : String): String {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.searchProduct(product_id)
     }
 
     private fun getStockMoveIssue() : String
     {
-        val odooConn = OdooConn("contacto@exinnotech.com","1411")
+        val odooConn = OdooConn(prefs.getString("User",""),prefs.getString("Pass",""),this)
         odooConn.authenticateOdoo()
         val noIds = emptyList<Int>()
         return odooConn.stockMoveIssue

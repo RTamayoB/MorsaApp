@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.view.ViewParent
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
@@ -42,6 +43,8 @@ class MainMenuActivity : AppCompatActivity() {
         val pickingBtn = findViewById<ImageButton>(R.id.picking_btn)
         val countBtn = findViewById<ImageButton>(R.id.count_btn)
         val routeBtn = findViewById<ImageButton>(R.id.routes_btn)
+        val settingsBtn = findViewById<ImageButton>(R.id.settings_btn)
+        val refundsBtn = findViewById<ImageButton>(R.id.refunds_btn)
 
         receptionBtn.setOnClickListener {
             val intent = Intent(applicationContext, ReceptionActivity::class.java)
@@ -89,6 +92,25 @@ class MainMenuActivity : AppCompatActivity() {
             val intent = Intent(applicationContext, RoutesActivity::class.java)
             startActivity(intent)
             finish()
+            }catch (e : Exception){
+                Log.d("Error", e.toString())
+            }
+        }
+
+        refundsBtn.setOnClickListener {
+            try{
+                val intent = Intent(applicationContext, RefundsActivity::class.java)
+                startActivity(intent)
+                finish()
+            }catch (e : Exception){
+                Log.d("Error", e.toString())
+            }
+        }
+
+        settingsBtn.setOnClickListener {
+            try{
+                val intent = Intent(applicationContext, SettingsActivity::class.java)
+                startActivity(intent)
             }catch (e : Exception){
                 Log.d("Error", e.toString())
             }
@@ -162,7 +184,7 @@ class MainMenuActivity : AppCompatActivity() {
 
     private fun getPermissions(user: String?) : String
     {
-        val odooConn = OdooConn("contacto@exinnotech.com","1411")
+        val odooConn = OdooConn(prefs.getString("User",""),prefs.getString("Pass",""),this)
         odooConn.authenticateOdoo()
         val noIds = emptyList<Int>()
         return odooConn.getPermissions(user)

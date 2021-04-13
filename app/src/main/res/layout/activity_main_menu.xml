@@ -72,8 +72,8 @@
                     android:id="@+id/transfer_btn"
                     android:layout_width="150dp"
                     android:layout_height="150dp"
-                    android:padding="6dp"
                     android:background="#FFFFFF"
+                    android:padding="6dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/acomodo" />
 
@@ -104,9 +104,9 @@
                 <ImageButton
                     android:id="@+id/count_btn"
                     android:layout_width="150dp"
-                    android:padding="6dp"
                     android:layout_height="150dp"
                     android:background="#FFFFFF"
+                    android:padding="6dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/count" />
             </TableRow>
@@ -120,20 +120,47 @@
                     android:id="@+id/routes_btn"
                     android:layout_width="150dp"
                     android:layout_height="150dp"
-                    android:padding="6dp"
                     android:background="#FFFFFF"
+                    android:padding="6dp"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/routes" />
+                    android:src="@drawable/enbarques" />
+
+                <ImageButton
+                    android:id="@+id/refunds_btn"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:background="#FFFFFF"
+                    android:padding="6dp"
+                    android:src="@drawable/refunds"
+                    android:scaleType="fitCenter" />
+
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center">
 
                 <ImageButton
                     android:id="@+id/settings_btn"
-                    android:layout_width="130dp"
-                    android:layout_height="130dp"
-                    android:background="#ffffff"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:background="#FFFFFF"
                     android:padding="6dp"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/settings_img" />
+                    android:src="@drawable/settings"/>
+
+                <Button
+                    android:id="@+id/mockup_btn"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:background="#FFFFFF"
+                    android:padding="6dp"
+                    android:scaleType="fitCenter"
+                    />
+
             </TableRow>
+
         </TableLayout>
     </ScrollView>
 

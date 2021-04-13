@@ -60,8 +60,8 @@ class RoutesOrdersActivity : AppCompatActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
 
-            if(action == "android.intent.ACTION_DECODE_DATA"){
-                soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
+            if(action == resources.getString(R.string.activity_intent_action)){
+                /*soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
                 mVibrator.vibrate(100)
 
                 val barcode  = intent!!.getByteArrayExtra(ScanManager.DECODE_DATA_TAG)
@@ -69,9 +69,10 @@ class RoutesOrdersActivity : AppCompatActivity() {
                 val temp = intent.getByteExtra(ScanManager.BARCODE_TYPE_TAG, 0.toByte())
                 Log.i("debug", "----codetype--$temp")
                 barcodeStr = String(barcode, 0, barcodelen)
-                Log.d("Result", barcodeStr)
-                displayScanResult(barcodeStr, temp.toString())
-                mScanManager.stopDecode()
+                Log.d("Result", barcodeStr)*/
+                    val value = intent.getStringExtra("barcode_string")
+                displayScanResult(value, "")
+                //mScanManager.stopDecode()
             }
         }
     }
@@ -102,7 +103,10 @@ class RoutesOrdersActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_routes_orders)
 
-        initScan()
+        //initScan()
+        val filter = IntentFilter()
+        filter.addAction(resources.getString(R.string.activity_intent_action))
+        registerReceiver(mScanReceiver, filter)
 
         val file = File(applicationContext.filesDir,"examplePDF")
         val pdfAsBytes = Base64.decode(Utilities.examplePDF, 0)
@@ -165,7 +169,8 @@ class RoutesOrdersActivity : AppCompatActivity() {
                 val item = boxesLv.adapter.getItem(i) as StockBoxesDataModel
                 if (!item.isScanned){
                     allScanned = false
-                    Toast.makeText(applicationContext,"Escanee todos los productos",Toast.LENGTH_SHORT).show()
+                    val customToast = CustomToast(this, this)
+                    customToast.show("Escanee todos los productos", 24.0F, Toast.LENGTH_LONG)
                     break
                 }
             }
@@ -178,19 +183,13 @@ class RoutesOrdersActivity : AppCompatActivity() {
                         if (!(deferredRouteInfo[0] as Boolean)) {
                             if (!(deferredRouteInfo[0] as Boolean)) {
                                 runOnUiThread {
-                                    Toast.makeText(
-                                        applicationContext,
-                                        "Cajas pendientes",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    val customToast = CustomToast(this, this)
+                                    customToast.show("Cajas pendientes", 24.0F, Toast.LENGTH_LONG)
                                 }
                             } else {
                                 runOnUiThread {
-                                    Toast.makeText(
-                                        applicationContext,
-                                        "No hay paquetes para mover a ruta",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    val customToast = CustomToast(this, this)
+                                    customToast.show("No hay paquetes para mover a ruta", 24.0F, Toast.LENGTH_LONG)
                                 }
                             }
 
@@ -233,11 +232,8 @@ class RoutesOrdersActivity : AppCompatActivity() {
                                             sendPlates(routeId, input.text.toString())
 
                                         runOnUiThread {
-                                            Toast.makeText(
-                                                applicationContext,
-                                                deferredPlaques[1] as String,
-                                                Toast.LENGTH_SHORT
-                                            ).show()
+                                            val customToast = CustomToast(this, this)
+                                            customToast.show(deferredPlaques[1].toString() as String, 24.0F, Toast.LENGTH_LONG)
                                         }
                                         if ((deferredPlaques[0] as Boolean)) {
                                             val file1 = File(applicationContext.filesDir, pdfName)
@@ -245,11 +241,8 @@ class RoutesOrdersActivity : AppCompatActivity() {
                                         } else {
                                             runOnUiThread {
                                                 dialog.dismiss()
-                                                Toast.makeText(
-                                                    applicationContext,
-                                                    "No se pudieron enviar las placas, intente de nuevo",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
+                                                val customToast = CustomToast(this, this)
+                                                customToast.show("No se pudieron enviar las placas, intente de nuevo", 24.0F, Toast.LENGTH_LONG)
                                             }
                                         }
                                     }catch (e: Exception){
@@ -281,7 +274,7 @@ class RoutesOrdersActivity : AppCompatActivity() {
     }
 
     private fun sendPlates(routeId: String?, plates : String): List<String>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.sendPlates(routeId,plates)
     }
@@ -289,6 +282,8 @@ class RoutesOrdersActivity : AppCompatActivity() {
     override fun onBackPressed() {
         super.onBackPressed()
         val returnIntent = Intent(applicationContext, RoutesActivity::class.java)
+        finish()
+        unregisterReceiver(mScanReceiver)
         startActivity(returnIntent)
         //unregisterReceiver(mScanReceiver) //This may stop the working of the scanner, shutdown in the meantime
     }
@@ -323,7 +318,7 @@ class RoutesOrdersActivity : AppCompatActivity() {
     }
 
     fun syncStockBoxes(routeName : String?) : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odoo.authenticateOdoo()
         val stockPicking = odoo.getRouteBoxes(routeName)
         Log.d("OrderList", stockPicking)
@@ -331,13 +326,13 @@ class RoutesOrdersActivity : AppCompatActivity() {
     }
 
     private fun getRouteBoxes(sessionId: String, routeId: String?): List<String>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.getPdf(sessionId, routeId)
     }
 
     private fun scanBox(boxId: String): List<String>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.scanBox(boxId)
     }

@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">MorsaApp</string>
+    <string name="activity_intent_action">android.intent.ACTION_DECODE_DATA</string>
+    <string name="activity_intent_filter_action_scan">com.morsaapp.SCANNER</string>
     <string name="activity_intent_filter_action_order">com.morsaapp.ACTIONORDER</string>
     <string name="activity_intent_filter_action_route">com.morsaapp.ACTIONROUTE</string>
     <string name="activity_intent_filter_action_product_to_location">com.morsaapp.ACTIONPTL</string>
@@ -15,4 +17,13 @@
     <string name="product_lv_lbl">Producto</string>
     <string name="import_lv_lbl">Importe</string>
     <string name="confirm_btn_str">CONFIRMAR</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+
+    <!-- Preference Titles -->
+    <string name="server_header">Datos de Servidor</string>
+
+    <!-- Messages Preferences -->
+    <string name="url_title">URL de Servidor</string>
+    <string name="db_title">Base de Datos</string>
+
 </resources>

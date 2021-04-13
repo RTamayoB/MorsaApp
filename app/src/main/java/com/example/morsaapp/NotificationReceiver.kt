@@ -49,7 +49,7 @@ class NotificationReceiver : BroadcastReceiver() {
 
     private fun reStock( context : Context,username : String) : String
     {
-        val odooConn = OdooConn("contacto@exinnotech.com","1411")
+        val odooConn = OdooConn("contacto@exinnotech.com","MORSA2020.",context)
         val prefs = context.getSharedPreferences("startupPreferences", 0)
         odooConn.authenticateOdoo()
         return odooConn.reStock(username,prefs.getInt("activeUser",0))

@@ -12,15 +12,17 @@ import androidx.work.*
 import com.example.morsaapp.adapter.InvoiceAdapter
 import com.example.morsaapp.datamodel.InvoiceDataModel
 import com.example.morsaapp.workmanager.ReceptionWorker
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import org.apache.xmlrpc.XmlRpcException
 import org.json.JSONArray
-import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
 
-class InvoiceActivity : AppCompatActivity() {
-
+class RefundDetailsActivity : AppCompatActivity() {
     var datamodels = ArrayList<InvoiceDataModel>()
-    lateinit var invoiceLv : ListView
+    lateinit var refundDetailsLv : ListView
     lateinit var adapter : InvoiceAdapter
     lateinit var progressBar: ProgressBar
 
@@ -32,7 +34,7 @@ class InvoiceActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_invoice)
+        setContentView(R.layout.activity_refund_details)
 
         prefs = this.getSharedPreferences("startupPreferences", 0)
         Log.d("Data start of invoice", prefs.getString("User","Null")+" - "+prefs.getString("Pass","Null"))
@@ -41,29 +43,30 @@ class InvoiceActivity : AppCompatActivity() {
 
         val intent : Intent = intent
         invoiceId = intent.getStringExtra("ID")
-        val purchaseId = intent.getStringExtra("Purchase Id")
+        //val purchaseId = intent.getStringExtra("Purchase Id")
         val number = intent.getStringExtra("Number")
         val displayName = intent.getStringExtra("Display Name")
         val realDisplayName = displayName.replace("/","\\/")
         val name = intent.getStringExtra("Name")
         val supplier = intent.getStringExtra("Supplier")
+        Log.d("Supplier", supplier)
         val total = intent.getStringExtra("Total")
         val address = intent.getStringExtra("Address")
         //val ref = intent.getStringExtra("Ref")
         val relatedId = "[$invoiceId,\"$realDisplayName\"]"
         Log.d("RelatedId", relatedId)
 
-        val supplierTxt = findViewById<TextView>(R.id.supplier_txt)
+        val partnerTxt = findViewById<TextView>(R.id.partner_txt)
         val invoiceTxt = findViewById<TextView>(R.id.invoice_txt)
         val totalTxt = findViewById<TextView>(R.id.total_txt)
-        val addressTxt = findViewById<TextView>(R.id.address_txt)
+        val motiveTxt = findViewById<TextView>(R.id.motive_txt)
 
-        supplierTxt.text = supplier
+        partnerTxt.text = supplier
         invoiceTxt.text = name
         totalTxt.text = "$$total MXN"
-        addressTxt.text = address
+        motiveTxt.text = address
 
-        invoiceLv = findViewById(R.id.product_lv)
+        refundDetailsLv = findViewById(R.id.product_lv)
         progressBar = findViewById(R.id.progressBar_invoice)
 
         /**
@@ -76,55 +79,20 @@ class InvoiceActivity : AppCompatActivity() {
             val prefs = this.getSharedPreferences("backlogPrefs", 0)
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Recibir Productos")
-                .setMessage("Recibir Orden de Compra?")
+                .setMessage("Recibir Garantia/Devolución?")
                 .setPositiveButton("Aceptar"){ _, _ ->
                     try {
-
-                        val workManager = WorkManager.getInstance(application)
-                        val builder = Data.Builder()
-                        builder.putInt("Id",purchaseId.toInt())
-                        builder.putString("Number",number)
-                        builder.putString("User", user)
-                        builder.putString("Pass", pass)
-                        val constraints = Constraints.Builder()
-                            .setRequiredNetworkType(NetworkType.CONNECTED)
-                            .build()
-                        val request = OneTimeWorkRequestBuilder<ReceptionWorker>()
-                            .setInputData(builder.build())
-                            .setConstraints(constraints)
-                            .build()
-                        workManager.enqueue(request)
-                        /*
-                        val deferredTest: Deferred<List<Any>> =
-                            GlobalScope.async { confirmInvoice(purchaseId.toInt()) }
+                        Log.d("Id", invoiceId.toString())
+                        val deferredTest: Deferred<List<Any>> = GlobalScope.async { confirmStockReturn(invoiceId.toString().toInt()) }
+                        var result = ""
                         runBlocking {
-                            if (deferredTest.await()[0] as Boolean) {
-                                val bool: Boolean = deferredTest.await()[0] as Boolean
-
-                                //val id: Int = deferredTest.await()[1] as Int
-
-                                val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
-                                db.changeStockState(id.toString())
-                                db.close()
-
-                                Toast.makeText(applicationContext, "Confirmado", Toast.LENGTH_LONG)
-                                    .show()
-                            } else {
-                                //Reception failed, add to backlog
-                                Toast.makeText(
-                                    applicationContext,
-                                    "Error en subir invoice",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                val editor = prefs.edit()
-                                val rawList: String? = prefs.getString("InvoiceIds", "")
-                                val list = rawList?.split(",") as ArrayList<String>
-                                list.add(id)
-                                editor.putString("InvoiceIds", list.toString())
-                            }
+                            result = deferredTest.await()[1].toString()
+                            Log.d("Result Stock Return", result)
                         }
-
-                         */
+                        runOnUiThread {
+                            val customToast = CustomToast(this, this)
+                            customToast.show(result, 8.0F, Toast.LENGTH_LONG)
+                        }
                         val intent = Intent(applicationContext, MainMenuActivity::class.java)
                         startActivity(intent)
                         finish()
@@ -150,12 +118,12 @@ class InvoiceActivity : AppCompatActivity() {
         val builder = AlertDialog.Builder(this)
         builder.setCancelable(false)
         builder.setTitle("Salir")
-        builder.setMessage("Interrumpir proceso de Recepcion")
+        builder.setMessage("Interrumpir proceso de Devolucion")
         builder.setNegativeButton("Cancelar") {dialog, which ->
             dialog.dismiss()
         }
         builder.setPositiveButton("Aceptar") {dialog, which ->
-            val intent = Intent(applicationContext, ReceptionActivity::class.java)
+            val intent = Intent(applicationContext, RefundsActivity::class.java)
             startActivity(intent)
             finish()
         }
@@ -164,24 +132,24 @@ class InvoiceActivity : AppCompatActivity() {
 
     private fun refreshData(relatedId: String){
         val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
-        if(db.reloadInvoiceLines(relatedId)){
+        if(db.deleteDataOnTable(Utilities.TABLE_STOCK_RETURN_LINE)){
             thread {
                 try {
                     val id = invoiceId!!.toInt()
-                    val deferredInvoiceLine: String = syncInvoiceLines(id)
+                    val deferredStockReturnLine: String = syncStockReturnLines(id)
                     val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
-                    val invoiceLineJson = JSONArray(deferredInvoiceLine)
+                    val stockLineJson = JSONArray(deferredStockReturnLine)
                     //Insert data
-                    val invoiceLineUpdate =
-                        db.fillTable(invoiceLineJson, Utilities.TABLE_INVOICE_LINE)
-                    if (invoiceLineUpdate) {
+                    val stockLineUpdate =
+                        db.fillTable(stockLineJson, Utilities.TABLE_STOCK_RETURN_LINE)
+                    if (stockLineUpdate) {
                         Log.d("Loaded Lines", "Loading")
                         //If succesfull, delete data from model, insert again and notify the dataset
                         runOnUiThread {
                             progressBar.isVisible = false
                             datamodels.clear()
                             populateListView(relatedId)
-                            val adapter = invoiceLv.adapter as InvoiceAdapter
+                            val adapter = refundDetailsLv.adapter as InvoiceAdapter
                             adapter.notifyDataSetChanged()
                             val customToast = CustomToast(this, this)
                             customToast.show("Lista Actualizada", 24.0F, Toast.LENGTH_LONG)
@@ -216,41 +184,43 @@ class InvoiceActivity : AppCompatActivity() {
     private fun populateListView(id : String)
     {
         val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
-        val invoiceItemsCursor = db.fillInvoiceItemsListView(id)
+        val refundItemsCursor = db.fillRefundItemsListView(id)
         var items : InvoiceDataModel?
 
 
-        while (invoiceItemsCursor.moveToNext()) {
+        while (refundItemsCursor.moveToNext()) {
             items = InvoiceDataModel()
-            val name = invoiceItemsCursor.getString(0)
-            items.product = name +" x "+invoiceItemsCursor.getString(1) +"\n" +
-                    invoiceItemsCursor.getString(2) +" c/u "
-            items.imports = invoiceItemsCursor.getString(3) + " MXN"
+            var name = refundItemsCursor.getString(2).split(",")[1]
+            name = name.replace("\"", "")
+            name = name.replace("]", "")
+            items.product = name +" x "+refundItemsCursor.getString(4) +"\n" +
+                    refundItemsCursor.getString(3) +" c/u "
+            items.imports = refundItemsCursor.getString(3) + " MXN"
 
 
             datamodels.add(items)
         }
         obtainList()
-        invoiceItemsCursor.close()
+        refundItemsCursor.close()
         db.close()
     }
 
     private fun obtainList() {
         adapter = InvoiceAdapter(datamodels, this)
-        invoiceLv.adapter = adapter
+        refundDetailsLv.adapter = adapter
     }
 
-    private fun confirmInvoice(id: Int): List<Any> {
+    private fun confirmStockReturn(id: Int): List<Any> {
         val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
-        return odooConn.confirmInvoice(id,"") as List<Any>
+        return odooConn.confirmStockReturn(id) as List<Any>
     }
 
     //Returns the purchases lines
-    fun syncInvoiceLines(invoiceId : Int) : String{
+    fun syncStockReturnLines(returnId : Int) : String{
         val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odoo.authenticateOdoo()
-        val invoiceLine = odoo.reloadInvoiceLines(invoiceId)
+        val invoiceLine = odoo.reloadStockReturnLines(returnId)
         return invoiceLine
     }
 }

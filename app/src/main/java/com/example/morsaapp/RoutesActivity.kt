@@ -65,8 +65,8 @@ class RoutesActivity : AppCompatActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
 
-            if(action == "android.intent.ACTION_DECODE_DATA"){
-                soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
+            if(action == resources.getString(R.string.activity_intent_action)){
+                /*soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
                 mVibrator.vibrate(100)
 
                 val barcode  = intent!!.getByteArrayExtra(ScanManager.DECODE_DATA_TAG)
@@ -74,9 +74,10 @@ class RoutesActivity : AppCompatActivity() {
                 val temp = intent.getByteExtra(ScanManager.BARCODE_TYPE_TAG, 0.toByte())
                 Log.i("debug", "----codetype--$temp")
                 barcodeStr = String(barcode, 0, barcodelen)
-                Log.d("Result", barcodeStr)
-                displayScanResult(barcodeStr)
-                mScanManager.stopDecode()
+                Log.d("Result", barcodeStr)*/
+                    val value = intent.getStringExtra("barcode_string")
+                displayScanResult(value)
+                //mScanManager.stopDecode()
             }
         }
     }
@@ -112,13 +113,12 @@ class RoutesActivity : AppCompatActivity() {
 
         prefs = this.getSharedPreferences("startupPreferences", 0)
 
-        initScan()
-        /*
+        //initScan()
+
         val filter = IntentFilter()
-        filter.addCategory(Intent.CATEGORY_DEFAULT)
-        filter.addAction(resources.getString(R.string.activity_intent_filter_action_route))
-        registerReceiver(myBroadcastReceiver, filter)
-        */
+        filter.addAction(resources.getString(R.string.activity_intent_action))
+        registerReceiver(mScanReceiver, filter)
+
 
         routesLv = findViewById(R.id.routes_lv)
 
@@ -173,47 +173,39 @@ class RoutesActivity : AppCompatActivity() {
                             populateListView()
                             val adapter = routesLv.adapter as RoutesAdapter
                             adapter.notifyDataSetChanged()
-                            Toast.makeText(
-                                applicationContext,
-                                "Escanee una Ruta",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Escanee una ruta", 24.0F, Toast.LENGTH_LONG)
                         }
                     } else {
                         runOnUiThread {
-                            Toast.makeText(applicationContext, "Sin Exito", Toast.LENGTH_SHORT)
-                                .show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Sin Exito", 24.0F, Toast.LENGTH_LONG)
                         }
                     }
                 }catch (e: Exception){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error General: $e",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error General: $e", 24.0F, Toast.LENGTH_LONG)
                     }
                     Log.d("Error General",e.toString())
                 }catch (xml: XmlRpcException){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error de Red: $xml",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error de Red: $xml", 24.0F, Toast.LENGTH_LONG)
                     }
                     Log.d("Error de Red",xml.toString())
                 }
             }
         }
         else{
-            Toast.makeText(applicationContext,"Error al cargar",Toast.LENGTH_SHORT).show()
+            val customToast = CustomToast(this, this)
+            customToast.show("Error al cargar", 24.0F, Toast.LENGTH_LONG)
         }
 
     }
 
     fun syncRoutes() : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odoo.authenticateOdoo()
         val invoice = odoo.routes
         Log.d("OrderList", invoice)
@@ -223,7 +215,9 @@ class RoutesActivity : AppCompatActivity() {
     override fun onBackPressed() {
         super.onBackPressed()
         val goBackintent = Intent(this, MainMenuActivity::class.java)
+        unregisterReceiver(mScanReceiver)
         startActivity(goBackintent)
+        finish()
     }
 
     /*
@@ -341,14 +335,15 @@ class RoutesActivity : AppCompatActivity() {
                 //Check if Route has boxes
                 Log.d("Stock Boxes from Route", deferredStockBoxes.await().toString())
                 if (deferredStockBoxes.await().equals("[]")) {
-                    Toast.makeText(applicationContext, "Ruta no tiene cajas", Toast.LENGTH_LONG)
-                        .show()
+                    val customToast = CustomToast(applicationContext, this@RoutesActivity)
+                    customToast.show("Ruta no tiene cajas", 24.0F, Toast.LENGTH_LONG)
                 }
                 //If not show list in new activity
                 else {
                     val intent = Intent(applicationContext, RoutesOrdersActivity::class.java)
                     intent.putExtra("Route", routeName)
                     intent.putExtra("RouteId", routeId)
+                    unregisterReceiver(mScanReceiver)
                     startActivity(intent)
                     finish()
                 }
@@ -365,7 +360,8 @@ class RoutesActivity : AppCompatActivity() {
             .enableSwipe(true)
             .swipeHorizontal(true)
             .onError { t ->
-                Toast.makeText(applicationContext, "Error al abrir documento", Toast.LENGTH_LONG).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error al abrir documento", 24.0F, Toast.LENGTH_LONG)
                 Log.d("Error", t.toString())
             }
             .enableAntialiasing(true)
@@ -386,19 +382,19 @@ class RoutesActivity : AppCompatActivity() {
     }
 
     private fun getRouteBoxes(sessionId: String, routeId: String): List<String>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.getPdf(sessionId, routeId)
     }
 
     private fun getStockBoxes(route: String): String{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.getRouteBoxes(route)
     }
 
     private fun sendPlates(routeId: String, plates : String): List<String>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.sendPlates(routeId,plates)
     }

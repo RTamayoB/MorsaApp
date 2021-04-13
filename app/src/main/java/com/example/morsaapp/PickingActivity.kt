@@ -1,5 +1,6 @@
 package com.example.morsaapp
 
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
@@ -12,10 +13,13 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.morsaapp.adapter.PickingAdapter
 import com.example.morsaapp.datamodel.PickingDataModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.runBlocking
 import org.apache.xmlrpc.XmlRpcException
 import org.json.JSONArray
 import kotlin.concurrent.thread
+import kotlin.concurrent.timer
 
 class PickingActivity : AppCompatActivity() {
 
@@ -24,8 +28,27 @@ class PickingActivity : AppCompatActivity() {
     private lateinit var adapter : PickingAdapter
     lateinit var pickingLv : ListView
 
+    var timers : HashMap<String, Long> = HashMap<String, Long>()
+
     lateinit var prefs : SharedPreferences
     lateinit var swipeRefreshLayout : SwipeRefreshLayout
+
+    fun saveHashMap(key: String?, obj: Any?, context : Context) {
+        val prefs: SharedPreferences = context.getSharedPreferences("startupPreferences", 0)
+        val editor = prefs.edit()
+        val gson = Gson()
+        val json = gson.toJson(obj)
+        editor.putString(key, json)
+        editor.apply() // This line is IMPORTANT !!!
+    }
+
+    fun getHashMap(key: String?, context : Context): HashMap<String, Long> {
+        val prefs: SharedPreferences = context.getSharedPreferences("startupPreferences", 0)
+        val gson = Gson()
+        val json = prefs.getString(key, "")
+        val type = object : TypeToken<HashMap<String?, Long?>?>() {}.type
+        return gson.fromJson(json, type)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +66,8 @@ class PickingActivity : AppCompatActivity() {
             swipeRefreshLayout.isRefreshing = true
             refreshData()
         }
+
+        timers = getHashMap("timers", this)
 
         pickingLv = findViewById(R.id.the_picking_lv)
 
@@ -65,12 +90,32 @@ class PickingActivity : AppCompatActivity() {
 
         swipeRefreshLayout.isRefreshing = true
         refreshData()
+
+        //Iterate trough lv and eliminate from the timers list
+        /*
+        val ite = timers.iterator()
+        while(ite.hasNext()){
+            val key = ite.next().key
+            var equal = false
+            for (i in 0 until pickingLv.count){
+                val e = pickingLv.getItemAtPosition(i) as PickingDataModel
+                if(e.id == key){
+                    equal = true
+                }
+            }
+            if(!equal){
+                timers.remove(key)
+            }
+        }
+        saveHashMap("timers",timers,this)
+        */
     }
 
     override fun onBackPressed() {
         super.onBackPressed()
         val goBackintent = Intent(this, MainMenuActivity::class.java)
         startActivity(goBackintent)
+        finish()
     }
 
     private fun refreshData(){
@@ -90,33 +135,27 @@ class PickingActivity : AppCompatActivity() {
                             populateListView()
                             val adapter = pickingLv.adapter as PickingAdapter
                             adapter.notifyDataSetChanged()
-                            Toast.makeText(applicationContext, "Exito", Toast.LENGTH_SHORT)
-                                .show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Exito", 24.0F, Toast.LENGTH_LONG)
                         }
                     } else {
                         runOnUiThread {
                             swipeRefreshLayout.isRefreshing = false
-                            Toast.makeText(applicationContext, "Sin Exito", Toast.LENGTH_SHORT)
-                                .show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Sin Exito", 24.0F, Toast.LENGTH_LONG)
                         }
                     }
                 }catch (e: Exception){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error General: $e",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error General: $e", 24.0F, Toast.LENGTH_LONG)
                         swipeRefreshLayout.isRefreshing = false
                     }
                     Log.d("Error General",e.toString())
                 }catch (xml: XmlRpcException){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error de Red: $xml",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error de Red: $xml", 24.0F, Toast.LENGTH_LONG)
                         swipeRefreshLayout.isRefreshing = false
                     }
                     Log.d("Error de Red",xml.toString())
@@ -169,17 +208,39 @@ class PickingActivity : AppCompatActivity() {
         adapter = PickingAdapter(this, datamodels)
         pickingLv.adapter = adapter
         adapter.notifyDataSetChanged()
+        var list : ArrayList<String> = ArrayList()
+        for(i in 0 until pickingLv.count){
+            val e = pickingLv.getItemAtPosition(i) as PickingDataModel
+            Log.d("Rack Id", e.id)
+            list.add(e.id)
+        }
+        Log.d("Full List", list.toString())
+        val ite = timers.iterator()
+        while(ite.hasNext()){
+            val key = ite.next().key
+            var equal = false
+            for (id in list){
+                if(id == key){
+                    equal = true
+                }
+            }
+            if(!equal){
+                Log.d("Removed", key)
+                ite.remove()
+            }
+        }
+        saveHashMap("timers",timers,this)
     }
 
     private fun testReStock(): String{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         val prefs = applicationContext.getSharedPreferences("startupPreferences", 0)
         return odooConn.testReStock(prefs.getInt("activeUser",0))
     }
 
     fun syncRacks() : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odoo.authenticateOdoo()
         val stockRacks = odoo.getStockRack(prefs.getInt("activeUser",1))
         Log.d("OrderList", stockRacks)

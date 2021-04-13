@@ -1,5 +1,7 @@
 package com.example.morsaapp;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -20,6 +22,10 @@ import static java.util.Collections.emptyMap;
 
 import static java.util.Arrays.asList;
 
+import android.content.SharedPreferences;
+
+import androidx.preference.PreferenceManager;
+
 public class OdooConn {
 
     //Declaration of variables
@@ -32,12 +38,18 @@ public class OdooConn {
         return uid;
     }
 
-    public OdooConn(String user, String pass) throws MalformedURLException {
+    public OdooConn(String user, String pass, Context context) throws MalformedURLException {
 
-        this.db = "MORSA";
+        SharedPreferences serverPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        //Check if data changed
+        Log.d("Server Data", serverPrefs.getString("url","URL")+"-"+serverPrefs.getString("db","DB"));
+
+        this.db = serverPrefs.getString("db","DB");
+        //this.db = "MORSA";
         this.user = user;
         this.pass = pass;
-            String url = "https://test.morsa.exinnotch.com";
+        String url = serverPrefs.getString("url","URL");
+        //String url = "https://test.morsa.exinnotch.com";
         this.url_common = url +"/xmlrpc/2/common";
         this.url_object = url +"/xmlrpc/2/object";
 
@@ -432,19 +444,15 @@ public class OdooConn {
     {
         List list = asList((Object[])models.execute("execute_kw", asList(
                 db,uid,pass,
-                "stock.picking","search_read",
-                asList(asList(
-                        asList("group_id","!=",false),
-                        asList("move_arrangement_ids","!=",false),
-                        asList("state","!=","assigned")
-                )),
+                "stock.arrangement","search_read",
+                asList(),
                 new HashMap() {{
-                    put("fields", asList("id", "name", "group_id", "partner_id", "state", "issues_set", "date_done", "purchase_id", "sequence", "origin_invoice_purchase","move_arrangement_ids"));
+                    put("fields", asList("id", "supplier_id", "name", "folio", "num_products"));
                 }}
         )));
         int size = list.size();
         Log.d("LOCATIONS QTY", Integer.toString(size));
-        Log.d("STOCK PICKING LOCATIONS", list.toString());
+        Log.d("STOCK ARR LOCATIONS", list.toString());
         Gson gson = new Gson();
         String returned = gson.toJson(list);
 
@@ -514,7 +522,10 @@ public class OdooConn {
                         asList("picking_id","=",pickingId)
                 )),
                 new HashMap() {{
-                    put("fields", asList("product_id", "remaining_qty", "total_qty", "location_dest_id", "quantity_done", "product_id", "id", "picking_id", "name", "price_unit", "product_qty", "state", "location_id", "is_completed", "picking_originative_id", "transfer_qty"));
+                    put("fields", asList("product_id", "remaining_qty", "total_qty", "location_dest_id", "quantity_done", "product_id", "id", "picking_id", "name", "price_unit", "product_qty", "state", "location_id", "is_completed", "picking_originative_id", "transfer_qty", "product_description"));
+                    HashMap context = new HashMap(){{
+                        put("display_default_code", false);
+                    }};
                 }}
         )));
         Log.d("STOCK MOVE", list.toString());
@@ -524,13 +535,16 @@ public class OdooConn {
         return  returned;
     }
 
-    public String getLocationsItems(int pickingId) throws XmlRpcException
+    public String getLocationsItems(int supplierId) throws XmlRpcException
     {
         List list = asList((Object[])models.execute("execute_kw", asList(
                 db,uid,pass,
                 "stock.move","search_read",
                 asList(asList(
-                        asList("picking_originative_id","=",pickingId)
+                        asList("picking_originative_id.group_id","!=",false),
+                        asList("picking_originative_id","!=",false),
+                        asList("state","in",asList("confirmed", "assigned", "partially_available")),
+                        asList("picking_originative_id.partner_id","=",supplierId)
                 )),
                 new HashMap() {{
                     put("fields", asList("product_id", "remaining_qty", "total_qty", "location_dest_id", "quantity_done", "product_id", "id", "picking_id", "name", "price_unit", "product_qty", "state", "location_id", "is_completed", "picking_originative_id"));
@@ -680,7 +694,7 @@ public class OdooConn {
                         asList("is_scanned", "!=", true)) //Remember to change so doesnt use default x
                 ),
                 new HashMap() {{
-                    put("fields", asList("id", "location_id", "product_code", "theoretical_qty", "create_uid", "user_id","product_id,","product_name","is_scanned"));
+                    put("fields", asList("id", "location_id", "product_code", "theoretical_qty", "create_uid", "user_id","product_id,","product_name","is_scanned", "product_description"));
                 }}
         )));
         Log.d("STOCK INVENTORY LINE", list.toString());
@@ -708,6 +722,27 @@ public class OdooConn {
                 }}
         )));
         Log.d("INVOICE", list.toString());
+        Gson gson = new Gson();
+        String returned = gson.toJson(list);
+
+        return  returned;
+    }
+
+    public String getStockReturn(/*List<Integer> idList*/) throws XmlRpcException
+    {
+
+        List list = asList((Object[])models.execute("execute_kw", asList(
+                db,uid,pass,
+                "stock.return","search_read",
+                asList(asList(
+                        asList("state", "=", "draft"),
+                        asList("line_ids","!=", false)
+                )),
+                new HashMap(){{
+                    put("fields", asList("id", "name", "type_id", "partner_id", "date", "state", "amount_total"));
+                }}
+        )));
+        Log.d("STOCK RETURN", list.toString());
         Gson gson = new Gson();
         String returned = gson.toJson(list);
 
@@ -790,6 +825,26 @@ public class OdooConn {
         return  returned;
     }
 
+    public String reloadStockReturnLines(int return_id) throws XmlRpcException
+    {
+
+        List list = asList((Object[])models.execute("execute_kw", asList(
+                db,uid,pass,
+                "stock.return.line","search_read",
+                asList(asList(
+                        asList("return_id","=",return_id)
+                )),
+                new HashMap(){{
+                    put("fields", asList("id", "product_id", "price_unit", "qty", "name", "return_id"));
+                }}
+        )));
+        Log.d("STOCK RETURN LINE", list.toString());
+        Gson gson = new Gson();
+        String returned = gson.toJson(list);
+
+        return  returned;
+    }
+
     //----------------------------
 
     public String getPickingIdsRack(List<Integer> idList) throws XmlRpcException
@@ -853,6 +908,23 @@ public class OdooConn {
                         )
                 )
             )
+        );
+        Log.d("RawData", list.toString());
+
+        return  list;
+    }
+
+    public List confirmStockReturn(Integer id) throws XmlRpcException
+    {
+        List list = asList(
+                (Object[])models.execute("execute_kw", asList(
+                        db,uid,pass,
+                        "stock.return","action_received",
+                        asList(
+                                id
+                        )
+                        )
+                )
         );
         Log.d("RawData", list.toString());
 
@@ -945,6 +1017,24 @@ public class OdooConn {
         Log.d("Send Count Result", list.toString());
 
         return  list.toString();
+    }
+
+    public List addCount(String productName, Integer qty) throws XmlRpcException
+    {
+        List list = asList(
+                (Object[])models.execute("execute_kw", asList(
+                        db,uid,pass,
+                        "stock.inventory.line","create_new_product",
+                        asList(
+                                productName,
+                                qty
+                        )
+                        )
+                )
+        );
+        Log.d("Send Count Result", list.toString());
+
+        return  list;
     }
 
     public List<Object> computeTheoreticalQty(Integer id) throws XmlRpcException

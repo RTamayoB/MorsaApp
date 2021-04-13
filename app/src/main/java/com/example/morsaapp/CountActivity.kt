@@ -59,8 +59,8 @@ class CountActivity : AppCompatActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
 
-            if(action == "android.intent.ACTION_DECODE_DATA"){
-                soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
+            if(action == resources.getString(R.string.activity_intent_action)){
+                /*soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
                 mVibrator.vibrate(100)
 
                 val barcode  = intent!!.getByteArrayExtra(ScanManager.DECODE_DATA_TAG)
@@ -68,9 +68,10 @@ class CountActivity : AppCompatActivity() {
                 val temp = intent.getByteExtra(ScanManager.BARCODE_TYPE_TAG, 0.toByte())
                 Log.i("debug", "----codetype--$temp")
                 barcodeStr = String(barcode, 0, barcodelen)
-                Log.d("Result", barcodeStr)
-                displayScanResult(barcodeStr, temp.toString())
-                mScanManager.stopDecode()
+                Log.d("Result", barcodeStr)*/
+                    val value = intent.getStringExtra("barcode_string")
+                displayScanResult(value, "")
+                //mScanManager.stopDecode()
             }
         }
     }
@@ -102,16 +103,15 @@ class CountActivity : AppCompatActivity() {
         setContentView(R.layout.activity_count)
         setSupportActionBar(findViewById(R.id.count_tb))
 
-        initScan()
+        //initScan()
 
 
         prefs = this.getSharedPreferences("startupPreferences", 0)
-        /*
+
         val filter = IntentFilter()
-        filter.addCategory(Intent.CATEGORY_DEFAULT)
-        filter.addAction(resources.getString(R.string.activity_intent_filter_action_count))
-        registerReceiver(myBroadcastReceiver, filter)
-        */
+        filter.addAction(resources.getString(R.string.activity_intent_action))
+        registerReceiver(mScanReceiver, filter)
+
 
         products = HashMap() //Instantiate the product hashmap
         countLv = findViewById(R.id.count_lv) //Instantiate Listview
@@ -140,6 +140,7 @@ class CountActivity : AppCompatActivity() {
             }
             builder.setPositiveButton("Si") {dialog, which ->
                 val intent = Intent(applicationContext, MainMenuActivity::class.java)
+                unregisterReceiver(mScanReceiver)
                 startActivity(intent)
                 finish()
             }
@@ -155,9 +156,6 @@ class CountActivity : AppCompatActivity() {
             refreshData()
         }
 
-        swipeRefreshLayout.isRefreshing = true
-        refreshData()
-
         countLv.setOnItemClickListener { parent, view, position, id ->
             val model : CountDataModel = countLv.getItemAtPosition(position) as CountDataModel
             val builder = AlertDialog.Builder(this)
@@ -170,19 +168,24 @@ class CountActivity : AppCompatActivity() {
                             reportHashMap[model.lineId] = 0
                             val deferredSendCount = sendCount(reportHashMap)
                             runOnUiThread {
-                                Toast.makeText(
-                                    applicationContext,
-                                    "Reportado",
-                                    Toast.LENGTH_SHORT
-                                )
-                                    .show()
+                                model.isReported = true
+                                val adapter = countLv.adapter as CountAdapter
+                                adapter.notifyDataSetChanged()
+                                val customToast = CustomToast(this, this)
+                                customToast.show("Reportado", 24.0F, Toast.LENGTH_LONG)
                                 Log.d("Result of count", deferredSendCount)
                             }
                         }catch (e: XmlRpcException){
-                            Toast.makeText(applicationContext,e.toString(), Toast.LENGTH_LONG).show()
+                            runOnUiThread {
+                                val customToast = CustomToast(this, this)
+                                customToast.show("$e", 24.0F, Toast.LENGTH_LONG)
+                            }
                         }
                         catch (c: Exception){
-                            Toast.makeText(applicationContext,c.toString(), Toast.LENGTH_LONG).show()
+                            runOnUiThread {
+                                val customToast = CustomToast(this, this)
+                                customToast.show("$c", 24.0F, Toast.LENGTH_LONG)
+                            }
                         }
                     }
             }
@@ -250,36 +253,27 @@ class CountActivity : AppCompatActivity() {
                             populateListView()
                             val adapter = countLv.adapter as CountAdapter
                             adapter.notifyDataSetChanged()
-                            Toast.makeText(
-                                applicationContext,
-                                "Lista Actualizada",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Lista actualizada", 24.0F, Toast.LENGTH_LONG)
                         }
                     } else {
                         runOnUiThread {
                             swipeRefreshLayout.isRefreshing = false
-                            Toast.makeText(applicationContext, "Sin Exito", Toast.LENGTH_SHORT)
-                                .show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Sin Exito", 24.0F, Toast.LENGTH_LONG)
                         }
                     }
                 }catch (e: Exception){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error General: $e",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error General: $e", 24.0F, Toast.LENGTH_LONG)
                         swipeRefreshLayout.isRefreshing = false
                     }
                     Log.d("Error General",e.toString())
                 }catch (xml: XmlRpcException){
                     runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Error de Red: $xml",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error de Red $xml", 24.0F, Toast.LENGTH_LONG)
                         swipeRefreshLayout.isRefreshing = false
                     }
                     Log.d("Error de Red",xml.toString())
@@ -287,7 +281,8 @@ class CountActivity : AppCompatActivity() {
             }
         }
         else{
-            Toast.makeText(applicationContext,"Error al cargar",Toast.LENGTH_SHORT).show()
+            val customToast = CustomToast(this, this)
+            customToast.show("Error al cargar", 24.0F, Toast.LENGTH_LONG)
         }
     }
 
@@ -307,12 +302,10 @@ class CountActivity : AppCompatActivity() {
             items.lineId = cursor.getInt(3)
             val locRaw = cursor.getString(0)
             val realLoc = locRaw.substring(locRaw.indexOf("/")+1, locRaw.indexOf("\"]"))
-            Log.d("BORUTO",realLoc)
             val realLoc2 = realLoc.substring(realLoc.indexOf("/")+1, realLoc.lastIndex+1)
-            Log.d("NARUTO",realLoc2)
             items.realLocation = cursor.getString(0)
             items.location = realLoc2
-            items.code = cursor.getString(cursor.getColumnIndex("product_name")) //Was 1 (product_code)
+            items.code = cursor.getString(cursor.getColumnIndex("product_name"))+": "+cursor.getString(cursor.getColumnIndex("product_description")) //Was 1 (product_code)
             items.theoricalQty = cursor.getString(2)
             items.totalQty = "0"
 
@@ -367,21 +360,15 @@ class CountActivity : AppCompatActivity() {
             }
         }catch (e: Exception){
             runOnUiThread {
-                Toast.makeText(
-                    applicationContext,
-                    "Error General: $e",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error General: $e", 24.0F, Toast.LENGTH_LONG)
                 swipeRefreshLayout.isRefreshing = false
             }
             Log.d("Error General",e.toString())
         }catch (xml: XmlRpcException){
             runOnUiThread {
-                Toast.makeText(
-                    applicationContext,
-                    "Error encontrando Producto",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error encontrando producto", 24.0F, Toast.LENGTH_LONG)
                 swipeRefreshLayout.isRefreshing = false
             }
             Log.d("Error de Red",xml.toString())
@@ -399,7 +386,8 @@ class CountActivity : AppCompatActivity() {
 
         if(showMessage){
             Log.d("Showing Message","True")
-            Toast.makeText(applicationContext,"Escanee el producto", Toast.LENGTH_LONG).show()
+            val customToast = CustomToast(this, this)
+            customToast.show("Escanee el producto", 24.0F, Toast.LENGTH_LONG)
         }
 
         Log.d("You Scanned", decodedString)
@@ -440,7 +428,6 @@ class CountActivity : AppCompatActivity() {
                         adap.notifyDataSetChanged()
                         builder.setCancelable(false)
                         builder.setTitle("Especifica cantidad")
-                        builder.setMessage("Cantidad Esperada: " + deferredTheoriticalQty.await()[1] as Double)
                         val input = EditText(applicationContext)
                         input.width = 10
                         input.inputType = InputType.TYPE_CLASS_NUMBER
@@ -458,12 +445,8 @@ class CountActivity : AppCompatActivity() {
                                 try {
                                     val deferredSendCount = sendCount(product)
                                     runOnUiThread {
-                                        Toast.makeText(
-                                            applicationContext,
-                                            "Enviado ",
-                                            Toast.LENGTH_SHORT
-                                        )
-                                            .show()
+                                        val customToast = CustomToast(applicationContext,this@CountActivity)
+                                        customToast.show("Enviado", 24.0F, Toast.LENGTH_LONG)
                                         Log.d("Result of count", deferredSendCount)
                                     }
                                 }catch (e: Exception){
@@ -475,11 +458,8 @@ class CountActivity : AppCompatActivity() {
 
                     } else {
                         runOnUiThread {
-                            Toast.makeText(
-                                applicationContext,
-                                "Error obteninedo cantidad",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            val customToast = CustomToast(applicationContext, this@CountActivity)
+                            customToast.show("Error obteniendo cantidad", 24.0F, Toast.LENGTH_LONG)
                         }
                     }
                 }
@@ -488,31 +468,67 @@ class CountActivity : AppCompatActivity() {
             }
         }
         else if (checkProduct.count == 0 && isCode){
-            Toast.makeText(
-                applicationContext,
-                "Producto '$decodedString' no correspondiente a ubicacion",
-                Toast.LENGTH_SHORT
-            ).show()
+            val builder = AlertDialog.Builder(this)
+            val qtyInput = EditText(this)
+            qtyInput.inputType = InputType.TYPE_CLASS_NUMBER
+            qtyInput.hint = "Cantidad"
+            builder.setView(qtyInput)
+            // TODO: Add validation, when product exits but is not on count list, add option to upload it with qty (addCount)
+            builder.setTitle("Producto no encontrado en lista")
+            builder.setMessage("¿Añadir '$decodedString' a conteo?")
+            builder.setPositiveButton("Añadir") { dialog, which ->
+                thread {
+                    val deferredAddCount = addCount(decodedString, qtyInput.text.toString().toInt())
+                    if(deferredAddCount[0] as Boolean){
+                        runOnUiThread {
+                            val customToast = CustomToast(applicationContext, this@CountActivity)
+                            customToast.show(deferredAddCount[1] as String, 24.0F, Toast.LENGTH_LONG)
+                        }
+                    }
+                    else{
+                        runOnUiThread {
+                            val customToast = CustomToast(applicationContext, this@CountActivity)
+                            customToast.show(deferredAddCount[1] as String, 24.0F, Toast.LENGTH_LONG
+                            )
+                        }
+                    }
+                }
+                /*
+                val goBackintent = Intent(this, MainMenuActivity::class.java)
+                finish()
+                unregisterReceiver(mScanReceiver)
+                startActivity(goBackintent)
+                */
+            }
+            builder.setNegativeButton("Cancelar"){ dialog, which ->
+                dialog.dismiss()
+            }
+            builder.show()
         }
+
+
         else if(!showMessage && !isCode){
-            Toast.makeText(
-                applicationContext,
-                "Codigo '$decodedString' no es producto ni ubicacion",
-                Toast.LENGTH_SHORT
-            ).show()
+            val customToast = CustomToast(this, this)
+            customToast.show("Codigo $decodedString no es producto ni ubicación", 24.0F, Toast.LENGTH_LONG)
         }
     }
 
     //Function that conects to Odoo and sends the qty as a hashmap
     private fun sendCount(products : HashMap<Int, Int>): String{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.sendCount(products)
     }
 
+    private fun addCount(productName : String, qty : Int): List<Any>{
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        odooConn.authenticateOdoo()
+        return odooConn.addCount(productName,qty) as List<Any>
+    }
+
     //Function that returns you the theoretical qty of a line
     private fun computeTheoreticalQty(id : Int): List<Any>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         return odooConn.computeTheoreticalQty(id)
     }
@@ -520,14 +536,14 @@ class CountActivity : AppCompatActivity() {
     //Returns the inventoryLines corresponding to that user
     private fun getInventoryLine() : String
     {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odooConn.authenticateOdoo()
         val noIds = emptyList<Int>()
         return odooConn.getStockInventoryLine(prefs.getInt("activeUser",1))
     }
 
     private fun searchProduct(product_id : String): String {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""), this)
         odooConn.authenticateOdoo()
         return odooConn.searchProductName(product_id)
     }

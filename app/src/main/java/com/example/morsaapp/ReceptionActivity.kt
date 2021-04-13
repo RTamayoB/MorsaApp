@@ -1,14 +1,18 @@
 package com.example.morsaapp
 
+import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ListView
 import android.widget.SearchView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
@@ -102,6 +106,7 @@ class ReceptionActivity : AppCompatActivity() {
         super.onBackPressed()
         val goBackintent = Intent(this, MainMenuActivity::class.java)
         startActivity(goBackintent)
+        finish()
     }
 
 
@@ -145,43 +150,36 @@ class ReceptionActivity : AppCompatActivity() {
                                 populateListView()
                                 val adapter = pedidos_lv.adapter as ReceptionAdapter
                                 adapter.notifyDataSetChanged()
-                                Toast.makeText(
-                                    applicationContext,
-                                    "Lista Actualizada",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                //Add new Custom Toast method
+                                val customToast = CustomToast(this, this)
+                                customToast.show("Lista Actualizada", 24.0F, Toast.LENGTH_LONG)
                             }
                         } else {
                             runOnUiThread {
                                 swipeRefreshLayout.isRefreshing = false
-                                Toast.makeText(applicationContext, "Sin Exito", Toast.LENGTH_SHORT)
-                                    .show()
+                                val customToast = CustomToast(this,this)
+                                customToast.show("Sin Exito", 24.0F, Toast.LENGTH_LONG)
                             }
                         }
                     }catch (e: Exception){
                         runOnUiThread {
-                            Toast.makeText(
-                                applicationContext,
-                                "Error General: $e",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            val customToast = CustomToast(this,this)
+                            customToast.show("Error General: $e", 24.0F, Toast.LENGTH_LONG)
                             swipeRefreshLayout.isRefreshing = false
                         }
                         Log.d("Error General",e.toString())
                     }catch (xml: XmlRpcException){
                         runOnUiThread {
-                            Toast.makeText(
-                                applicationContext,
-                                "Error de Red: $xml",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Error Red: $xml", 24.0F, Toast.LENGTH_LONG)
                             swipeRefreshLayout.isRefreshing = false
                         }
                         Log.d("Error de Red",xml.toString())
                     }
                 }
             } else {
-                Toast.makeText(applicationContext, "Error al cargar", Toast.LENGTH_SHORT).show()
+                val customToast = CustomToast(this, this)
+                customToast.show("Error al Cargar", 24.0F, Toast.LENGTH_LONG)
             }
 
 
@@ -249,7 +247,7 @@ class ReceptionActivity : AppCompatActivity() {
 
     //Returns the purchases
     fun syncInvoice(/*idList : List<Int>*/) : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""))
+        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
         odoo.authenticateOdoo()
         val invoice = odoo.getInvoice(/*idList*/)
         Log.d("OrderList", invoice)

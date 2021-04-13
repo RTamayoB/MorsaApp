@@ -9,6 +9,7 @@ import kotlinx.coroutines.async
 
 class RevisionWorker(ctx : Context, params: WorkerParameters) : Worker(ctx, params){
 
+    val context = ctx
     override fun doWork(): Result {
 
         val pickingId = inputData.getInt("PickingId",0)
@@ -17,8 +18,8 @@ class RevisionWorker(ctx : Context, params: WorkerParameters) : Worker(ctx, para
         return Result.failure()
     }
 
-    private fun confirmIssues(id: Int, issues : HashMap<Int,HashMap<String,Any>>, user : String, pass: String): List<List<String>> {
-        val odooConn = OdooConn(user, pass)
+    private fun confirmIssues(id: Int, issues : HashMap<Int,HashMap<String,Any>>, user : String, pass: String, context: Context): List<List<String>> {
+        val odooConn = OdooConn(user, pass,context)
         odooConn.authenticateOdoo()
         return odooConn.confirmIssues(id,issues) as List<List<String>>
     }
