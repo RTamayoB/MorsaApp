@@ -16,6 +16,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
+import com.google.gson.Gson
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -26,6 +27,16 @@ import java.lang.Exception
 class LoginActivity : AppCompatActivity() {
 
     lateinit var prefs : SharedPreferences
+
+    fun saveHashMap(key: String?, obj: Any?, context : Context) {
+        val prefs: SharedPreferences = context.getSharedPreferences("startupPreferences", 0)
+        val editor = prefs.edit()
+        val gson = Gson()
+        val json = gson.toJson(obj)
+        editor.putString(key, json)
+        editor.apply() // This line is IMPORTANT !!!
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         prefs = this.getSharedPreferences("startupPreferences", 0)
         super.onCreate(savedInstanceState)
@@ -36,6 +47,7 @@ class LoginActivity : AppCompatActivity() {
 
         val isDBLoaded = prefs.getBoolean("databaseLoaded", false)
         if (!isDBLoaded) {
+            saveHashMap("timers", HashMap<String, Long>(), this)
             val db2 = DBConnect(applicationContext, Utilities.DBNAME, null, 1).writableDatabase
             db2.execSQL("INSERT INTO " + Utilities.TABLE_STOCK_ITEMS + " (revision_qty) VALUES (0)")
         }
