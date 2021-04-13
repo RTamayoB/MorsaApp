@@ -51,7 +51,6 @@
             android:name=".InvoiceActivity"
             android:screenOrientation="portrait" />
         <activity android:name=".ReceptionActivity" />
-        <activity android:name=".Scanner" />
 
         <receiver
             android:name=".LoginActivity"
