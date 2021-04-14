@@ -19,9 +19,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.morsaapp.adapter.ReStockAdapter
+import com.example.morsaapp.data.DBConnect
+import com.example.morsaapp.data.OdooConn
+import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.ReStockDataModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -174,15 +176,20 @@ class ReStockActivity : AppCompatActivity() {
     }
 
     private fun refreshData(){
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
-        if(db.deleteDataOnTable(Utilities.TABLE_STOCK_ITEMS)){
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
+        if(db.deleteDataOnTable(OdooData.TABLE_STOCK_ITEMS)){
             thread {
                 try {
                     val deferredInvoice: String = reStock("")
                     Log.d("ReStock Line", deferredInvoice)
                     val invoicejson = JSONArray(deferredInvoice)
                     //Insert data
-                    val invoiceUpdate = db.fillTable(invoicejson, Utilities.TABLE_STOCK_ITEMS)
+                    val invoiceUpdate = db.fillTable(invoicejson, OdooData.TABLE_STOCK_ITEMS)
                     if (invoiceUpdate) {
                         runOnUiThread {
                             //If succesfull, delete data from model, insert again and notify the dataset
@@ -226,7 +233,12 @@ class ReStockActivity : AppCompatActivity() {
 
     private fun populateListView()
     {
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
         val cursor = db.movesTestReStock()
         var orders : ReStockDataModel
 
@@ -488,20 +500,32 @@ class ReStockActivity : AppCompatActivity() {
 
     private fun reStock(username : String) : String
     {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         val prefs = applicationContext.getSharedPreferences("startupPreferences", 0)
         return odooConn.reStock(username, prefs.getInt("activeUser",0))
     }
 
     private fun sendReStock(moveId: Int, moveQty: Int): List<Any>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.setMovesQty(moveId, moveQty)
     }
 
     private fun searchProduct(product_id : String): String {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.searchProduct(product_id)
     }

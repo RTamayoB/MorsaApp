@@ -27,8 +27,10 @@ import android.view.MenuItem
 import androidx.core.view.isVisible
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.morsaapp.adapter.CountAdapter
+import com.example.morsaapp.data.DBConnect
+import com.example.morsaapp.data.OdooConn
+import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.CountDataModel
-import com.example.morsaapp.datamodel.ReceptionDataModel
 import org.apache.xmlrpc.XmlRpcException
 import java.lang.Exception
 import kotlin.concurrent.thread
@@ -236,15 +238,20 @@ class CountActivity : AppCompatActivity() {
 
 
     private fun refreshData(){
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
-        if(db.deleteDataOnTable(Utilities.TABLE_INVENTORY_LINE)){
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
+        if(db.deleteDataOnTable(OdooData.TABLE_INVENTORY_LINE)){
             thread {
                 try {
                     val deferredInvoice: String = getInventoryLine()
                     Log.d("Inventory Line", deferredInvoice)
                     val invoicejson = JSONArray(deferredInvoice)
                     //Insert data
-                    val invoiceUpdate = db.fillTable(invoicejson, Utilities.TABLE_INVENTORY_LINE)
+                    val invoiceUpdate = db.fillTable(invoicejson, OdooData.TABLE_INVENTORY_LINE)
                     if (invoiceUpdate) {
                         runOnUiThread {
                             //If succesfull, delete data from model, insert again and notify the dataset
@@ -289,7 +296,12 @@ class CountActivity : AppCompatActivity() {
     //Fills the lines in the datamodel for inventory_line
     private fun populateListView()
     {
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
         val cursor = db.inventory
         var items : CountDataModel?
 
@@ -394,7 +406,8 @@ class CountActivity : AppCompatActivity() {
         val builder = AlertDialog.Builder(this)
 
         //Based on the scanned code check if it corresponds to a Route
-        val db = DBConnect(this, Utilities.DBNAME, null, 1)
+        val db =
+            DBConnect(this, OdooData.DBNAME, null, 1)
         //Check for routes with that name
         Log.d("Product - Location", "$productName-$location")
         //If not location, check If is product and is related to the location
@@ -515,20 +528,32 @@ class CountActivity : AppCompatActivity() {
 
     //Function that conects to Odoo and sends the qty as a hashmap
     private fun sendCount(products : HashMap<Int, Int>): String{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.sendCount(products)
     }
 
     private fun addCount(productName : String, qty : Int): List<Any>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.addCount(productName,qty) as List<Any>
     }
 
     //Function that returns you the theoretical qty of a line
     private fun computeTheoreticalQty(id : Int): List<Any>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.computeTheoreticalQty(id)
     }
@@ -536,14 +561,21 @@ class CountActivity : AppCompatActivity() {
     //Returns the inventoryLines corresponding to that user
     private fun getInventoryLine() : String
     {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
-        val noIds = emptyList<Int>()
         return odooConn.getStockInventoryLine(prefs.getInt("activeUser",1))
     }
 
     private fun searchProduct(product_id : String): String {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""), this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.searchProductName(product_id)
     }

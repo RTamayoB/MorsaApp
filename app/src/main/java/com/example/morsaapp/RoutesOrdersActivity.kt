@@ -19,8 +19,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import com.example.morsaapp.adapter.StockBoxesAdapter
+import com.example.morsaapp.data.DBConnect
+import com.example.morsaapp.data.OdooConn
+import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.StockBoxesDataModel
-import org.apache.xmlrpc.XmlRpcException
 import org.json.JSONArray
 import java.io.File
 import java.io.FileOutputStream
@@ -109,7 +111,7 @@ class RoutesOrdersActivity : AppCompatActivity() {
         registerReceiver(mScanReceiver, filter)
 
         val file = File(applicationContext.filesDir,"examplePDF")
-        val pdfAsBytes = Base64.decode(Utilities.examplePDF, 0)
+        val pdfAsBytes = Base64.decode(OdooData.examplePDF, 0)
         val fos = FileOutputStream(file)
         fos.write(pdfAsBytes)
         fos.flush()
@@ -133,13 +135,15 @@ class RoutesOrdersActivity : AppCompatActivity() {
         /**
          * First action after variable declaration is to get fill database and get all boxes according to the routeName
          */
-        val dbReload = DBConnect(this, Utilities.DBNAME, null, 1)
-        if(dbReload.reloadStockBoxes(routeName)){
+        val dbReload =
+            DBConnect(this, OdooData.DBNAME, null, 1)
+
+        if(dbReload.deleteDataOnTableFromField(OdooData.TABLE_STOCK_BOX,"route",routeName)){
             thread {
                 try {
                     val stockBoxesData: String = syncStockBoxes(routeName)
                     val stockBoxesJson = JSONArray(stockBoxesData)
-                    val result = dbReload.fillTable(stockBoxesJson, Utilities.TABLE_STOCK_BOX)
+                    val result = dbReload.fillTable(stockBoxesJson, OdooData.TABLE_STOCK_BOX)
                     if (result) {
                         runOnUiThread {
                             boxesProgressBar.isVisible = false
@@ -274,7 +278,11 @@ class RoutesOrdersActivity : AppCompatActivity() {
     }
 
     private fun sendPlates(routeId: String?, plates : String): List<String>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.sendPlates(routeId,plates)
     }
@@ -290,7 +298,12 @@ class RoutesOrdersActivity : AppCompatActivity() {
 
     private fun populateListView(route : String?)
     {
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
         val cursor = db.getStockBoxesFromRoute(route)
         var items : StockBoxesDataModel?
 
@@ -318,7 +331,11 @@ class RoutesOrdersActivity : AppCompatActivity() {
     }
 
     fun syncStockBoxes(routeName : String?) : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odoo = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odoo.authenticateOdoo()
         val stockPicking = odoo.getRouteBoxes(routeName)
         Log.d("OrderList", stockPicking)
@@ -326,13 +343,21 @@ class RoutesOrdersActivity : AppCompatActivity() {
     }
 
     private fun getRouteBoxes(sessionId: String, routeId: String?): List<String>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.getPdf(sessionId, routeId)
     }
 
     private fun scanBox(boxId: String): List<String>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.scanBox(boxId)
     }
@@ -341,7 +366,12 @@ class RoutesOrdersActivity : AppCompatActivity() {
         Log.d("Stock Box - You scanned", decodedString)
 
         //Using the routeName and the scanned Id, look for boxes with same parameters, when all boxes are scanned allow to free route
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
         val matchingBoxes = db.getStockBox(decodedString,routeName)
         //If box found, get Id and change line color
         if(matchingBoxes.count > 0){

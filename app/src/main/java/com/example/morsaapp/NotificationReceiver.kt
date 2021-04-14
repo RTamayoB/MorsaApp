@@ -9,6 +9,7 @@ import android.widget.Toast
 
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.example.morsaapp.data.OdooConn
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -49,7 +50,11 @@ class NotificationReceiver : BroadcastReceiver() {
 
     private fun reStock( context : Context,username : String) : String
     {
-        val odooConn = OdooConn("contacto@exinnotech.com","MORSA2020.",context)
+        val odooConn = OdooConn(
+            "contacto@exinnotech.com",
+            "MORSA2020.",
+            context
+        )
         val prefs = context.getSharedPreferences("startupPreferences", 0)
         odooConn.authenticateOdoo()
         return odooConn.reStock(username,prefs.getInt("activeUser",0))

@@ -74,7 +74,7 @@ public class PdfDocumentAdapter extends PrintDocumentAdapter {
                 in.close();
                 out.close();
             }catch (IOException e){
-                Log.d("IOERROR IN CLOSE", e.getMessage());
+                Log.d("IO ERROR IN CLOSE", e.getMessage());
             }
         }
     }

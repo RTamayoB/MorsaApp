@@ -1,4 +1,4 @@
-package com.example.morsaapp;
+package com.example.morsaapp.adapter;
 
 import android.app.Activity;
 import android.view.LayoutInflater;
@@ -6,6 +6,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
+
+import com.example.morsaapp.datamodel.LocationDataModel;
+import com.example.morsaapp.R;
 
 import java.util.ArrayList;
 
@@ -43,9 +46,9 @@ public class LocationAdapter extends BaseAdapter {
         TextView productIdTxt = convertView.findViewById(R.id.product_id_txt);
         TextView locationTxt = convertView.findViewById(R.id.location_txt);
 
-        productNameTxt.setText(item.productName);
-        productIdTxt.setText(item.productId);
-        locationTxt.setText(item.location);
+        productNameTxt.setText(item.getProductName());
+        productIdTxt.setText(item.getProductId());
+        locationTxt.setText(item.getLocation());
 
         return convertView;
     }

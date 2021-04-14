@@ -1,12 +1,9 @@
 package com.example.morsaapp
 
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.database.Cursor
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -16,12 +13,13 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
+import com.example.morsaapp.data.DBConnect
+import com.example.morsaapp.data.OdooConn
+import com.example.morsaapp.data.OdooData
 import com.google.gson.Gson
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
-import org.json.JSONArray
 import java.lang.Exception
 
 class LoginActivity : AppCompatActivity() {
@@ -48,8 +46,13 @@ class LoginActivity : AppCompatActivity() {
         val isDBLoaded = prefs.getBoolean("databaseLoaded", false)
         if (!isDBLoaded) {
             saveHashMap("timers", HashMap<String, Long>(), this)
-            val db2 = DBConnect(applicationContext, Utilities.DBNAME, null, 1).writableDatabase
-            db2.execSQL("INSERT INTO " + Utilities.TABLE_STOCK_ITEMS + " (revision_qty) VALUES (0)")
+            val db2 = DBConnect(
+                applicationContext,
+                OdooData.DBNAME,
+                null,
+                1
+            ).writableDatabase
+            db2.execSQL("INSERT INTO " + OdooData.TABLE_STOCK_ITEMS + " (revision_qty) VALUES (0)")
         }
         val editor = prefs.edit()
         editor.putBoolean("databaseLoaded", true)
@@ -136,24 +139,29 @@ class LoginActivity : AppCompatActivity() {
 
     private fun checkLogin(user:String, pass:String) : Boolean
     {
-        val odooConn = OdooConn(user, pass,this)
+        val odooConn = OdooConn(user, pass, this)
         val isConnected = odooConn.authenticateOdoo()
         if(isConnected){
 
             val prefs = applicationContext.getSharedPreferences("startupPreferences", 0)
 
-            val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1).writableDatabase
+            val db = DBConnect(
+                applicationContext,
+                OdooData.DBNAME,
+                null,
+                1
+            ).writableDatabase
             val contentValues = ContentValues()
             contentValues.put("username",user)
             contentValues.put("app_password", pass)
             contentValues.put("user_id", odooConn.uid)
-            val cursor = db.rawQuery("SELECT user_id FROM "+Utilities.TABLE_USERS+" where user_id = "+odooConn.uid,null)
+            val cursor = db.rawQuery("SELECT user_id FROM "+ OdooData.TABLE_USERS+" where user_id = "+odooConn.uid,null)
             Log.d("Error", "Error 2 here")
             if(cursor.count <= 0){
-                db.insert(Utilities.TABLE_USERS,null, contentValues)
+                db.insert(OdooData.TABLE_USERS,null, contentValues)
                 Log.d("Table Result", "Row created")
             }else {
-                db.update(Utilities.TABLE_USERS, contentValues, "user_id = "+ odooConn.uid, null)
+                db.update(OdooData.TABLE_USERS, contentValues, "user_id = "+ odooConn.uid, null)
                 Log.d("Table Result", "Row updated")
             }
             val editor = prefs.edit()
@@ -169,7 +177,11 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun sequence(): String{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         val noIds = emptyList<Int>()
         return odooConn.getSequence(noIds)

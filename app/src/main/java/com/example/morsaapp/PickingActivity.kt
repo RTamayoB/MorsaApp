@@ -11,15 +11,16 @@ import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.morsaapp.adapter.PickingAdapter
+import com.example.morsaapp.data.DBConnect
+import com.example.morsaapp.data.OdooConn
+import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.PickingDataModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.runBlocking
 import org.apache.xmlrpc.XmlRpcException
 import org.json.JSONArray
 import kotlin.concurrent.thread
-import kotlin.concurrent.timer
 
 class PickingActivity : AppCompatActivity() {
 
@@ -119,15 +120,25 @@ class PickingActivity : AppCompatActivity() {
     }
 
     private fun refreshData(){
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
-        if(db.deleteDataOnTable(Utilities.TABLE_RACK)){
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
+        if(db.deleteDataOnTable(OdooData.TABLE_RACK)){
             thread {
                 try {
                     val reloadRacks: String = syncRacks()
                     Log.d("Returned Racks", reloadRacks)
-                    val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+                    val db = DBConnect(
+                        applicationContext,
+                        OdooData.DBNAME,
+                        null,
+                        1
+                    )
                     val rackJson = JSONArray(reloadRacks)
-                    val result = db.fillTable(rackJson, Utilities.TABLE_RACK)
+                    val result = db.fillTable(rackJson, OdooData.TABLE_RACK)
                     if (result) {
                         runOnUiThread {
                             swipeRefreshLayout.isRefreshing = false
@@ -168,7 +179,12 @@ class PickingActivity : AppCompatActivity() {
     private fun populateListView()
     {
         var racks : PickingDataModel?
-        val dbrack = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+        val dbrack = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
         val cursorRack = dbrack.stockRack
         Log.d("Picking Qty", cursorRack.count.toString())
         datamodels.clear()
@@ -233,14 +249,22 @@ class PickingActivity : AppCompatActivity() {
     }
 
     private fun testReStock(): String{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         val prefs = applicationContext.getSharedPreferences("startupPreferences", 0)
         return odooConn.testReStock(prefs.getInt("activeUser",0))
     }
 
     fun syncRacks() : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odoo = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odoo.authenticateOdoo()
         val stockRacks = odoo.getStockRack(prefs.getInt("activeUser",1))
         Log.d("OrderList", stockRacks)

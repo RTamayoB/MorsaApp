@@ -3,7 +3,6 @@ package com.example.morsaapp
 import android.annotation.SuppressLint
 import android.content.*
 import android.device.ScanManager
-import android.device.scanner.configuration.PropertyID
 import android.device.scanner.configuration.Triggering
 import android.media.AudioManager
 import android.media.SoundPool
@@ -21,12 +20,14 @@ import androidx.core.view.isVisible
 import com.example.morsaapp.adapter.IssuesPopupAdapter
 import com.example.morsaapp.adapter.OrderRevisionAdapter
 import com.example.morsaapp.adapter.ScanIssuesAdapter
+import com.example.morsaapp.data.DBConnect
+import com.example.morsaapp.data.OdooConn
+import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.IssuesPopupDataModel
 import com.example.morsaapp.datamodel.OrderRevisionDataModel
 import com.example.morsaapp.datamodel.ScanIssuesDataModel
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_main_menu.*
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -79,7 +80,8 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
 
 
     private fun saveCurrentIssues(issues : String) {
-        val db = DBConnect(this,Utilities.DBNAME, null, 1)
+        val db =
+            DBConnect(this, OdooData.DBNAME, null, 1)
         val userId = 0
 //        Log.d("picking_id", pickingId)
         db.saveIssuesToDB(issues, userId, pickingId.toInt())
@@ -366,8 +368,13 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         orderTxt.text = "Orden: $name"
 
         var hashMapRaw = ""
-        val db = DBConnect(this, Utilities.DBNAME, null, 1).writableDatabase
-        val cursor = db.rawQuery("SELECT issues FROM "+Utilities.TABLE_ISSUES_LIST+" WHERE picking_id = "+pickingId, null)
+        val db = DBConnect(
+            this,
+            OdooData.DBNAME,
+            null,
+            1
+        ).writableDatabase
+        val cursor = db.rawQuery("SELECT issues FROM "+ OdooData.TABLE_ISSUES_LIST+" WHERE picking_id = "+pickingId, null)
         if(cursor.count > 0){
             while (cursor.moveToNext()) {
                 hashMapRaw = cursor.getString(0)
@@ -471,12 +478,12 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                     var rawReturnId = ""
                                                     val dbReturns = DBConnect(
                                                         applicationContext,
-                                                        Utilities.DBNAME,
+                                                        OdooData.DBNAME,
                                                         null,
                                                         1
                                                     ).readableDatabase
                                                     val cursorReturns = dbReturns.rawQuery(
-                                                        "SELECT return_id FROM " + Utilities.TABLE_STOCK + " WHERE id = " + pickingId.toInt(),
+                                                        "SELECT return_id FROM " + OdooData.TABLE_STOCK + " WHERE id = " + pickingId.toInt(),
                                                         null
                                                     )
                                                     while (cursorReturns.moveToNext()) {
@@ -633,12 +640,12 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                             var rawReturnId = ""
                                             val dbReturns = DBConnect(
                                                 applicationContext,
-                                                Utilities.DBNAME,
+                                                OdooData.DBNAME,
                                                 null,
                                                 1
                                             ).readableDatabase
                                             val cursorReturns = dbReturns.rawQuery(
-                                                "SELECT return_id FROM " + Utilities.TABLE_STOCK + " WHERE id = " + pickingId.toInt(),
+                                                "SELECT return_id FROM " + OdooData.TABLE_STOCK + " WHERE id = " + pickingId.toInt(),
                                                 null
                                             )
                                             while (cursorReturns.moveToNext()) {
@@ -726,16 +733,17 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
             }
         }
 
-        val dbReload = DBConnect(this, Utilities.DBNAME, null, 1)
+        val dbReload =
+            DBConnect(this, OdooData.DBNAME, null, 1)
         /**
          * Reload the issues table
          */
-        if(dbReload.deleteDataOnTable(Utilities.TABLE_STOCK_ISSUES)){
+        if(dbReload.deleteDataOnTable(OdooData.TABLE_STOCK_ISSUES)){
             thread {
                 try {
                     val deferredIssuesList : String = getStockMoveIssue()
                     val issuesJson = JSONArray(deferredIssuesList)
-                    val issuesUpdate = dbReload.fillTable(issuesJson, Utilities.TABLE_STOCK_ISSUES)
+                    val issuesUpdate = dbReload.fillTable(issuesJson, OdooData.TABLE_STOCK_ISSUES)
                     if(issuesUpdate){
                     Log.d("Issues Table", "Updated")
                 }
@@ -762,12 +770,17 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
          * and show the lines on the ListView
          */
 
-        if(dbReload.reloadInspectionLines(relatedId)){
+        if(dbReload.deleteDataOnTableFromField(OdooData.TABLE_STOCK_ITEMS,"picking_id",relatedId)){
             thread {
                 val deferredStockItemsReSync: String =  syncInspectionItems(pickingId.toInt())
-                    val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+                    val db = DBConnect(
+                        applicationContext,
+                        OdooData.DBNAME,
+                        null,
+                        1
+                    )
                     val stockItemJson = JSONArray(deferredStockItemsReSync)
-                    val result = db.fillTable(stockItemJson, Utilities.TABLE_STOCK_ITEMS)
+                    val result = db.fillTable(stockItemJson, OdooData.TABLE_STOCK_ITEMS)
                     if (result) {
                         runOnUiThread {
                             progressBar.isVisible = false
@@ -794,7 +807,11 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
     }
 
     fun syncInspectionItems(pickingId: Int) : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odoo = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odoo.authenticateOdoo()
         val stockPicking = odoo.getInspectionItems(pickingId)
         Log.d("OrderList", stockPicking)
@@ -824,7 +841,11 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
 
     private fun movesTest(location: String, pickingId : Int) : String
     {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.movesTest(location, pickingId)
     }
@@ -833,7 +854,12 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
 
     private fun populateListView(rel_id : String)
     {
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
         val cursor = db.fillStockitemsListView(rel_id)
         var items : OrderRevisionDataModel?
 
@@ -903,7 +929,12 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
 
     private fun populateIssuesListView(isDevolution: Boolean)
     {
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
 
         val cursor = db.fillIncidenciesListView(isDevolution)
         if (finalHashMap[pickingId.toInt()]?.get(this.activeModeId)?.get("issues") == null){
@@ -1089,11 +1120,16 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                     arrayAdapter.notifyDataSetChanged()
                     productScannedId = pedido.Id
 
-                    val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1).writableDatabase
+                    val db = DBConnect(
+                        applicationContext,
+                        OdooData.DBNAME,
+                        null,
+                        1
+                    ).writableDatabase
                     val contentValues = ContentValues()
                     contentValues.put("revision_qty", pedido.revisionQty)
 
-                    db.update(Utilities.TABLE_STOCK_ITEMS, contentValues, "id = "+pedido.Id,null)
+                    db.update(OdooData.TABLE_STOCK_ITEMS, contentValues, "id = "+pedido.Id,null)
                     Log.d("Updated", "Done")
 
                     //inflate the layout of popup window
@@ -1170,9 +1206,14 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         val obj = objGson.toJson(listIssues)
         val bundle = Bundle()
         bundle.putString("key", obj)
-        val db = DBConnect(this, Utilities.DBNAME, null, 1).writableDatabase
+        val db = DBConnect(
+            this,
+            OdooData.DBNAME,
+            null,
+            1
+        ).writableDatabase
         Log.d("Saving issues in ",activeModeId.toString())
-        db.execSQL("UPDATE "+Utilities.TABLE_STOCK_ITEMS+" SET issues = '"+bundle.get("key").toString()+"' WHERE id = '"+activeModeId+"'")
+        db.execSQL("UPDATE "+ OdooData.TABLE_STOCK_ITEMS+" SET issues = '"+bundle.get("key").toString()+"' WHERE id = '"+activeModeId+"'")
         try{
             scanPopupWindow.dismiss()
         }catch(error:Exception){
@@ -1210,19 +1251,31 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
 
 
     private fun confirmIssues(id: Int, issues : HashMap<Int,HashMap<String,Any>>): List<List<String>> {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.confirmIssues(id,issues) as List<List<String>>
     }
 
     private fun actionClose(returnId: Int): String {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.actionClose(returnId) as String
     }
 
     private fun actionRejected(returnId: Int): String {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.actionRejected(returnId) as String
     }
@@ -1239,7 +1292,12 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
 
     private fun populateScanIssuesListView(isDevolution : Boolean)
     {
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
         val cursor = db.fillIncidenciesListView(isDevolution)
         var items : ScanIssuesDataModel
         while (cursor.moveToNext()) {
@@ -1264,14 +1322,22 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
     }
 
     private fun searchProduct(product_id : String): String {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.searchProduct(product_id)
     }
 
     private fun getStockMoveIssue() : String
     {
-        val odooConn = OdooConn(prefs.getString("User",""),prefs.getString("Pass",""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         val noIds = emptyList<Int>()
         return odooConn.stockMoveIssue

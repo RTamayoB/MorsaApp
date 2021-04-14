@@ -1,27 +1,25 @@
 package com.example.morsaapp
 
-import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ListView
 import android.widget.SearchView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.morsaapp.adapter.ReceptionAdapter
+import com.example.morsaapp.data.DBConnect
+import com.example.morsaapp.data.OdooConn
+import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.ReceptionDataModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.activity_reception.*
-import kotlinx.android.synthetic.main.issues_popup_item.*
 import org.apache.xmlrpc.XmlRpcException
 import org.json.JSONArray
 import kotlin.concurrent.thread
@@ -133,15 +131,20 @@ class ReceptionActivity : AppCompatActivity() {
 
     //Reload the database for new instances
     private fun refreshData(){
-            val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
-            if (db.deleteDataOnTable(Utilities.TABLE_INVOICE)) {
+            val db = DBConnect(
+                applicationContext,
+                OdooData.DBNAME,
+                null,
+                1
+            )
+            if (db.deleteDataOnTable(OdooData.TABLE_INVOICE)) {
                 thread {
                     try {
                         val deferredInvoice: String = syncInvoice(/*invoiceIdList*/)
                         Log.d("Inventory Line", deferredInvoice)
                         val invoicejson = JSONArray(deferredInvoice)
                         //Insert data
-                        val invoiceUpdate = db.fillTable(invoicejson, Utilities.TABLE_INVOICE)
+                        val invoiceUpdate = db.fillTable(invoicejson, OdooData.TABLE_INVOICE)
                         if (invoiceUpdate) {
                             runOnUiThread {
                                 //If succesfull, delete data from model, insert again and notify the dataset
@@ -188,7 +191,12 @@ class ReceptionActivity : AppCompatActivity() {
     //Fills the lines in datamodel
     private fun populateListView()
     {
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
         val invoiceCursor = db.fillInvoiceListView()
 
         var orders : ReceptionDataModel?
@@ -247,7 +255,11 @@ class ReceptionActivity : AppCompatActivity() {
 
     //Returns the purchases
     fun syncInvoice(/*idList : List<Int>*/) : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odoo = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odoo.authenticateOdoo()
         val invoice = odoo.getInvoice(/*idList*/)
         Log.d("OrderList", invoice)

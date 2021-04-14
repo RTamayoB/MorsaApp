@@ -8,10 +8,11 @@ import android.util.Log
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
-import androidx.work.*
 import com.example.morsaapp.adapter.InvoiceAdapter
+import com.example.morsaapp.data.DBConnect
+import com.example.morsaapp.data.OdooConn
+import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.InvoiceDataModel
-import com.example.morsaapp.workmanager.ReceptionWorker
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -131,17 +132,27 @@ class RefundDetailsActivity : AppCompatActivity() {
     }
 
     private fun refreshData(relatedId: String){
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
-        if(db.deleteDataOnTable(Utilities.TABLE_STOCK_RETURN_LINE)){
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
+        if(db.deleteDataOnTable(OdooData.TABLE_STOCK_RETURN_LINE)){
             thread {
                 try {
                     val id = invoiceId!!.toInt()
                     val deferredStockReturnLine: String = syncStockReturnLines(id)
-                    val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+                    val db = DBConnect(
+                        applicationContext,
+                        OdooData.DBNAME,
+                        null,
+                        1
+                    )
                     val stockLineJson = JSONArray(deferredStockReturnLine)
                     //Insert data
                     val stockLineUpdate =
-                        db.fillTable(stockLineJson, Utilities.TABLE_STOCK_RETURN_LINE)
+                        db.fillTable(stockLineJson, OdooData.TABLE_STOCK_RETURN_LINE)
                     if (stockLineUpdate) {
                         Log.d("Loaded Lines", "Loading")
                         //If succesfull, delete data from model, insert again and notify the dataset
@@ -183,7 +194,12 @@ class RefundDetailsActivity : AppCompatActivity() {
 
     private fun populateListView(id : String)
     {
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
         val refundItemsCursor = db.fillRefundItemsListView(id)
         var items : InvoiceDataModel?
 
@@ -211,14 +227,22 @@ class RefundDetailsActivity : AppCompatActivity() {
     }
 
     private fun confirmStockReturn(id: Int): List<Any> {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.confirmStockReturn(id) as List<Any>
     }
 
     //Returns the purchases lines
     fun syncStockReturnLines(returnId : Int) : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odoo = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odoo.authenticateOdoo()
         val invoiceLine = odoo.reloadStockReturnLines(returnId)
         return invoiceLine

@@ -1,15 +1,13 @@
 package com.example.morsaapp.workmanager
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.util.Log
 import android.widget.Toast
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import com.example.morsaapp.DBConnect
-import com.example.morsaapp.OdooConn
-import com.example.morsaapp.Utilities
-import kotlinx.coroutines.*
+import com.example.morsaapp.data.DBConnect
+import com.example.morsaapp.data.OdooConn
+import com.example.morsaapp.data.OdooData
 import java.lang.Exception
 
 class ReceptionWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
@@ -29,7 +27,12 @@ class ReceptionWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, para
 
                 //val id: Int = deferredTest.await()[1] as Int
 
-                val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+                val db = DBConnect(
+                    applicationContext,
+                    OdooData.DBNAME,
+                    null,
+                    1
+                )
                 db.changeStockState(id.toString())
                 db.close()
 
@@ -50,7 +53,7 @@ class ReceptionWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, para
     }
 
     private fun confirmInvoice(id: Int, number: String?, user: String?, pass: String?, context: Context): List<Any> {
-        val odooConn = OdooConn(user, pass,context)
+        val odooConn = OdooConn(user, pass, context)
         odooConn.authenticateOdoo()
         return odooConn.confirmInvoice(id, number) as List<Any>
     }

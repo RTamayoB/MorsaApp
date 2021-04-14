@@ -1,4 +1,4 @@
-package com.example.morsaapp;
+package com.example.morsaapp.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;

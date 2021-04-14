@@ -1,15 +1,9 @@
 package com.example.morsaapp
 
 import android.content.*
-import android.device.ScanManager
-import android.device.scanner.configuration.PropertyID
-import android.device.scanner.configuration.Triggering
 import android.graphics.Color
-import android.media.AudioManager
-import android.media.SoundPool
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.os.Vibrator
 import android.text.InputType
 import android.util.Log
 import android.view.Gravity
@@ -21,6 +15,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.example.morsaapp.adapter.MissingProductsAdapter
 import com.example.morsaapp.adapter.ProductsToLocationAdapter
+import com.example.morsaapp.data.DBConnect
+import com.example.morsaapp.data.OdooConn
+import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.MissingProductsDatamodel
 import com.example.morsaapp.datamodel.ProductsToLocationDataModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -39,96 +36,53 @@ import kotlin.concurrent.thread
 class PickingMovesActivity : AppCompatActivity() {
 
     private var datamodels = ArrayList<ProductsToLocationDataModel>()
-    var popupDataModel = ArrayList<MissingProductsDatamodel>()
+    private var popupDataModel = ArrayList<MissingProductsDatamodel>()
     private lateinit var pickingMovesLv : ListView
     private var pickingIds : String = ""
     private var rackId : String = ""
-    var scan1 : String = ""
-    var scan2 : String = ""
-    var currentOrigin : String = ""
-    var destiny : String = ""
-    var donePickingProcess : Boolean = false
-    lateinit var productsHashMap : HashMap<Int, List<Int>>
+    //var scan1 : String = ""
+    //var scan2 : String = ""
+    private var currentOrigin : String = ""
+    //var destiny : String = ""
+    private var donePickingProcess : Boolean = false
+    private lateinit var productsHashMap : HashMap<Int, List<Int>>
     lateinit var adapter : ProductsToLocationAdapter
     private lateinit var popupListViewGlobal:ListView
-    lateinit var popupWindow : PopupWindow
-    lateinit var popupViewGlobal : View
-    lateinit var popupAdapter: MissingProductsAdapter
-
-    //Decode Variables
-    val SCAN_ACTION = ScanManager.ACTION_DECODE
-    lateinit var mVibrator: Vibrator
-    lateinit var mScanManager: ScanManager
-    lateinit var soundPool: SoundPool
-    var soundid : Int = 0
-    lateinit var barcodeStr : String
+    private lateinit var popupWindow : PopupWindow
+    private lateinit var popupViewGlobal : View
+    //lateinit var popupAdapter: MissingProductsAdapter
 
     //Timer Data
-    var timers : HashMap<String, Long> = HashMap<String, Long>()
+    var timers : HashMap<String, Long> = HashMap()
 
     lateinit var prefs : SharedPreferences
 
-    val mScanReceiver = object : BroadcastReceiver(){
+    private val mScanReceiver = object : BroadcastReceiver(){
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
 
             if(action == resources.getString(R.string.activity_intent_action)){
-                /*soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
-                //mVibrator.vibrate(100)
-
-                val barcode  = intent!!.getByteArrayExtra(ScanManager.DECODE_DATA_TAG)
-                val barcodelen = intent.getIntExtra(ScanManager.BARCODE_LENGTH_TAG, 0)
-                val temp = intent.getByteExtra(ScanManager.BARCODE_TYPE_TAG, 0.toByte())
-                Log.i("debug", "----codetype--$temp")
-                barcodeStr = String(barcode, 0, barcodelen)
-                Log.d("Result", barcodeStr)*/
-                    val value = intent.getStringExtra("barcode_string")
-                displayScanResult(value, "")
-                //mScanManager.stopDecode()
+                val value = intent.getStringExtra("barcode_string")
+                displayScanResult(value!!)
             }
         }
     }
 
-    private fun initScan() {
-        mVibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        mScanManager = ScanManager()
-        mScanManager.openScanner()
-        mScanManager.triggerMode = Triggering.HOST
+    private lateinit var progressBar: ProgressBar
 
-        mScanManager.switchOutputMode(0)
-        soundPool = SoundPool(1, AudioManager.STREAM_NOTIFICATION, 100) // MODE_RINGTONE
-        soundid = soundPool.load("/etc/Scan_new.ogg", 1)
-
-        //Set IntentFilter
-        val filter = IntentFilter()
-        val idbuf : IntArray= intArrayOf(
-            PropertyID.WEDGE_INTENT_ACTION_NAME,
-            PropertyID.WEDGE_INTENT_DATA_STRING_TAG
-        )
-        val value_buf = mScanManager.getParameterString(idbuf)
-        if(value_buf != null && value_buf[0] != null && !value_buf[0].equals("")) {
-            filter.addAction(value_buf[0])
-        } else {
-            filter.addAction(SCAN_ACTION)
-        }
-        registerReceiver(mScanReceiver, filter)
-    }
-
-    lateinit var progressBar: ProgressBar
-
-    fun saveHashMap(key: String?, obj: Any?, context : Context) {
+    private fun saveHashMap(obj: Any?, context : Context) {
         val prefs: SharedPreferences = context.getSharedPreferences("startupPreferences", 0)
         val editor = prefs.edit()
         val gson = Gson()
         val json = gson.toJson(obj)
-        editor.putString(key, json)
-        editor.apply() // This line is IMPORTANT !!!
+        editor.putString("timers", json)
+        editor.apply()
     }
 
-    fun getHashMap(key: String?, context : Context): HashMap<String, Long> {
+    private fun getHashMap(context : Context): HashMap<String, Long> {
         val prefs: SharedPreferences = context.getSharedPreferences("startupPreferences", 0)
         val gson = Gson()
-        val json = prefs.getString(key, "")
+        val json = prefs.getString("timers", "")
         val type = object : TypeToken<HashMap<String?, Long?>?>() {}.type
         return gson.fromJson(json, type)
     }
@@ -141,12 +95,12 @@ class PickingMovesActivity : AppCompatActivity() {
         prefs = this.getSharedPreferences("startupPreferences", 0)
 
 
-        if(getHashMap("timers",this).isEmpty()){
+        if(getHashMap(this).isEmpty()){
             Log.d("Was","Empty")
-            saveHashMap("timers",timers,this)
+            saveHashMap(timers,this)
         }
 
-        timers = getHashMap("timers", this)
+        timers = getHashMap(this)
 
         pickingMovesLv = findViewById(R.id.picking_moves_lv)
         progressBar = findViewById(R.id.picking_move_progress)
@@ -154,15 +108,14 @@ class PickingMovesActivity : AppCompatActivity() {
 
         progressBar.isVisible = true
 
-        //initScan()
         val filter = IntentFilter()
         filter.addAction(resources.getString(R.string.activity_intent_action))
         registerReceiver(mScanReceiver, filter)
 
         val noPieceMoves = findViewById<FloatingActionButton>(R.id.no_piece_btn)
 
-        pickingIds = intent.getStringExtra("pickingIds")
-        rackId = intent.getStringExtra("rackId")
+        pickingIds = intent.getStringExtra("pickingIds")!!
+        rackId = intent.getStringExtra("rackId")!!
 
         val customToast = CustomToast(this, this)
         customToast.show("Escanee la ubicacion origen", 24.0F, Toast.LENGTH_LONG)
@@ -175,7 +128,8 @@ class PickingMovesActivity : AppCompatActivity() {
         /**
          * For each pickingId, reload said picking and its lines
          */
-        val dbPicking = DBConnect(this, Utilities.DBNAME, null, 1)
+        val dbPicking =
+            DBConnect(this, OdooData.DBNAME, null, 1)
         var idsRaw = pickingIds.replace("(", "")
         idsRaw = idsRaw.replace(")", "")
         idsRaw = idsRaw.replace(" ", "")
@@ -183,13 +137,13 @@ class PickingMovesActivity : AppCompatActivity() {
         thread {
             for (id in idList) {
                 Log.d("Current Id", id)
-                if (dbPicking.reloadPickings(id)) {
+                if (dbPicking.deleteDataOnTableFromField(OdooData.TABLE_STOCK, "id", id)) {
                     val deferredStockReSync: String = syncInspections(id)
                     val stockItemJson = JSONArray(deferredStockReSync)
-                    val result = dbPicking.fillTable(stockItemJson, Utilities.TABLE_STOCK)
+                    dbPicking.fillTable(stockItemJson, OdooData.TABLE_STOCK)
                     //Get name
                     val pickingName = dbPicking.getNameFromPicking(id)
-                    var name: String = ""
+                    var name = ""
                     while (pickingName.moveToNext()) {
                         name = pickingName.getString(0)
                     }
@@ -198,11 +152,16 @@ class PickingMovesActivity : AppCompatActivity() {
                     val finalMovePickingId = movePickingId.replace("/", "\\/")
                     Log.d("PickingId on Move", finalMovePickingId)
                     //With the move Picking Id, reload the lines
-                    if (dbPicking.reloadInspectionLines(finalMovePickingId)) {
+                    if (dbPicking.deleteDataOnTableFromField(OdooData.TABLE_STOCK_ITEMS,"picking_id",finalMovePickingId)) {
                         val deferredStockItemsReSync: String = syncInspectionItems(id.toInt())
-                        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
-                        val stockItemJson = JSONArray(deferredStockItemsReSync)
-                        val results = db.fillTable(stockItemJson, Utilities.TABLE_STOCK_ITEMS)
+                        val db = DBConnect(
+                            applicationContext,
+                            OdooData.DBNAME,
+                            null,
+                            1
+                        )
+                        val stockItemJson1 = JSONArray(deferredStockItemsReSync)
+                        db.fillTable(stockItemJson1, OdooData.TABLE_STOCK_ITEMS)
                     }
                 }
             }
@@ -216,102 +175,6 @@ class PickingMovesActivity : AppCompatActivity() {
                 progressBar.isVisible = false
             }
         }
-
-
-        /**
-         * Manual way of doing the picking process, in case product doesnt have a code
-         * This is temporary, as manual proces should only be done by the admin
-         */
-        /*
-        pickingMovesLv.setOnItemClickListener { parent, view, position, id ->
-            val model : ProductsToLocationDataModel = pickingMovesLv.getItemAtPosition(position) as ProductsToLocationDataModel
-            if(currentOrigin == model.origin){
-                val builder = AlertDialog.Builder(this)
-                builder.setTitle("Cantidad a Mover")
-                builder.setMessage("Especifique cantidad:")
-                val input = EditText(this)
-                input.width = 10
-                input.inputType = InputType.TYPE_CLASS_NUMBER
-                builder.setView(input)
-                builder.setPositiveButton("Ok") { dialog, which ->
-                    try {
-                        val num = input.text.toString()
-                        if (num.toInt() <= model.total_qty) {
-                            model.qty = num.toInt()
-                            //Add to hashmap
-
-
-                            //Sent qty
-                            val deferredSendToCart: Deferred<List<Any>> = GlobalScope.async { sendtoCart(model.id, model.qty) }
-
-                            var isCountPicking = false
-                            runBlocking {
-                                Log.d("Result from deferred",deferredSendToCart.await().toString())
-                                isCountPicking = deferredSendToCart.await()[1] as Boolean
-                            }
-                            if(isCountPicking){
-                                Log.d("IS COUNT","TRUE")
-                                val countPickingBuilder = AlertDialog.Builder(applicationContext)
-                                countPickingBuilder.setTitle("Conteo de Picking")
-                                countPickingBuilder.setMessage("Favor de contar las piezas:")
-                                val countQty = EditText(applicationContext)
-                                input.width = 10
-                                input.inputType = InputType.TYPE_CLASS_NUMBER
-                                countPickingBuilder.setView(countQty)
-                                countPickingBuilder.setPositiveButton("Confirmar") { dialog, which ->
-                                    val deferredCount : Deferred<List<Any>> = GlobalScope.async { countPicking(model.id, model.qty) }
-                                    runBlocking {
-                                        Log.d("Result of count picking", deferredCount.await().toString())
-                                    }
-                                }
-                            }
-                            else{
-                                Log.d("IS COUNT", "FALSE")
-                                Toast.makeText(applicationContext,"Completado", Toast.LENGTH_LONG).show()
-                            }
-
-                            productsHashMap[model.id] = listOf(model.qty, model.total_qty)
-
-                            val db = DBConnect(this, Utilities.DBNAME, null, 1).writableDatabase
-                            val contentValues = ContentValues()
-                            contentValues.put("quantity_done", num.toInt())
-                            db.update(
-                                Utilities.TABLE_STOCK_ITEMS,
-                                contentValues,
-                                "id=" + model.id,
-                                null
-                            )
-                            val adapterModifier = pickingMovesLv.adapter as ProductsToLocationAdapter
-                            adapterModifier.notifyDataSetChanged()
-                            val deferredToCart: Deferred<List<String>> = GlobalScope.async { sendtoCart(model.id, model.qty) }
-
-                        } else {
-                            Toast.makeText(
-                                applicationContext,
-                                "Excediste la cantidad total",
-                                Toast.LENGTH_LONG
-                            ).show()
-                            dialog.dismiss()
-                        }
-
-                    }catch (e : XmlRpcException){
-                        Log.d("XMLRPC ERROR", e.toString())
-                        Toast.makeText(this, "Error en Odoo: $e",Toast.LENGTH_SHORT).show()
-                    }catch (e : Exception){
-                        Log.d("ERROR", e.toString())
-                        Toast.makeText(this, "Error en peticion",Toast.LENGTH_SHORT).show()
-                    }
-                }
-                builder.setNegativeButton("Cancelar") { dialog, which ->
-                    dialog.dismiss()
-                }
-                builder.show()
-            }
-            else{
-                Toast.makeText(applicationContext,"Ubicacion origen no coincide", Toast.LENGTH_LONG).show()
-            }
-        }
-         */
 
         if(timers[rackId] == null){
             timers[rackId] = 900000
@@ -341,42 +204,24 @@ class PickingMovesActivity : AppCompatActivity() {
             }
 
             override fun onFinish() {
-                timerTxt.text = "00:00"
+                timerTxt.text = resources.getString(R.string.time_over)
                 timerTxt.setTextColor(Color.RED)
             }
         }
         timer.start()
 
-
-
-    }
-
-    fun syncInspections(id: String) : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""), this)
-        odoo.authenticateOdoo()
-        val stockPicking = odoo.getPickingFromRack(id)
-        Log.d("OrderList", stockPicking)
-        return stockPicking
-    }
-
-    fun syncInspectionItems(pickingId: Int) : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""), this)
-        odoo.authenticateOdoo()
-        val stockPicking = odoo.getInspectionItems(pickingId)
-        Log.d("OrderList", stockPicking)
-        return stockPicking
     }
 
     override fun onBackPressed() {
         super.onBackPressed()
-        saveHashMap("timers",timers, this)
+        saveHashMap(timers, this)
         finish()
         val intent  = Intent(this, PickingActivity::class.java)
         startActivity(intent)
         unregisterReceiver(mScanReceiver)
     }
 
-    fun showMissingPopup(){
+    private fun showMissingPopup(){
         val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val popupView : View = inflater.inflate(R.layout.no_product_popup, null)
 
@@ -426,14 +271,14 @@ class PickingMovesActivity : AppCompatActivity() {
         popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
     }
 
-    fun populatePopupListview(){
+    private fun populatePopupListview(){
         popupDataModel.clear()
         for (data in datamodels){
-            var item = MissingProductsDatamodel()
+            val item = MissingProductsDatamodel()
             item.id = data.productId.toInt()
-            val Name = data.stockMoveName
-            Log.d("NameParsed", Name)
-            item.name = Name
+            val name = data.stockMoveName
+            Log.d("NameParsed", name)
+            item.name = name
             item.qty = data.qty
             item.totalQty = data.total_qty
             popupDataModel.add(item)
@@ -446,28 +291,14 @@ class PickingMovesActivity : AppCompatActivity() {
             )
     }
 
-    /*
-    private val myBroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            val action = intent?.action
-
-            if (action == resources.getString(R.string.activity_intent_filter_action_picking)) {
-                //  Received a barcode scan
-                try {
-                    displayScanResult(intent)
-                } catch (e: Exception) {
-                    Log.e("Error",e.message)
-                }
-
-            }
-        }
-
-    }
-    */
-
     private fun populateListView(data: String) {
 
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
         var idsRaw = data.replace("(", "")
         idsRaw = idsRaw.replace(")", "")
         idsRaw = idsRaw.replace(" ", "")
@@ -510,7 +341,7 @@ class PickingMovesActivity : AppCompatActivity() {
         try {
             val deferredSequence: Deferred<String> = GlobalScope.async { sequence(moveList) }
             runBlocking {
-                Log.d("Sequence", deferredSequence.await().toString())
+                Log.d("Sequence", deferredSequence.await())
                 val json = JSONArray(deferredSequence.await())
                 for (i in 0 until json.length()) {
                     Log.d("Added to sequence", i.toString())
@@ -553,12 +384,12 @@ class PickingMovesActivity : AppCompatActivity() {
                 realOrigin.replace(" ", "")
                 Log.d("Origin", realOrigin)
                 orders.origin = realOrigin
-                val Name = cursor.getString(cursor.getColumnIndex("product_id"))
+                //val name = cursor.getString(cursor.getColumnIndex("product_id"))
                 //Parse name
                 val description = cursor.getString(cursor.getColumnIndex("product_description"))
                 val mixedName  = cursor.getString(cursor.getColumnIndex("product_id"))
                 val separateName : Array<String> = mixedName.split(",").toTypedArray()
-                val arrayofNames : Array<String> = separateName[1].toString().split(" ").toTypedArray()
+                val arrayofNames : Array<String> = separateName[1].split(" ").toTypedArray()
                 var name = arrayofNames[0]
                 name = name.replace("[", "")
                 name = name.replace("]", "")
@@ -606,13 +437,9 @@ class PickingMovesActivity : AppCompatActivity() {
         pickingMovesLv.adapter = adapter
     }
 
-    private fun displayScanResult(decodedString: String, decodedType: String) {
+    private fun displayScanResult(decodedString: String) {
 
-        //val decodedSource = initiatingIntent.getStringExtra(resources.getString(R.string.datawedge_intent_key_source))
-        //val decodedData = initiatingIntent.getStringExtra(resources.getString(R.string.datawedge_intent_key_data))
-        //val decodedLabelType = initiatingIntent.getStringExtra(resources.getString(R.string.datawedge_intent_key_label_type))
-
-        Log.d("You Scanned", "$decodedString type - $decodedType")
+        Log.d("You Scanned", decodedString)
         /**
          * When data recieved, determine if its an origin, product, or
          * destination and act accordingly, if not, show message of 'Codigo Invalido'
@@ -629,7 +456,7 @@ class PickingMovesActivity : AppCompatActivity() {
                     code = parse2
                     val list: List<String> = code.split(",").map { it.trim() }
                     scannedProductIdSearch = list[0]
-                    Log.d("Scanned Product", scannedProductIdSearch.toString())
+                    Log.d("Scanned Product", scannedProductIdSearch)
                 }
             }
         }catch (e: Exception){
@@ -655,8 +482,8 @@ class PickingMovesActivity : AppCompatActivity() {
             }
             else if(decodedString == item.origin){
                 scanResult = true
-                for(i in 0 until pickingMovesLv.adapter.count){
-                    val item2 = pickingMovesLv.adapter.getItem(i) as ProductsToLocationDataModel
+                for(j in 0 until pickingMovesLv.adapter.count){
+                    val item2 = pickingMovesLv.adapter.getItem(j) as ProductsToLocationDataModel
                     item2.originScanned = false
                 }
                 item.originScanned = true
@@ -680,12 +507,12 @@ class PickingMovesActivity : AppCompatActivity() {
                     numberPicker.maxValue = 100
                     numberPicker.minValue = 1
                     builder.setView(numberPicker)
-                    builder.setPositiveButton("Ok") { dialog, which ->
+                    builder.setPositiveButton("Ok") { dialog, _ ->
                         try {
-                            val num = numberPicker.value.toInt()
-                            val expectedQty = num.toInt() + item.qty
+                            val num = numberPicker.value
+                            val expectedQty = num + item.qty
                             if (expectedQty <= item.total_qty) {
-                                item.qty = item.qty+num.toInt()
+                                item.qty = item.qty+num
                                 //Change bar color
                                 //Add to hashmap
                                 //Sent qty
@@ -718,7 +545,7 @@ class PickingMovesActivity : AppCompatActivity() {
                                     countQty.width = 10
                                     countQty.inputType = InputType.TYPE_CLASS_NUMBER
                                     countPickingBuilder.setView(countQty)
-                                    countPickingBuilder.setPositiveButton("Confirmar") { dialog, which ->
+                                    countPickingBuilder.setPositiveButton("Confirmar") { _, _ ->
                                         thread {
                                             try {
                                                 val deferredCount: List<Any> =
@@ -736,11 +563,16 @@ class PickingMovesActivity : AppCompatActivity() {
 
                                 productsHashMap[item.id] = listOf(item.qty, item.total_qty)
 
-                                val db = DBConnect(this, Utilities.DBNAME, null, 1).writableDatabase
+                                val db = DBConnect(
+                                    this,
+                                    OdooData.DBNAME,
+                                    null,
+                                    1
+                                ).writableDatabase
                                 val contentValues = ContentValues()
-                                contentValues.put("quantity_done", num.toInt())
+                                contentValues.put("quantity_done", num)
                                 db.update(
-                                    Utilities.TABLE_STOCK_ITEMS,
+                                    OdooData.TABLE_STOCK_ITEMS,
                                     contentValues,
                                     "id=" + item.id,
                                     null
@@ -768,10 +600,10 @@ class PickingMovesActivity : AppCompatActivity() {
                             var scanDestiny = true
                             var destiny = ""
                             //Check all lines to show message
-                            for(i in 0 until pickingMovesLv.adapter.count){
-                                val item = pickingMovesLv.adapter.getItem(i) as ProductsToLocationDataModel
-                                destiny = item.location
-                                if(item.lineScanned == 0){
+                            for(j in 0 until pickingMovesLv.adapter.count){
+                                val product = pickingMovesLv.adapter.getItem(j) as ProductsToLocationDataModel
+                                destiny = product.location
+                                if(product.lineScanned == 0){
                                     scanDestiny = false
                                 }
                             }
@@ -795,7 +627,7 @@ class PickingMovesActivity : AppCompatActivity() {
                             customToast.show("Error en peticion: $e", 24.0F, Toast.LENGTH_LONG)
                         }
                     }
-                    builder.setNegativeButton("Cancelar") { dialog, which ->
+                    builder.setNegativeButton("Cancelar") { dialog, _ ->
                         dialog.dismiss()
                     }
                     builder.show()
@@ -817,7 +649,7 @@ class PickingMovesActivity : AppCompatActivity() {
                     //Confirmar envio de picking
                     val builder = AlertDialog.Builder(this)
                     builder.setTitle("Confirmar Picking")
-                    builder.setPositiveButton("Ok") { dialog, which ->
+                    builder.setPositiveButton("Ok") { _, _ ->
                         try {
                             //Iterar por Hashmap para enviar los datos de el picking
                                 Log.d("Map", productsHashMap.toString())
@@ -885,7 +717,7 @@ class PickingMovesActivity : AppCompatActivity() {
                             customToast.show("Error en peticion: $e", 24.0F, Toast.LENGTH_LONG)
                         }
                     }
-                    builder.setNegativeButton("Cancelar") { dialog, which ->
+                    builder.setNegativeButton("Cancelar") { dialog, _ ->
                         dialog.dismiss()
                     }
                     builder.show()
@@ -916,142 +748,89 @@ class PickingMovesActivity : AppCompatActivity() {
                 Toast.LENGTH_LONG
             )
         }
-
-        //val db = DBConnect(this, Utilities.DBNAME, null, 1).readableDatabase
-        //val cursor = db.rawQuery("SELECT id FROM "+Utilities.TABLE_PRODUCT_PRODUCT+" where barcode = ? OR default_code = ?", arrayOf(decodedData, decodedData))
-        //var scannedProductIdSearch = ""
-/*
-        for(i in 0 until pickingMovesLv.adapter.count) {
-            val item = pickingMovesLv.adapter.getItem(i) as ProductsToLocationDataModel
-            Log.d("Item Id", item.productId)
-            if (decodedData == item.location) {
-                scan1 = decodedData
-                Toast.makeText(applicationContext, "Escanee un producto", Toast.LENGTH_SHORT).show()
-            }
-
-            if (scannedProductIdSearch == item.productId) {
-                scan2 = item.productId
-                val builder = AlertDialog.Builder(this)
-                builder.setTitle("¿Moviendo Producto a Carrito o Rack?")
-                builder.setPositiveButton("Carrito") { dialog, which ->
-                    val builder = AlertDialog.Builder(this)
-                    builder.setTitle("Cantidad a Mover")
-                    builder.setMessage("Especifique cantidad:")
-                    val input = EditText(this)
-                    input.width = 10
-                    input.inputType = InputType.TYPE_CLASS_NUMBER
-                    builder.setView(input)
-                    builder.setPositiveButton("Ok") { dialog, which ->
-
-                        val num = input.text.toString()
-                        item.qty = num.toInt()
-
-                        val db = DBConnect(this, Utilities.DBNAME, null, 1).writableDatabase
-                        val contentValues = ContentValues()
-                        contentValues.put("quantity_done",num.toInt())
-                        db.update(Utilities.TABLE_STOCK_ITEMS,contentValues, "id="+item.id,null)
-                        val adapterModifier = pickingMovesLv.adapter as ProductsToLocationAdapter
-                        adapterModifier.notifyDataSetChanged()
-                        val deferredToCart : Deferred<List<String>> = GlobalScope.async { sendtoCart(item.id,item.qty) }
-
-                        runBlocking {
-                            Log.d("Final Result", deferredToCart.await()[1])
-
-                            Toast.makeText(applicationContext,deferredToCart.await()[1],Toast.LENGTH_LONG).show()
-                        }
-                    }
-                    builder.setNegativeButton("Cancel") { dialog, which ->
-                        dialog.dismiss()
-                    }
-                    builder.show()
-                }
-                builder.setNegativeButton("Rack") { dialog, which ->
-                    Toast.makeText(applicationContext, "Escanee una ubicación", Toast.LENGTH_SHORT).show()
-                }
-                builder.show()
-
-            }
-
-            Log.d("Location","Location = "+item.location+", Scanner = "+scan1)
-            Log.d("Product","Product = "+item.productId+", Scanner = "+scan2)
-            if (scan1 == item.location && scan2 == item.productId) {
-                scan1 = ""
-                scan2 = ""
-                val builder = AlertDialog.Builder(this)
-                builder.setTitle("Cantidad a Mover")
-                builder.setMessage("Especifique cantidad:")
-                val input = EditText(this)
-                input.width = 10
-                input.inputType = InputType.TYPE_CLASS_NUMBER
-                builder.setView(input)
-                builder.setPositiveButton("Ok") { dialog, which ->
-                    Log.d("Input", input.text.toString())
-                    val num = input.text.toString()
-//                    if(num.toInt() > item.total_qty){
-//                        dialog.dismiss()
-//                    }
-                    if (item.qty <= item.total_qty) {
-                        item.qty = num.toInt()
-                        val adapterModifier = pickingMovesLv.adapter as ProductsToLocationAdapter
-                        adapterModifier.notifyDataSetChanged()
-                        val deferredReStock : Deferred<List<String>> = GlobalScope.async { sendReStock(item.id, item.qty) }
-
-                        runBlocking {
-                            Log.d("Final Result", deferredReStock.await()[1])
-
-                            Toast.makeText(applicationContext,deferredReStock.await()[1],Toast.LENGTH_LONG).show()
-                        }
-
-                    } else {
-                        Toast.makeText(
-                            applicationContext,
-                            "Excediste la cantidad total",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-                builder.setNegativeButton("Cancel") { dialog, which ->
-                    dialog.dismiss()
-                }
-                builder.show()
-            }
-        }
-        */
     }
 
     private fun sendReStock(moveId: Int, moveQty: Int): List<Any>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""), this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.setMovesQty(moveId, moveQty)
     }
 
     private fun sendtoCart(moveId: Int, moveQty: Int): List<String>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""), this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.sendToCart(moveId, moveQty)
     }
 
     private fun notifyMissing(stockRackId: Int, map: HashMap<Int, Int>): List<String>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""), this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.notifyMissing(stockRackId, map)
     }
 
     private fun sequence(moveList: ArrayList<Int>): String{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""), this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.getSequence(moveList)
     }
 
     private fun searchProduct(product_id: String): String {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""), this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.searchProduct(product_id)
     }
 
     private fun countPicking(moveId: Int, moveQty: Int): List<String>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""), this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.countPicking(moveId, moveQty)
+    }
+
+    private fun syncInspections(id: String) : String{
+        val odoo = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
+        odoo.authenticateOdoo()
+        val stockPicking = odoo.getPickingFromRack(id)
+        Log.d("OrderList", stockPicking)
+        return stockPicking
+    }
+
+    private fun syncInspectionItems(pickingId: Int) : String{
+        val odoo = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
+        odoo.authenticateOdoo()
+        val stockPicking = odoo.getInspectionItems(pickingId)
+        Log.d("OrderList", stockPicking)
+        return stockPicking
     }
 }

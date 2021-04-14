@@ -2,10 +2,9 @@ package com.example.morsaapp.datamodel;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.util.Log;
 
-import com.example.morsaapp.DBConnect;
-import com.example.morsaapp.Utilities;
+import com.example.morsaapp.data.DBConnect;
+import com.example.morsaapp.data.OdooData;
 
 public class ReceptionDataModel {
     public String id;
@@ -35,7 +34,7 @@ public class ReceptionDataModel {
     public ReceptionDataModel(Context ctx, String id, String num) {
         this.id = id;
         this.num = num;
-        DBConnect db = new DBConnect(ctx, Utilities.DBNAME,null,1);
+        DBConnect db = new DBConnect(ctx, OdooData.DBNAME,null,1);
         String relatedId = "["+id+",\""+num+"\"]";
         Cursor cursor = db.getStockStatefromOrder(relatedId);
         while (cursor.moveToNext()){

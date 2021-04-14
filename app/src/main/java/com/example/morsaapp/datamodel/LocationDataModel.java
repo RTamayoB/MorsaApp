@@ -1,4 +1,4 @@
-package com.example.morsaapp;
+package com.example.morsaapp.datamodel;
 
 public class LocationDataModel {
     String productId;

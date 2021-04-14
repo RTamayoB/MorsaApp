@@ -1,36 +1,13 @@
 package com.example.morsaapp
 
-import android.app.Activity
-import android.content.ActivityNotFoundException
-import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
-import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import com.github.barteksc.pdfviewer.PDFView
-import java.io.BufferedInputStream
-import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
-import java.lang.Exception
-import java.net.URL
-import java.net.URLConnection
-import java.util.*
-import androidx.core.app.ComponentActivity.ExtraData
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import android.net.Uri
-import android.os.Environment
-import android.util.Base64
+import com.example.morsaapp.data.OdooConn
 import kotlinx.android.synthetic.main.activity_pdf.*
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
-import java.text.SimpleDateFormat
 
 
 class PdfActivity : AppCompatActivity() {
@@ -66,7 +43,11 @@ class PdfActivity : AppCompatActivity() {
 
 
     private fun getPdf(sessionId: String, routeId: String): List<String>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.getPdf(sessionId, routeId)
     }

@@ -1,27 +1,15 @@
 package com.example.morsaapp
 
-import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
-import android.view.View
-import android.view.ViewParent
-import android.widget.Button
 import android.widget.ImageButton
-import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
-import kotlinx.android.synthetic.main.activity_reception.*
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
-import org.json.JSONArray
+import com.example.morsaapp.data.OdooConn
 import java.lang.Exception
-import kotlin.concurrent.thread
 
 class MainMenuActivity : AppCompatActivity() {
 
@@ -184,7 +172,11 @@ class MainMenuActivity : AppCompatActivity() {
 
     private fun getPermissions(user: String?) : String
     {
-        val odooConn = OdooConn(prefs.getString("User",""),prefs.getString("Pass",""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         val noIds = emptyList<Int>()
         return odooConn.getPermissions(user)

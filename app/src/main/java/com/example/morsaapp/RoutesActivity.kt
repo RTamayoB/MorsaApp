@@ -18,6 +18,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import com.example.morsaapp.adapter.RoutesAdapter
+import com.example.morsaapp.data.DBConnect
+import com.example.morsaapp.data.OdooConn
+import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.RoutesDataModel
 import kotlinx.android.synthetic.main.activity_pdf.*
 import kotlinx.coroutines.Deferred
@@ -157,15 +160,20 @@ class RoutesActivity : AppCompatActivity() {
              */
         }
 
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
-        if(db.deleteDataOnTable(Utilities.TABLE_ROUTES)){
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
+        if(db.deleteDataOnTable(OdooData.TABLE_ROUTES)){
             thread {
                 try {
                     val deferredRoutes: String = syncRoutes()
                     Log.d("Inventory Line", deferredRoutes)
                     val routesjson = JSONArray(deferredRoutes)
                     //Insert data
-                    val routesUpdate = db.fillTable(routesjson, Utilities.TABLE_ROUTES)
+                    val routesUpdate = db.fillTable(routesjson, OdooData.TABLE_ROUTES)
                     if (routesUpdate) {
                         runOnUiThread {
                             //If succesfull, delete data from model, insert again and notify the dataset
@@ -205,7 +213,11 @@ class RoutesActivity : AppCompatActivity() {
     }
 
     fun syncRoutes() : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odoo = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odoo.authenticateOdoo()
         val invoice = odoo.routes
         Log.d("OrderList", invoice)
@@ -261,7 +273,12 @@ class RoutesActivity : AppCompatActivity() {
 
     private fun populateListView()
     {
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
         val cursor = db.routes
 
         var orders : RoutesDataModel?
@@ -314,7 +331,8 @@ class RoutesActivity : AppCompatActivity() {
         val builder = AlertDialog.Builder(this)
 
         //Based on the scanned code check if it corresponds to a Route
-        val db = DBConnect(this, Utilities.DBNAME, null, 1)
+        val db =
+            DBConnect(this, OdooData.DBNAME, null, 1)
         //Check for routes with that name
         val getRoute = db.getRoute(decodedData)
 
@@ -382,19 +400,31 @@ class RoutesActivity : AppCompatActivity() {
     }
 
     private fun getRouteBoxes(sessionId: String, routeId: String): List<String>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.getPdf(sessionId, routeId)
     }
 
     private fun getStockBoxes(route: String): String{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.getRouteBoxes(route)
     }
 
     private fun sendPlates(routeId: String, plates : String): List<String>{
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.sendPlates(routeId,plates)
     }

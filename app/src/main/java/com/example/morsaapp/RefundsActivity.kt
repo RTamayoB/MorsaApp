@@ -14,6 +14,9 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.morsaapp.adapter.ReceptionAdapter
+import com.example.morsaapp.data.DBConnect
+import com.example.morsaapp.data.OdooConn
+import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.ReceptionDataModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.activity_refunds.*
@@ -135,15 +138,20 @@ class RefundsActivity : AppCompatActivity() {
 
     //Reload the database for new instances
     private fun refreshData(){
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
-        if (db.deleteDataOnTable(Utilities.TABLE_STOCK_RETURN)) {
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
+        if (db.deleteDataOnTable(OdooData.TABLE_STOCK_RETURN)) {
             thread {
                 try {
                     val deferredStockReturn: String = syncStockReturn(/*invoiceIdList*/)
                     Log.d("StockReturn Line", deferredStockReturn)
                     val stockReturnjson = JSONArray(deferredStockReturn)
                     //Insert data
-                    val stockReturnUpdate = db.fillTable(stockReturnjson, Utilities.TABLE_STOCK_RETURN)
+                    val stockReturnUpdate = db.fillTable(stockReturnjson, OdooData.TABLE_STOCK_RETURN)
                     if (stockReturnUpdate) {
                         runOnUiThread {
                             //If succesfull, delete data from model, insert again and notify the dataset
@@ -190,7 +198,12 @@ class RefundsActivity : AppCompatActivity() {
     //Fills the lines in datamodel
     private fun populateListView()
     {
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
         val refundCursor = db.fillRefundListView()
 
         var orders : ReceptionDataModel?
@@ -244,7 +257,11 @@ class RefundsActivity : AppCompatActivity() {
 
     //Returns the purchases
     fun syncStockReturn(/*idList : List<Int>*/) : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odoo = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odoo.authenticateOdoo()
         val invoice = odoo.stockReturn
         Log.d("OrderList", invoice)

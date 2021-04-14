@@ -1,4 +1,4 @@
-package com.example.morsaapp;
+package com.example.morsaapp.data;
 
 import android.graphics.ColorSpace;
 
@@ -7,7 +7,10 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
-public class Utilities {
+/**
+ * This class encapsulates all the table names and what fields do we fetch from Odoo
+ */
+public class OdooData {
 
     public static final String DBNAME = "MORSADB";
     public static final String TABLE_ORDER = "purchase_order";

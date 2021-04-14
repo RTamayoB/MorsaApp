@@ -13,9 +13,11 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.morsaapp.adapter.ReceptionAdapter
+import com.example.morsaapp.data.DBConnect
+import com.example.morsaapp.data.OdooConn
+import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.ReceptionDataModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlinx.coroutines.runBlocking
 import org.apache.xmlrpc.XmlRpcException
 import org.json.JSONArray
 import kotlin.concurrent.thread
@@ -89,15 +91,25 @@ class LocationActivity : AppCompatActivity() {
     }
 
     private fun refreshData(){
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
-        if(db.deleteDataOnTable(Utilities.TABLE_STOCK_ARRANGEMENT)){
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
+        if(db.deleteDataOnTable(OdooData.TABLE_STOCK_ARRANGEMENT)){
             thread {
                 try {
                     val deferredStockReSync: String = syncLocations()
                     Log.d("Returned Stock", deferredStockReSync)
-                    val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+                    val db = DBConnect(
+                        applicationContext,
+                        OdooData.DBNAME,
+                        null,
+                        1
+                    )
                     val stockJson = JSONArray(deferredStockReSync)
-                    val result = db.fillTable(stockJson, Utilities.TABLE_STOCK_ARRANGEMENT)
+                    val result = db.fillTable(stockJson, OdooData.TABLE_STOCK_ARRANGEMENT)
                     if (result) {
                         runOnUiThread {
                             swipeRefreshLayout.isRefreshing = false
@@ -136,7 +148,12 @@ class LocationActivity : AppCompatActivity() {
 
     private fun populateListView()
     {
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
 
         val cursor = db.fillLocationsListView()
         var orders : ReceptionDataModel?
@@ -165,7 +182,11 @@ class LocationActivity : AppCompatActivity() {
     }
 
     fun syncLocations() : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odoo = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odoo.authenticateOdoo()
         val stockArr = odoo.locations
         Log.d("OrderList", stockArr)

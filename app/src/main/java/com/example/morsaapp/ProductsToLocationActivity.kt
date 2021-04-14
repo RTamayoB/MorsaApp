@@ -16,6 +16,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.isVisible
 import com.example.morsaapp.adapter.ProductsToLocationAdapter
+import com.example.morsaapp.data.DBConnect
+import com.example.morsaapp.data.OdooConn
+import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.ProductsToLocationDataModel
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
@@ -152,14 +155,20 @@ class ProductsToLocationActivity : AppCompatActivity() {
          * Delete the stock.move lines that have that completeName, download them again (so they are the most updated)
          * and show the lines on the ListView
          */
-        val dbReload = DBConnect(this, Utilities.DBNAME, null, 1)
-        if(dbReload.reloadLocationLines(completeName)){
+        val dbReload =
+            DBConnect(this, OdooData.DBNAME, null, 1)
+        if(dbReload.deleteDataOnTable(OdooData.TABLE_STOCK_ITEMS)){
             thread {
                 try {
                     val deferredStockItemsReSync: String =  syncLocationItems(pickingId)
-                    val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+                    val db = DBConnect(
+                        applicationContext,
+                        OdooData.DBNAME,
+                        null,
+                        1
+                    )
                     val stockItemJson = JSONArray(deferredStockItemsReSync)
-                    val result = db.fillTable(stockItemJson, Utilities.TABLE_STOCK_ITEMS)
+                    val result = db.fillTable(stockItemJson, OdooData.TABLE_STOCK_ITEMS)
                     if (result) {
                         runOnUiThread {
                             progressBar.isVisible = false
@@ -295,10 +304,15 @@ class ProductsToLocationActivity : AppCompatActivity() {
 //                    }
                     if(item.qty <= item.total_qty){
                         item.qty = item.qty.toInt() + num.toInt()
-                        val db = DBConnect(this, Utilities.DBNAME, null, 1).writableDatabase
+                        val db = DBConnect(
+                            this,
+                            OdooData.DBNAME,
+                            null,
+                            1
+                        ).writableDatabase
                         val contentValues = ContentValues()
                         contentValues.put("quantity_done",num.toInt())
-                        db.update(Utilities.TABLE_STOCK_ITEMS,contentValues, "id="+item.id,null)
+                        db.update(OdooData.TABLE_STOCK_ITEMS,contentValues, "id="+item.id,null)
                         item.isLineScanned = 2
                         val adapterModifier = productToLocationLv.adapter as ProductsToLocationAdapter
                         adapterModifier.notifyDataSetChanged()
@@ -340,7 +354,12 @@ class ProductsToLocationActivity : AppCompatActivity() {
 
     private fun populateListView(data: String)
     {
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
         val cursor = db.getLocationMoves(data)
         var orders : ProductsToLocationDataModel
         if(cursor.count <= 0){
@@ -408,21 +427,33 @@ class ProductsToLocationActivity : AppCompatActivity() {
 
     private fun movesTest(location: String, pickingId : Int) : String
     {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.movesTest(location, pickingId)
     }
 
     private fun setMoves(moveId : Int, moveQty : Int) : List<Any>
     {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         val noIds = emptyList<Int>()
         return odooConn.setMovesQty(moveId,moveQty)
     }
 
     fun syncLocationItems(pickingOriginativeId: Int) : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odoo = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odoo.authenticateOdoo()
         val stockPicking = odoo.getLocationsItems(pickingOriginativeId)
         Log.d("OrderList", stockPicking)
@@ -430,7 +461,11 @@ class ProductsToLocationActivity : AppCompatActivity() {
     }
 
     private fun searchProduct(product_id : String): String {
-        val odooConn = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odooConn.authenticateOdoo()
         return odooConn.searchProduct(product_id)
     }

@@ -12,9 +12,11 @@ import android.widget.SearchView
 import android.widget.Toast
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.morsaapp.adapter.RevisionAdapter
+import com.example.morsaapp.data.DBConnect
+import com.example.morsaapp.data.OdooConn
+import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.ReceptionDataModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlinx.coroutines.runBlocking
 import org.apache.xmlrpc.XmlRpcException
 import org.json.JSONArray
 import kotlin.concurrent.thread
@@ -97,14 +99,19 @@ class RevisionActivity : AppCompatActivity() {
     }
 
     private fun refreshData(){
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
-        if(db.deleteDataOnTable(Utilities.TABLE_STOCK)){
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
+        if(db.deleteDataOnTable(OdooData.TABLE_STOCK)){
             thread {
                 try {
                     val deferredStockReSync: String = syncInspections()
                     Log.d("Returned Stock", deferredStockReSync)
                     val stockJson = JSONArray(deferredStockReSync)
-                    val result = db.fillTable(stockJson, Utilities.TABLE_STOCK)
+                    val result = db.fillTable(stockJson, OdooData.TABLE_STOCK)
                     if (result) {
                         runOnUiThread {
                             swipeRefreshLayout.isRefreshing = false
@@ -147,7 +154,12 @@ class RevisionActivity : AppCompatActivity() {
 
     private fun populateListView()
     {
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
         val cursor = db.fillStockListView()
         var orders : ReceptionDataModel?
 
@@ -222,7 +234,11 @@ class RevisionActivity : AppCompatActivity() {
     }
 
     fun syncInspections() : String{
-        val odoo = OdooConn(prefs.getString("User", ""), prefs.getString("Pass", ""),this)
+        val odoo = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
         odoo.authenticateOdoo()
         val stockPicking = odoo.inspections
         Log.d("OrderList", stockPicking)
