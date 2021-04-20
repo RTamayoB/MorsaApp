@@ -1,5 +1,7 @@
 package com.example.morsaapp.adapter;
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -45,10 +47,10 @@ public class MissingProductsAdapter extends BaseAdapter {
 
         convertView = LayoutInflater.from(mContext).inflate(R.layout.no_product_item, null);
 
-        CheckBox productCheck = convertView.findViewById(R.id.mp_name_txt);
+        final CheckBox productCheck = convertView.findViewById(R.id.mp_name_txt);
         productCheck.setText(item.getName());
         final EditText qty = convertView.findViewById(R.id.mp_qty_edt);
-        qty.setText(item.totalQty.toString());
+        qty.setText(item.missingQty.toString());
 
         productCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -56,12 +58,45 @@ public class MissingProductsAdapter extends BaseAdapter {
                 if (isChecked){
                     item.isChecked = true;
                     item.missingQty = Integer.parseInt(qty.getText().toString());
+                    notifyDataSetChanged();
                 }
                 else{
                     item.isChecked = false;
+                    notifyDataSetChanged();
                 }
             }
         });
+
+        TextWatcher textWatcher = new TextWatcher() {
+
+            public void afterTextChanged(Editable s) {
+                try {
+                    item.missingQty = Integer.parseInt(qty.getText().toString());
+                    qty.setText(item.missingQty);
+                }catch (Exception e){
+
+                }
+            }
+
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                try {
+                    item.missingQty = Integer.parseInt(qty.getText().toString());
+                    qty.setText(item.missingQty);
+                }catch (Exception e){
+
+                }
+            }
+        };
+
+        qty.addTextChangedListener(textWatcher);
+
+
+        if(item.isChecked){
+            productCheck.setChecked(true);
+        }
 
         return convertView;
     }

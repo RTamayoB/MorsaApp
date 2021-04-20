@@ -98,7 +98,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
     private var returnID : Boolean = false
     lateinit var scanPopupWindow : PopupWindow
     lateinit var selectPopupWindow : PopupWindow
-     var activeModeId : Int = 0
+    var activeModeId : Int = 0
     var maxNumber = 0
 
     lateinit var finalHashMap : HashMap<Int,
@@ -1004,33 +1004,6 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                 incidDataModel,
                 this
             )
-//
-//        val adapterGlobalListView = popupListViewGlobal.adapter as IssuesPopupAdapter
-//        if(finalHashMap[pickingId.toInt()]?.get(activeModeId)?.get("issues") == null)
-//        {
-//
-//            Log.d("HM", finalHashMap.toString())
-//            Log.d("HM", activeModeId.toString())
-//            adapterGlobalListView.dataSet = incidDataModel
-//        }
-//        else
-//        {
-//            var arrayListForPopUpAdapter=ArrayList<IssuesPopupDataModel>()
-//
-//            for (issue in finalHashMap[pickingId.toInt()]?.get(activeModeId)?.get("issues") as ArrayList<ArrayList<Int>>){
-//                val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1).writableDatabase
-//                val cursor = db.rawQuery("SELECT name FROM "+Utilities.TABLE_STOCK_ISSUES+" WHERE id = "+ issue[0], null)
-//                var name : String = "None"
-//                while (cursor.moveToNext()){
-//                    name = cursor.getString(0)
-//                }
-//                arrayListForPopUpAdapter.add(IssuesPopupDataModel(activeModeId,name, issue[0], issue[1]))
-//                cursor.close()
-//            }
-//
-//            adapterGlobalListView.dataSet = arrayListForPopUpAdapter
-//        }
-//        adapterGlobalListView.notifyDataSetChanged()
     }
 
     var productScannedId = 0

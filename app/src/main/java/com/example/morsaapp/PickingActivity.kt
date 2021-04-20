@@ -33,6 +33,7 @@ class PickingActivity : AppCompatActivity() {
 
     lateinit var prefs : SharedPreferences
     lateinit var swipeRefreshLayout : SwipeRefreshLayout
+    lateinit var orderType : String
 
     fun saveHashMap(key: String?, obj: Any?, context : Context) {
         val prefs: SharedPreferences = context.getSharedPreferences("startupPreferences", 0)
@@ -80,6 +81,7 @@ class PickingActivity : AppCompatActivity() {
             Log.d("PickingIds", model.picking_ids.toString())
             intent.putExtra("pickingIds",pickingIds)
             intent.putExtra("rackId", rackId)
+            intent.putExtra("orderType", orderType)
             finish()
             startActivity(intent)
         }
@@ -213,6 +215,8 @@ class PickingActivity : AppCompatActivity() {
             racks.date = cursorRack.getString(cursorRack.getColumnIndex("create_date"))
             racks.box = "1 (Temp)"
 
+            //Check if local
+            orderType = cursorRack.getString(cursorRack.getColumnIndex("order_type"))
             datamodels.add(racks)
         }
         obtainList()

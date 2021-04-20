@@ -1,18 +1,27 @@
 package com.example.morsaapp
 
-import android.content.Intent
-import android.content.SharedPreferences
+import android.content.*
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import com.example.morsaapp.adapter.InvoiceAdapter
+import com.example.morsaapp.adapter.IssuesPopupAdapter
+import com.example.morsaapp.adapter.OrderRevisionAdapter
+import com.example.morsaapp.adapter.ScanIssuesAdapter
 import com.example.morsaapp.data.DBConnect
 import com.example.morsaapp.data.OdooConn
 import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.InvoiceDataModel
+import com.example.morsaapp.datamodel.IssuesPopupDataModel
+import com.example.morsaapp.datamodel.OrderRevisionDataModel
+import com.example.morsaapp.datamodel.ScanIssuesDataModel
+import com.google.gson.Gson
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -21,10 +30,10 @@ import org.apache.xmlrpc.XmlRpcException
 import org.json.JSONArray
 import kotlin.concurrent.thread
 
-class RefundDetailsActivity : AppCompatActivity() {
-    var datamodels = ArrayList<InvoiceDataModel>()
+class RefundDetailsActivity : AppCompatActivity(), Definable {
+    var datamodels = ArrayList<OrderRevisionDataModel>()
     lateinit var refundDetailsLv : ListView
-    lateinit var adapter : InvoiceAdapter
+    lateinit var adapter : OrderRevisionAdapter
     lateinit var progressBar: ProgressBar
 
     lateinit var prefs : SharedPreferences
@@ -32,6 +41,33 @@ class RefundDetailsActivity : AppCompatActivity() {
     private var user : String? = ""
     private var pass : String? = ""
     private var invoiceId : String? = ""
+
+    //Inspection variables
+    lateinit var scanPopupWindow : PopupWindow
+    lateinit var selectPopupWindow : PopupWindow
+    var activeModeId : Int = 0
+    var markedAsExcedent : Boolean = false
+    var productScannedId = 0
+    lateinit var scanIssuesLv :ListView
+    private var scanIssuesDataModel = ArrayList<ScanIssuesDataModel>()
+    private var returnID : Boolean = false
+    lateinit var finalHashMap : HashMap<Int, HashMap<Int, HashMap<String,Any>>>
+    lateinit var pickingId : String
+    var maxNumber = 0
+    lateinit var popupViewGlobal : View
+    private lateinit var popupListViewGlobal:ListView
+    private var incidDataModel = ArrayList<IssuesPopupDataModel>()
+
+    private val mScanReceiver = object : BroadcastReceiver(){
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val action = intent?.action
+
+            if(action == resources.getString(R.string.activity_intent_action)){
+                val value = intent.getStringExtra("barcode_string")
+                displayScanResult(value!!)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,8 +78,13 @@ class RefundDetailsActivity : AppCompatActivity() {
         user = prefs.getString("User","Null")
         pass = prefs.getString("Pass","Null")
 
+        val filter = IntentFilter()
+        filter.addAction(resources.getString(R.string.activity_intent_action))
+        registerReceiver(mScanReceiver, filter)
+
         val intent : Intent = intent
         invoiceId = intent.getStringExtra("ID")
+        pickingId = intent.getStringExtra("ID")!!
         //val purchaseId = intent.getStringExtra("Purchase Id")
         val number = intent.getStringExtra("Number")
         val displayName = intent.getStringExtra("Display Name")
@@ -113,6 +154,41 @@ class RefundDetailsActivity : AppCompatActivity() {
                 .show()
         }
 
+        //Inspection
+        finalHashMap= HashMap()
+        finalHashMap[pickingId.toInt()] = HashMap()
+
+        val dbReload =
+            DBConnect(this, OdooData.DBNAME, null, 1)
+        /**
+         * Reload the issues table
+         */
+        if(dbReload.deleteDataOnTable(OdooData.TABLE_STOCK_ISSUES)){
+            thread {
+                try {
+                    val deferredIssuesList : String = getStockMoveIssue()
+                    val issuesJson = JSONArray(deferredIssuesList)
+                    val issuesUpdate = dbReload.fillTable(issuesJson, OdooData.TABLE_STOCK_ISSUES)
+                    if(issuesUpdate){
+                        Log.d("Issues Table", "Updated")
+                    }
+                }catch (e: java.lang.Exception){
+                    runOnUiThread {
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error General", 24.0F, Toast.LENGTH_LONG)
+                    }
+                    Log.d("Error General",e.toString())
+                }catch (xml: XmlRpcException){
+                    runOnUiThread {
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Error de Red: $xml", 24.0F, Toast.LENGTH_LONG)
+                    }
+                    Log.d("Error de Red",xml.toString())
+                }
+            }
+
+        }
+
     }
 
     override fun onBackPressed() {
@@ -160,7 +236,7 @@ class RefundDetailsActivity : AppCompatActivity() {
                             progressBar.isVisible = false
                             datamodels.clear()
                             populateListView(relatedId)
-                            val adapter = refundDetailsLv.adapter as InvoiceAdapter
+                            val adapter = refundDetailsLv.adapter as OrderRevisionAdapter
                             adapter.notifyDataSetChanged()
                             val customToast = CustomToast(this, this)
                             customToast.show("Lista Actualizada", 24.0F, Toast.LENGTH_LONG)
@@ -201,17 +277,25 @@ class RefundDetailsActivity : AppCompatActivity() {
             1
         )
         val refundItemsCursor = db.fillRefundItemsListView(id)
-        var items : InvoiceDataModel?
+        var items : OrderRevisionDataModel?
 
 
         while (refundItemsCursor.moveToNext()) {
-            items = InvoiceDataModel()
-            var name = refundItemsCursor.getString(2).split(",")[1]
+            items = OrderRevisionDataModel()
+            val productId = refundItemsCursor.getString(2).split(",")
+            Log.d("ProductId",productId.toString())
+            var name = productId[1]
             name = name.replace("\"", "")
             name = name.replace("]", "")
-            items.product = name +" x "+refundItemsCursor.getString(4) +"\n" +
+            var myId = productId[0]
+            myId = myId.replace("[","")
+            items.productName = name
+            items.productId = myId.toInt()
+            items.qty = refundItemsCursor.getInt(refundItemsCursor.getColumnIndex("qty"))
+            items.incidencies = "0"
+            //items.product = name +" x "+refundItemsCursor.getString(4) +"\n" +
                     refundItemsCursor.getString(3) +" c/u "
-            items.imports = refundItemsCursor.getString(3) + " MXN"
+            //items.imports = refundItemsCursor.getString(3) + " MXN"
 
 
             datamodels.add(items)
@@ -222,8 +306,209 @@ class RefundDetailsActivity : AppCompatActivity() {
     }
 
     private fun obtainList() {
-        adapter = InvoiceAdapter(datamodels, this)
+        adapter = OrderRevisionAdapter(this,datamodels,null)
         refundDetailsLv.adapter = adapter
+    }
+
+    private fun displayScanResult(decodedString : String) {
+        try {
+            scanPopupWindow.dismiss()
+            selectPopupWindow.dismiss()
+        }catch (e : java.lang.Exception){
+            Log.d("NULL","Es nulo")
+        }
+
+
+        Log.d("Barcode",decodedString)
+        var scannedProductIdSearch = 0
+        /*
+        val db = DBConnect(this, Utilities.DBNAME, null, 1).readableDatabase
+        val cursor = db.rawQuery("SELECT id FROM "+Utilities.TABLE_PRODUCT_PRODUCT+" where barcode = ? OR default_code = ?", arrayOf(decodedData, decodedData))
+
+        */
+        var pedido: OrderRevisionDataModel
+        val deferredProductId = GlobalScope.async { searchProduct(decodedString) }
+        var code : String
+        try{
+            runBlocking {
+                if(deferredProductId.await() != "[]"){
+                    Log.d("Raw code result",deferredProductId.await().toString())
+                    val raw = deferredProductId.await()
+                    val parse1 = raw.replace("[","")
+                    val parse2 = parse1.replace("]","")
+                    code = parse2
+                    val list : List<String> = code.split(",").map { it.trim() }
+                    scannedProductIdSearch = list[0].toInt()
+                    Log.d("Scanned Product", scannedProductIdSearch.toString())
+                }
+                else{
+                    val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
+                    customToast.show("Producto no encontrado", 24.0F, Toast.LENGTH_LONG)
+                }
+            }
+        }catch (e: java.lang.Exception){
+            runOnUiThread {
+                val customToast = CustomToast(this, this)
+                customToast.show("Error General", 24.0F, Toast.LENGTH_LONG)
+            }
+            Log.d("Error General",e.toString())
+        }catch (xml: XmlRpcException){
+            runOnUiThread {
+                val customToast = CustomToast(this, this)
+                customToast.show("Error encontrando Producto", 24.0F, Toast.LENGTH_LONG)
+            }
+            Log.d("Error de Red",xml.toString())
+        }
+
+        for(i in 0 until refundDetailsLv.adapter.count){
+            pedido = refundDetailsLv.adapter.getItem(i) as OrderRevisionDataModel
+            val productId = pedido.productId
+            Log.d("Product Id and Name", productId.toString()+ pedido.productName)
+            if(scannedProductIdSearch == productId){
+                Log.d("Match in", productId.toString())
+                if(activeModeId != pedido.Id){
+                    markedAsExcedent = false
+                }
+                activeModeId = pedido.Id
+                if ((pedido.revisionQty >= pedido.qty) && !markedAsExcedent){
+                    val builder = AlertDialog.Builder(this)
+                    builder.setTitle("Producto Excede Cantidad")
+                        .setMessage("¿Desea agregar los siguientes productos a excedente?")
+                        .setPositiveButton("Aceptar"){ _, _ ->
+                            markedAsExcedent = true
+
+                        }
+                        .setNegativeButton("Cancelar"){ dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .show()
+                }
+                else {
+                    setScannedQuantity(productId)
+                    pedido.revisionQty++
+                    val arrayAdapter = refundDetailsLv.adapter as OrderRevisionAdapter
+                    arrayAdapter.dataSet[i] = pedido
+                    arrayAdapter.notifyDataSetChanged()
+                    productScannedId = pedido.Id
+
+                    val db = DBConnect(
+                        applicationContext,
+                        OdooData.DBNAME,
+                        null,
+                        1
+                    ).writableDatabase
+                    val contentValues = ContentValues()
+                    contentValues.put("revision_qty", pedido.revisionQty)
+
+                    db.update(OdooData.TABLE_STOCK_ITEMS, contentValues, "id = "+pedido.Id,null)
+                    Log.d("Updated", "Done")
+
+                    //inflate the layout of popup window
+                    val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+                    val popupView: View = inflater.inflate(R.layout.issues_scan_popup, null)
+
+                    scanIssuesLv = popupView.findViewById(R.id.direct_incidencies_lv)
+                    val scannedProduct = popupView.findViewById<TextView>(R.id.product_chosed_txt)
+                    scannedProduct.text = pedido.productName
+
+                    val noIssuesBtn = popupView.findViewById<Button>(R.id.no_incidencies_btn)
+                    noIssuesBtn.setOnClickListener {
+                        scanPopupWindow.dismiss()
+                    }
+
+                    scanIssuesDataModel.clear()
+                    populateScanIssuesListView(returnID)
+
+                    //create the popup window
+                    val width: Int = LinearLayout.LayoutParams.WRAP_CONTENT
+                    val height: Int = LinearLayout.LayoutParams.WRAP_CONTENT
+                    val focusable = true
+
+                    scanPopupWindow = PopupWindow(popupView, width, height, focusable)
+
+                    scanPopupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
+                }
+            }
+        }
+    }
+
+    private fun populateScanIssuesListView(isDevolution : Boolean)
+    {
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
+        val cursor = db.fillIncidenciesListView(isDevolution)
+        var items : ScanIssuesDataModel
+        while (cursor.moveToNext()) {
+            items = ScanIssuesDataModel()
+            items.scanIssueName = cursor.getString(cursor.getColumnIndex("name"))
+            items.scanIssueId = cursor.getInt(cursor.getColumnIndex("id"))
+            items.isChecked = 0
+            scanIssuesDataModel.add(items)
+        }
+        obtainScanIssuesList()
+        cursor.close()
+        db.close()
+    }
+
+    private fun obtainScanIssuesList() {
+        val adapter = ScanIssuesAdapter(
+            scanIssuesDataModel,
+            this,
+            this
+        )
+        scanIssuesLv.adapter = adapter
+    }
+
+    fun setScannedQuantity(scanId: Int):Boolean{
+        var hmFinalPickingId = finalHashMap[pickingId.toInt()]
+        var issuesQtyHm = hmFinalPickingId?.get(activeModeId)
+        //If the id of the active move is not a key in hashmap, we will make a key from it and assign a hashmap with a "issues" key that will have a list with the scanned issue and 1 (default) issue.
+        if(issuesQtyHm == null){
+            hmFinalPickingId?.put(activeModeId, hashMapOf("qty" to 1))
+            //Test
+        }
+        //If the id of the active move is a key in hashmap.
+        else{
+            var intQty=issuesQtyHm.get("qty")
+            //qty is not a key, then make a key and assign a list with the scan issue and 1 (default)
+            if (intQty == null) {
+                issuesQtyHm.put("qty",1)
+            }
+            //qty is a key, take the previous value of that qty and add 1 to it.
+            else{
+                //iterate and check which one correspond to the id we are manipulating
+                finalHashMap[pickingId.toInt()]?.get(activeModeId)?.put("qty",(intQty as Int)+1)
+
+            }
+        }
+        Log.d("HashMap Result", finalHashMap.toString())
+        return true
+    }
+
+    private fun searchProduct(product_id : String): String {
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
+        odooConn.authenticateOdoo()
+        return odooConn.searchProduct(product_id)
+    }
+
+    private fun getStockMoveIssue() : String
+    {
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
+        odooConn.authenticateOdoo()
+        val noIds = emptyList<Int>()
+        return odooConn.stockMoveIssue
     }
 
     private fun confirmStockReturn(id: Int): List<Any> {
@@ -246,5 +531,294 @@ class RefundDetailsActivity : AppCompatActivity() {
         odoo.authenticateOdoo()
         val invoiceLine = odoo.reloadStockReturnLines(returnId)
         return invoiceLine
+    }
+
+    override fun showPopup(value: Int, moveId: Int, Name: String?) {
+        this.activeModeId = moveId
+        var correctedValue=value
+        maxNumber = correctedValue
+        val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val popupView : View = inflater.inflate(R.layout.issues_popup, null)
+
+        val width : Int = LinearLayout.LayoutParams.WRAP_CONTENT
+        val height : Int = LinearLayout.LayoutParams.WRAP_CONTENT
+        val focusable = true
+        //create the popup window
+        selectPopupWindow = PopupWindow(popupView, width, height, focusable)
+        this.popupViewGlobal =  popupView
+        val productName = popupView.findViewById<TextView>(R.id.productName_lbl)
+        productName.text = Name
+        val confirmBtn = popupView.findViewById<Button>(R.id.confirm_incidencies)
+        confirmBtn.setOnClickListener {
+            selectPopupWindow.dismiss()
+            /**
+             * Tells me the result of the incidencies
+             */
+            Log.d("Qty and Issues", finalHashMap[pickingId.toInt()]?.get(activeModeId)?.get("qty").toString()+" - "
+                    +finalHashMap[pickingId.toInt()]?.get(activeModeId)?.get("issues").toString())
+        }
+        val number = popupView.findViewById<TextView>(R.id.incid_txt)
+
+        number.text = getTotalIssuesFromMove(activeModeId).toString()
+        /**
+         * Hardcoding the Number of incidencies
+         */
+        number.text = finalHashMap[pickingId.toInt()]?.get(activeModeId)?.get("qty").toString()
+        this.popupListViewGlobal = popupView.findViewById(R.id.incidencies_popup_lv)
+        populateIssuesListView(returnID)
+
+        selectPopupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
+    }
+
+    private fun populateIssuesListView(isDevolution: Boolean)
+    {
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            1
+        )
+
+        val cursor = db.fillIncidenciesListView(isDevolution)
+        if (finalHashMap[pickingId.toInt()]?.get(this.activeModeId)?.get("issues") == null){
+
+            incidDataModel.clear()
+            var items : IssuesPopupDataModel
+            while (cursor.moveToNext()) {
+                items = IssuesPopupDataModel()
+                items.orderId = activeModeId
+                items.incid_id = cursor.getInt(cursor.getColumnIndex("id"))
+                items.incid_type = cursor.getString(cursor.getColumnIndex("name"))
+                items.number = 0
+
+
+                incidDataModel.add(items)
+                obtainIssuesList()
+            }
+        }else {
+            incidDataModel.clear()
+            var items : IssuesPopupDataModel
+            while (cursor.moveToNext()) {
+                items = IssuesPopupDataModel()
+                items.orderId = activeModeId
+                items.incid_id = cursor.getInt(cursor.getColumnIndex("id"))
+                items.incid_type = cursor.getString(cursor.getColumnIndex("name"))
+                items.number = 0
+                for (issue in finalHashMap[pickingId.toInt()]?.get(activeModeId)?.get("issues") as ArrayList<ArrayList<Int>>) {
+                    if (issue[0] == items.incid_id) {
+                        items.number = issue[1]
+                    }
+                }
+
+                incidDataModel.add(items)
+            }
+        }
+
+
+//        if(finalHashMap[pickingId.toInt()]?.get(this.activeModeId)==null){
+//            Log.d("This Happened","1")
+//            incidDataModel.clear()
+//            var items : IssuesPopupDataModel
+//            while (cursor.moveToNext()) {
+//                items = IssuesPopupDataModel()
+//                items.orderId = activeModeId
+//                items.incid_id = cursor.getInt(cursor.getColumnIndex("id"))
+//                items.incid_type = cursor.getString(cursor.getColumnIndex("name"))
+//                items.number = 0
+//
+//
+//                incidDataModel.add(items)
+//                obtainIssuesList()
+//            }
+//        }
+//        else{
+//            Log.d("This Happened", "2")
+//            obtainIssuesList()
+//        }
+        obtainIssuesList()
+        cursor.close()
+        db.close()
+    }
+
+    private fun obtainIssuesList() {
+        popupListViewGlobal.adapter =
+            IssuesPopupAdapter(
+                this,
+                incidDataModel,
+                this
+            )
+    }
+
+    fun getTotalIssuesFromMove(moveId : Int): Int{
+        val issues = finalHashMap[pickingId.toInt()]?.get(activeModeId)?.get("issues") ?: return 0
+        var totalIssues = 0
+        for (issue in issues as ArrayList<ArrayList<Int>>){
+            totalIssues += issue[1]
+            Log.d("Total Issues", totalIssues.toString())
+
+        }
+        return totalIssues
+    }
+
+    override fun alterCount(item: IssuesPopupDataModel, position: Int?, increase: Boolean) {
+        val tvIssues=this.popupViewGlobal.findViewById<TextView>(R.id.incid_txt)
+        val adapterIssues: IssuesPopupAdapter = popupListViewGlobal.adapter as IssuesPopupAdapter
+        val number=tvIssues.text.toString().toInt()
+        val issueChosen = item.incid_id
+
+        val currentQty = finalHashMap[pickingId.toInt()]?.get(activeModeId)?.get("qty")
+        var totalIssues = 0
+        var workingList = arrayListOf<Int>()
+        //Test
+        if(finalHashMap.get(pickingId.toInt()) == null){
+            Log.d("It was null", "Picking is null")
+        }
+        if(finalHashMap[pickingId.toInt()]?.get(activeModeId) == null){
+            Log.d("It was null", "Mode id is null")
+        }
+        if (currentQty == null){
+            Log.d("It was null", finalHashMap[pickingId.toInt()]?.get(activeModeId)?.get("issues").toString())
+            return
+        }
+        else {
+            /* CHANGE */
+            val issues : ArrayList<ArrayList<Int>>
+            if(finalHashMap[pickingId.toInt()]?.get(activeModeId)?.get("issues") == null){
+                //finalHashMap[pickingId.toInt()]?.put(activeModeId, hashMapOf("issues" to arrayListOf(arrayListOf(0, 1))))
+                Log.d("Null", finalHashMap[pickingId.toInt()]?.get(activeModeId)?.get("issues").toString())
+                return
+            }
+            else{
+                issues = finalHashMap[pickingId.toInt()]?.get(activeModeId)?.get("issues") as ArrayList<ArrayList<Int>>
+            }
+            /*CHANGE*/
+            Log.d("HashMap Before Sum/Rest", finalHashMap[pickingId.toInt()]?.get(activeModeId)?.get("issues").toString())
+            var exists = false
+            for ((key,issue) in  issues.withIndex()) {
+                if (issue[0] == issueChosen) {
+                    exists = true
+                    workingList = issues[key]
+                    totalIssues = getTotalIssuesFromMove(activeModeId)
+
+                }
+            }
+            if (!exists){
+                workingList = arrayListOf(issueChosen,0)
+                issues.add(workingList)
+            }
+        }
+        if (increase) {
+            if (totalIssues < currentQty as Int) {
+                item.number++
+                workingList[1] = item.number
+
+                Log.d("HashMap After Sum", finalHashMap[pickingId.toInt()]?.get(activeModeId)?.get("issues").toString())
+            }
+        } else {
+            if (totalIssues > 0 && (item.number > 0)) {
+                item.number--
+                workingList[1] = item.number
+
+
+                Log.d("HashMap After Rest", finalHashMap[pickingId.toInt()]?.get(activeModeId)?.get("issues").toString())
+            }
+        }
+        adapterIssues.notifyDataSetChanged()
+
+//        val popupGeneralNumber=tvIssues.text.toString().toInt()
+//        Log.d("general number",popupGeneralNumber.toString())
+//        Log.d("increase",increase.toString())
+//
+//        val arrayListToSet = adapterIssues.dataSet
+//        val setincid = adapterIssues.getItem(position) as IssuesPopupDataModel
+//
+//        if(tvIssues!=null) {
+//            if (increase) {
+//                if(!(item.number==0 || ((popupGeneralNumber+1)>popUpMaxNumber))){
+//                    item.number--
+//                    value = 1
+//                }
+//
+//            } else {
+//                if((popupGeneralNumber-1) >= 0){
+//                    item.number++
+//                    value = -1
+//                }
+//            }
+//            if(value == 0)
+//                return
+//            setincid.incidHashMap[setincid.incid_id] = item.number
+//            tvIssues.text = (number+value).toString()
+//            arrayListToSet[position] = item
+////           adapter.setData(array_list_to_set)
+//            Log.d("Item Number", item.number.toString())
+//            adapterIssues.notifyDataSetChanged()
+//
+//        }else{
+//            Log.d("funcionando","es nulo")
+//        }
+    }
+
+    override fun setNumber(newvalue: Int, item: IssuesPopupDataModel?) {
+    }
+
+    override fun setScannedIssue(issueId: Int) {
+        Log.d("scan_id",issueId.toString())
+        var issuesQty=1
+        var hmFinalPickingId = finalHashMap[pickingId.toInt()]
+        var issuesQtyHm = hmFinalPickingId?.get(activeModeId)
+        //If the id of the active move is not a key in hashmap, we will make a key from it and assign a hashmap with a "issues" key that will have a list with the scanned issue and 1 (default) issue.
+        if(issuesQtyHm == null){
+            var list2= listOf(listOf(issueId, 1))
+            hmFinalPickingId?.put(activeModeId, hashMapOf("issues" to arrayListOf(arrayListOf(issueId, 1))))
+        }
+        //If the id of the active move is a key in hashmap.
+        else{
+            var listIssues=issuesQtyHm.get("issues")
+            //issues is not a key, then make a key and assign a list with the scan issue and 1 (default)
+            if (listIssues == null) {
+                issuesQtyHm.put("issues",arrayListOf(arrayListOf(issueId, 1)))
+            }
+            //issues is a key, take the previous value of that issue and add 1 to it.
+            else{
+                //iterate and check which one correspond to the id we are manipulating
+                listIssues=listIssues as ArrayList<ArrayList<Int>>
+                //var to know if we modified something
+                var modified=false
+                for (issue in listIssues){
+                    if(issue.get(0)==issueId){
+                        issue.set(1,issue.get(1).plus(1))
+                        //issuesQty=issue.get(1).plus(1)
+                        modified=true
+                        break
+                    }
+                }
+                //if we didn't modify it, we gotta create it
+                if(!modified){
+                    var list=finalHashMap[pickingId.toInt()]?.get(activeModeId)?.get("issues") as ArrayList<List<Int>>
+                    list.add(arrayListOf(issueId, 1))
+                }
+            }
+        }
+        val listIssues = finalHashMap[pickingId.toInt()]?.get(activeModeId)?.get("issues")
+        val objGson = Gson()
+        val obj = objGson.toJson(listIssues)
+        val bundle = Bundle()
+        bundle.putString("key", obj)
+        val db = DBConnect(
+            this,
+            OdooData.DBNAME,
+            null,
+            1
+        ).writableDatabase
+        Log.d("Saving issues in ",activeModeId.toString())
+        db.execSQL("UPDATE "+ OdooData.TABLE_STOCK_ITEMS+" SET issues = '"+bundle.get("key").toString()+"' WHERE id = '"+activeModeId+"'")
+        try{
+            scanPopupWindow.dismiss()
+        }catch(error: java.lang.Exception){
+            Log.e("error",error.message)
+        }
+
+        Log.d("HashMap Result", finalHashMap.toString())
     }
 }

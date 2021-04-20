@@ -29,7 +29,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.apache.xmlrpc.XmlRpcException
 import org.json.JSONArray
+import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 import kotlin.concurrent.thread
 
 
@@ -54,6 +57,7 @@ class PickingMovesActivity : AppCompatActivity() {
 
     //Timer Data
     var timers : HashMap<String, Long> = HashMap()
+    public lateinit var timerTxt : TextView
 
     lateinit var prefs : SharedPreferences
 
@@ -104,7 +108,13 @@ class PickingMovesActivity : AppCompatActivity() {
 
         pickingMovesLv = findViewById(R.id.picking_moves_lv)
         progressBar = findViewById(R.id.picking_move_progress)
-        val timerTxt = findViewById<TextView>(R.id.timer_txt)
+        timerTxt = findViewById<TextView>(R.id.timer_txt)
+
+        /*
+        if(intent?.getStringExtra("orderType") != "local"){
+            timerTxt.visibility = View.INVISIBLE
+        }*/
+
 
         progressBar.isVisible = true
 
@@ -176,16 +186,39 @@ class PickingMovesActivity : AppCompatActivity() {
             }
         }
 
+
         if(timers[rackId] == null){
             timers[rackId] = 900000
         }
         val time : Long = timers[rackId] as Long
         Log.d("Time", time.toString())
         timerTxt.setTextColor(Color.GREEN)
-        val timer  = object: CountDownTimer(time, 1000) {
+
+        var updiff: Long = 1000
+        val maxCounter : Long = 9000000
+        val uptimer  = object: CountDownTimer(maxCounter, updiff) {
+            override fun onTick(millisUntilFinished: Long) {
+                timerTxt.setTextColor(Color.RED)
+                val updiff = maxCounter - millisUntilFinished
+                timerTxt.text = String.format(
+                    "-%02d:%02d",
+                    TimeUnit.MILLISECONDS.toMinutes(updiff),
+                    TimeUnit.MILLISECONDS.toSeconds(updiff) -
+                            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(updiff))
+                )
+                timers[rackId] = -updiff
+            }
+
+            override fun onFinish() {
+                timerTxt.setTextColor(Color.RED)
+            }
+        }
+
+
+        val downTimer  = object: CountDownTimer(time, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 if(millisUntilFinished <= time/2){
-                    timerTxt.setTextColor(Color.YELLOW)
+                    timerTxt.setTextColor(Color.parseColor("#ffa500"))
                 }
                 else{
                     timerTxt.setTextColor(Color.GREEN)
@@ -206,11 +239,41 @@ class PickingMovesActivity : AppCompatActivity() {
             override fun onFinish() {
                 timerTxt.text = resources.getString(R.string.time_over)
                 timerTxt.setTextColor(Color.RED)
+                uptimer.start()
             }
         }
-        timer.start()
+        if(timers[rackId]!! < 0 ){
+            uptimer.start()
+        }else{
+            downTimer.start()
+        }
+
+
 
     }
+
+    /*
+    class Timer : NegativeCountDownTimer(10000,1000) {
+
+        override fun onTickToc(millisFromFinished: Long) {
+            timerTxt.text = String.format(
+                "%02d:%02d",
+                TimeUnit.MILLISECONDS.toMinutes(millisFromFinished),
+                TimeUnit.MILLISECONDS.toSeconds(millisFromFinished) -
+                        TimeUnit.MINUTES.toSeconds(
+                            TimeUnit.MILLISECONDS.toMinutes(
+                                millisFromFinished
+                            )
+                        )
+            )
+        }
+
+        override fun onZero() {
+            timerTxt.text = resources.getString(R.string.time_over)
+            timerTxt.setTextColor(Color.RED)
+        }
+
+    }*/
 
     override fun onBackPressed() {
         super.onBackPressed()
@@ -274,14 +337,17 @@ class PickingMovesActivity : AppCompatActivity() {
     private fun populatePopupListview(){
         popupDataModel.clear()
         for (data in datamodels){
-            val item = MissingProductsDatamodel()
-            item.id = data.productId.toInt()
-            val name = data.stockMoveName
-            Log.d("NameParsed", name)
-            item.name = name
-            item.qty = data.qty
-            item.totalQty = data.total_qty
-            popupDataModel.add(item)
+            if(data.lineScanned != 1){
+                val item = MissingProductsDatamodel()
+                item.id = data.productId.toInt()
+                val name = data.stockMoveName
+                Log.d("NameParsed", name)
+                item.name = name
+                item.missingQty = data.total_qty
+                item.qty = data.qty
+                item.totalQty = data.total_qty
+                popupDataModel.add(item)
+            }
         }
 
         popupListViewGlobal.adapter =
@@ -603,7 +669,7 @@ class PickingMovesActivity : AppCompatActivity() {
                             for(j in 0 until pickingMovesLv.adapter.count){
                                 val product = pickingMovesLv.adapter.getItem(j) as ProductsToLocationDataModel
                                 destiny = product.location
-                                if(product.lineScanned == 0){
+                                if(product.lineScanned == 1){
                                     scanDestiny = false
                                 }
                             }
