@@ -45,20 +45,22 @@ public class PickingAdapter extends BaseAdapter implements Filterable{
     public View getView(int position, View convertView, ViewGroup parent) {
         PickingDataModel item = (PickingDataModel) getItem(position);
 
-        convertView = LayoutInflater.from(mContext).inflate(R.layout.picking_item, null);
+
+        if(convertView == null){
+            convertView = LayoutInflater.from(mContext).inflate(R.layout.picking_item, null);
 
 
-        TextView num = convertView.findViewById(R.id.picking_name_txt);
-        TextView date = convertView.findViewById(R.id.picking_date_txt);
-        TextView time = convertView.findViewById(R.id.picking_time_txt);
-        TextView box = convertView.findViewById(R.id.picking_box_txt);
+            TextView num = convertView.findViewById(R.id.picking_name_txt);
+            TextView date = convertView.findViewById(R.id.picking_date_txt);
+            TextView time = convertView.findViewById(R.id.picking_time_txt);
+            TextView box = convertView.findViewById(R.id.picking_box_txt);
 
-        num.setText(item.getName());
-        String[] timeDate = item.date.split(" ");
-        date.setText(timeDate[0]);
-        time.setText(timeDate[1]);
-        box.setText(item.getBox());
-
+            num.setText(item.getName());
+            String[] timeDate = item.date.split(" ");
+            date.setText(timeDate[0]);
+            time.setText(timeDate[1]);
+            box.setText(item.getBox());
+        }
         return convertView;
     }
 

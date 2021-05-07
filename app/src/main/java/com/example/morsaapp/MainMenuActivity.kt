@@ -2,6 +2,7 @@ package com.example.morsaapp
 
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -19,10 +20,13 @@ class MainMenuActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_menu)
         val toolbar : Toolbar = findViewById(R.id.main_menu_toolbar)
+        toolbar.setSubtitleTextColor(Color.WHITE)
         setSupportActionBar(toolbar)
         supportActionBar?.title = "Menu Principal"
 
         prefs = this.getSharedPreferences("startupPreferences", 0)
+
+        supportActionBar?.subtitle = prefs.getString("User","")
 
         val receptionBtn = findViewById<ImageButton>(R.id.reception_btn)
         val revisionBtn = findViewById<ImageButton>(R.id.revision_btn)

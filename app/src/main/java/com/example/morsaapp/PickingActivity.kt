@@ -78,6 +78,7 @@ class PickingActivity : AppCompatActivity() {
             val model : PickingDataModel = pickingLv.getItemAtPosition(position) as PickingDataModel
             val pickingIds = model.picking_ids
             val rackId = model.id
+            orderType = model.orderType
             Log.d("PickingIds", model.picking_ids.toString())
             intent.putExtra("pickingIds",pickingIds)
             intent.putExtra("rackId", rackId)
@@ -214,9 +215,8 @@ class PickingActivity : AppCompatActivity() {
             racks.id = cursorRack.getString(cursorRack.getColumnIndex("id"))
             racks.date = cursorRack.getString(cursorRack.getColumnIndex("create_date"))
             racks.box = "1 (Temp)"
-
+            racks.orderType = cursorRack.getString(cursorRack.getColumnIndex("order_type"))
             //Check if local
-            orderType = cursorRack.getString(cursorRack.getColumnIndex("order_type"))
             datamodels.add(racks)
         }
         obtainList()

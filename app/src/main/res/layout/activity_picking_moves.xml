@@ -98,7 +98,7 @@
         android:clickable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@android:drawable/ic_delete" />
+        app:srcCompat="@android:drawable/ic_popup_reminder" />
 
     <ProgressBar
         android:id="@+id/picking_move_progress"

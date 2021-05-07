@@ -717,6 +717,7 @@ public class OdooConn {
                         asList("app_confirm","=",false)
                         //asList("id", "not in", idList)
                 )),
+                //No abra cambios en la app
                 new HashMap(){{
                     put("fields", asList("id", "name", "display_name", "number", "datetime_invoice", "partner_id", "amount_total", "origin", "purchase_id", "state"));
                 }}

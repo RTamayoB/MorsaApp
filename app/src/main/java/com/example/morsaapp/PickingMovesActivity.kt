@@ -110,10 +110,11 @@ class PickingMovesActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.picking_move_progress)
         timerTxt = findViewById<TextView>(R.id.timer_txt)
 
-        /*
-        if(intent?.getStringExtra("orderType") != "local"){
-            timerTxt.visibility = View.INVISIBLE
-        }*/
+        timerTxt.visibility = View.INVISIBLE
+        Log.d("Order Type", intent!!.getStringExtra("orderType")!!)
+        if(intent?.getStringExtra("orderType") == "local"){
+            timerTxt.visibility = View.VISIBLE
+        }
 
 
         progressBar.isVisible = true

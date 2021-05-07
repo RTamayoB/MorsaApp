@@ -17,6 +17,7 @@
             android:background="@drawable/invoice_lv_dbl"
             android:padding="4dp"
             android:text="Holder"
+            android:textColor="#000000"
             android:textSize="10sp" />
 
         <TextView
@@ -26,7 +27,8 @@
             android:background="@drawable/invoice_lv_dbl"
             android:padding="4dp"
             android:text="Holder"
-            android:textAlignment="center" />
+            android:textAlignment="center"
+            android:textColor="#000000" />
 
     </TableRow>
 </TableLayout>

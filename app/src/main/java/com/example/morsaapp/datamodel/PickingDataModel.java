@@ -7,6 +7,7 @@ public class PickingDataModel {
     public String date;
     public String time;
     public String box;
+    public String orderType;
 
 
     public PickingDataModel() {
@@ -58,5 +59,13 @@ public class PickingDataModel {
 
     public void setBox(String box) {
         this.box = box;
+    }
+
+    public String getOrderType() {
+        return orderType;
+    }
+
+    public void setOrderType(String orderType) {
+        this.orderType = orderType;
     }
 }

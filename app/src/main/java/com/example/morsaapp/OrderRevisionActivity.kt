@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.*
 import android.device.ScanManager
 import android.device.scanner.configuration.Triggering
+import android.graphics.Color
 import android.media.AudioManager
 import android.media.SoundPool
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +17,7 @@ import android.view.Menu
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.Toolbar
 import androidx.core.view.isVisible
 import com.example.morsaapp.adapter.IssuesPopupAdapter
 import com.example.morsaapp.adapter.OrderRevisionAdapter
@@ -340,11 +342,15 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_order_revision)
-        setSupportActionBar(findViewById(R.id.order_revision_tb))
+        val toolbar : Toolbar = findViewById(R.id.order_revision_tb)
+        toolbar.setSubtitleTextColor(Color.WHITE)
+        setSupportActionBar(toolbar)
         supportActionBar?.title = "Revisión de Orden"
 
         prefs = this.getSharedPreferences("startupPreferences", 0)
         progressBar = findViewById(R.id.progressBar_revision)
+
+        supportActionBar?.subtitle = prefs.getString("User","")
 
         /*
         val filter = IntentFilter()
@@ -897,7 +903,8 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                 name = name.replace("[","")
                 name = name.replace("]","")
                 name = name.replace("\"","")
-                items.productName = name
+                val description = cursor.getString(cursor.getColumnIndex("product_description"))
+                items.productName = "$name - $description"
                 items.qty = cursor.getInt(1)
                 val mixedId  = cursor.getString(cursor.getColumnIndex("product_id"))
                 val arrayOfId : Array<Any> = mixedId.split(",").toTypedArray()
