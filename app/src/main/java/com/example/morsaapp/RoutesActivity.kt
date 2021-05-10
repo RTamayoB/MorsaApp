@@ -164,7 +164,7 @@ class RoutesActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
         if(db.deleteDataOnTable(OdooData.TABLE_ROUTES)){
             thread {
@@ -277,7 +277,7 @@ class RoutesActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
         val cursor = db.routes
 
@@ -332,7 +332,7 @@ class RoutesActivity : AppCompatActivity() {
 
         //Based on the scanned code check if it corresponds to a Route
         val db =
-            DBConnect(this, OdooData.DBNAME, null, 1)
+            DBConnect(this, OdooData.DBNAME, null, prefs.getInt("DBver",1))
         //Check for routes with that name
         val getRoute = db.getRoute(decodedData)
 
@@ -352,7 +352,7 @@ class RoutesActivity : AppCompatActivity() {
             runBlocking {
                 //Check if Route has boxes
                 Log.d("Stock Boxes from Route", deferredStockBoxes.await().toString())
-                if (deferredStockBoxes.await().equals("[]")) {
+                if (deferredStockBoxes.await() == "[]") {
                     val customToast = CustomToast(applicationContext, this@RoutesActivity)
                     customToast.show("Ruta no tiene cajas", 24.0F, Toast.LENGTH_LONG)
                 }

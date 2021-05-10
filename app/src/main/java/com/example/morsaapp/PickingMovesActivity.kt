@@ -140,7 +140,7 @@ class PickingMovesActivity : AppCompatActivity() {
          * For each pickingId, reload said picking and its lines
          */
         val dbPicking =
-            DBConnect(this, OdooData.DBNAME, null, 1)
+            DBConnect(this, OdooData.DBNAME, null, prefs.getInt("DBver",1))
         var idsRaw = pickingIds.replace("(", "")
         idsRaw = idsRaw.replace(")", "")
         idsRaw = idsRaw.replace(" ", "")
@@ -165,14 +165,8 @@ class PickingMovesActivity : AppCompatActivity() {
                     //With the move Picking Id, reload the lines
                     if (dbPicking.deleteDataOnTableFromField(OdooData.TABLE_STOCK_ITEMS,"picking_id",finalMovePickingId)) {
                         val deferredStockItemsReSync: String = syncInspectionItems(id.toInt())
-                        val db = DBConnect(
-                            applicationContext,
-                            OdooData.DBNAME,
-                            null,
-                            1
-                        )
                         val stockItemJson1 = JSONArray(deferredStockItemsReSync)
-                        db.fillTable(stockItemJson1, OdooData.TABLE_STOCK_ITEMS)
+                        dbPicking.fillTable(stockItemJson1, OdooData.TABLE_STOCK_ITEMS)
                     }
                 }
             }
@@ -364,7 +358,7 @@ class PickingMovesActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
         var idsRaw = data.replace("(", "")
         idsRaw = idsRaw.replace(")", "")
@@ -634,7 +628,7 @@ class PickingMovesActivity : AppCompatActivity() {
                                     this,
                                     OdooData.DBNAME,
                                     null,
-                                    1
+                                    prefs.getInt("DBver",1)
                                 ).writableDatabase
                                 val contentValues = ContentValues()
                                 contentValues.put("quantity_done", num)

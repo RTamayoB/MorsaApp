@@ -242,7 +242,7 @@ class CountActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
         if(db.deleteDataOnTable(OdooData.TABLE_INVENTORY_LINE)){
             thread {
@@ -300,7 +300,7 @@ class CountActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
         val cursor = db.inventory
         var items : CountDataModel?
@@ -407,7 +407,7 @@ class CountActivity : AppCompatActivity() {
 
         //Based on the scanned code check if it corresponds to a Route
         val db =
-            DBConnect(this, OdooData.DBNAME, null, 1)
+            DBConnect(this, OdooData.DBNAME, null, prefs.getInt("DBver",1))
         //Check for routes with that name
         Log.d("Product - Location", "$productName-$location")
         //If not location, check If is product and is related to the location

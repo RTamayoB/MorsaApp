@@ -156,19 +156,13 @@ class ProductsToLocationActivity : AppCompatActivity() {
          * and show the lines on the ListView
          */
         val dbReload =
-            DBConnect(this, OdooData.DBNAME, null, 1)
+            DBConnect(this, OdooData.DBNAME, null, prefs.getInt("DBver",1))
         if(dbReload.deleteDataOnTable(OdooData.TABLE_STOCK_ITEMS)){
             thread {
                 try {
                     val deferredStockItemsReSync: String =  syncLocationItems(pickingId)
-                    val db = DBConnect(
-                        applicationContext,
-                        OdooData.DBNAME,
-                        null,
-                        1
-                    )
                     val stockItemJson = JSONArray(deferredStockItemsReSync)
-                    val result = db.fillTable(stockItemJson, OdooData.TABLE_STOCK_ITEMS)
+                    val result = dbReload.fillTable(stockItemJson, OdooData.TABLE_STOCK_ITEMS)
                     if (result) {
                         runOnUiThread {
                             progressBar.isVisible = false
@@ -308,7 +302,7 @@ class ProductsToLocationActivity : AppCompatActivity() {
                             this,
                             OdooData.DBNAME,
                             null,
-                            1
+                            prefs.getInt("DBver",1)
                         ).writableDatabase
                         val contentValues = ContentValues()
                         contentValues.put("quantity_done",num.toInt())
@@ -358,7 +352,7 @@ class ProductsToLocationActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
         val cursor = db.getLocationMoves(data)
         var orders : ProductsToLocationDataModel

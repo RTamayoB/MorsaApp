@@ -180,7 +180,7 @@ class ReStockActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
         if(db.deleteDataOnTable(OdooData.TABLE_STOCK_ITEMS)){
             thread {
@@ -237,7 +237,7 @@ class ReStockActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
         val cursor = db.movesTestReStock()
         var orders : ReStockDataModel

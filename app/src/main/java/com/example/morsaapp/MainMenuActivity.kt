@@ -9,7 +9,9 @@ import android.util.Log
 import android.view.Menu
 import android.widget.ImageButton
 import androidx.appcompat.widget.Toolbar
+import com.example.morsaapp.data.DBConnect
 import com.example.morsaapp.data.OdooConn
+import com.example.morsaapp.data.OdooData
 import java.lang.Exception
 
 class MainMenuActivity : AppCompatActivity() {
@@ -165,7 +167,13 @@ class MainMenuActivity : AppCompatActivity() {
             }
         }
         */
-
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            prefs.getInt("DBver",1)
+        ).writableDatabase
+        Log.d("DB ver", db.version.toString())
 
     }
 

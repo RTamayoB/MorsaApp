@@ -50,7 +50,7 @@ class LoginActivity : AppCompatActivity() {
                 applicationContext,
                 OdooData.DBNAME,
                 null,
-                1
+                prefs.getInt("DBver",1)
             ).writableDatabase
             db2.execSQL("INSERT INTO " + OdooData.TABLE_STOCK_ITEMS + " (revision_qty) VALUES (0)")
         }
@@ -149,7 +149,7 @@ class LoginActivity : AppCompatActivity() {
                 applicationContext,
                 OdooData.DBNAME,
                 null,
-                1
+                prefs.getInt("DBver",1)
             ).writableDatabase
             val contentValues = ContentValues()
             contentValues.put("username",user)

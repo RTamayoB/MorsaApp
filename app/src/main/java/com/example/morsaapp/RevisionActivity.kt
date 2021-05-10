@@ -103,7 +103,7 @@ class RevisionActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
         if(db.deleteDataOnTable(OdooData.TABLE_STOCK)){
             thread {
@@ -158,7 +158,7 @@ class RevisionActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
         val cursor = db.fillStockListView()
         var orders : ReceptionDataModel?

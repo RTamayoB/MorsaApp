@@ -392,7 +392,7 @@ public class OdooConn {
      * @return
      * @throws XmlRpcException
      */
-    public String getRouteBoxes(String route) throws XmlRpcException
+    public String   getRouteBoxes(String route) throws XmlRpcException
     {
         List list = asList((Object[])models.execute("execute_kw", asList(
                 db,uid,pass,

@@ -170,7 +170,7 @@ class InvoiceActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
 
         if(db.deleteDataOnTableFromField(OdooData.TABLE_INVOICE_LINE,"invoice_id",relatedId)){
@@ -182,7 +182,7 @@ class InvoiceActivity : AppCompatActivity() {
                         applicationContext,
                         OdooData.DBNAME,
                         null,
-                        1
+                        prefs.getInt("DBver",1)
                     )
                     val invoiceLineJson = JSONArray(deferredInvoiceLine)
                     //Insert data
@@ -233,7 +233,7 @@ class InvoiceActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
         val invoiceItemsCursor = db.fillInvoiceItemsListView(id)
         var items : InvoiceDataModel?

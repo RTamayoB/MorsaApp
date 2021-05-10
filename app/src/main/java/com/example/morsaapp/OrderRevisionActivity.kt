@@ -83,7 +83,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
 
     private fun saveCurrentIssues(issues : String) {
         val db =
-            DBConnect(this, OdooData.DBNAME, null, 1)
+            DBConnect(this, OdooData.DBNAME, null, prefs.getInt("DBver",1))
         val userId = 0
 //        Log.d("picking_id", pickingId)
         db.saveIssuesToDB(issues, userId, pickingId.toInt())
@@ -378,7 +378,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
             this,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         ).writableDatabase
         val cursor = db.rawQuery("SELECT issues FROM "+ OdooData.TABLE_ISSUES_LIST+" WHERE picking_id = "+pickingId, null)
         if(cursor.count > 0){
@@ -486,7 +486,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                         applicationContext,
                                                         OdooData.DBNAME,
                                                         null,
-                                                        1
+                                                        prefs.getInt("DBver",1)
                                                     ).readableDatabase
                                                     val cursorReturns = dbReturns.rawQuery(
                                                         "SELECT return_id FROM " + OdooData.TABLE_STOCK + " WHERE id = " + pickingId.toInt(),
@@ -648,7 +648,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                 applicationContext,
                                                 OdooData.DBNAME,
                                                 null,
-                                                1
+                                                prefs.getInt("DBver",1)
                                             ).readableDatabase
                                             val cursorReturns = dbReturns.rawQuery(
                                                 "SELECT return_id FROM " + OdooData.TABLE_STOCK + " WHERE id = " + pickingId.toInt(),
@@ -740,7 +740,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         }
 
         val dbReload =
-            DBConnect(this, OdooData.DBNAME, null, 1)
+            DBConnect(this, OdooData.DBNAME, null, prefs.getInt("DBver",1))
         /**
          * Reload the issues table
          */
@@ -779,14 +779,9 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         if(dbReload.deleteDataOnTableFromField(OdooData.TABLE_STOCK_ITEMS,"picking_id",relatedId)){
             thread {
                 val deferredStockItemsReSync: String =  syncInspectionItems(pickingId.toInt())
-                    val db = DBConnect(
-                        applicationContext,
-                        OdooData.DBNAME,
-                        null,
-                        1
-                    )
+
                     val stockItemJson = JSONArray(deferredStockItemsReSync)
-                    val result = db.fillTable(stockItemJson, OdooData.TABLE_STOCK_ITEMS)
+                    val result = dbReload.fillTable(stockItemJson, OdooData.TABLE_STOCK_ITEMS)
                     if (result) {
                         runOnUiThread {
                             progressBar.isVisible = false
@@ -864,7 +859,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
         val cursor = db.fillStockitemsListView(rel_id)
         var items : OrderRevisionDataModel?
@@ -940,7 +935,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
 
         val cursor = db.fillIncidenciesListView(isDevolution)
@@ -1104,7 +1099,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                         applicationContext,
                         OdooData.DBNAME,
                         null,
-                        1
+                        prefs.getInt("DBver",1)
                     ).writableDatabase
                     val contentValues = ContentValues()
                     contentValues.put("revision_qty", pedido.revisionQty)
@@ -1190,7 +1185,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
             this,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         ).writableDatabase
         Log.d("Saving issues in ",activeModeId.toString())
         db.execSQL("UPDATE "+ OdooData.TABLE_STOCK_ITEMS+" SET issues = '"+bundle.get("key").toString()+"' WHERE id = '"+activeModeId+"'")
@@ -1276,7 +1271,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
         val cursor = db.fillIncidenciesListView(isDevolution)
         var items : ScanIssuesDataModel

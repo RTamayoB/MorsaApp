@@ -136,7 +136,7 @@ class RoutesOrdersActivity : AppCompatActivity() {
          * First action after variable declaration is to get fill database and get all boxes according to the routeName
          */
         val dbReload =
-            DBConnect(this, OdooData.DBNAME, null, 1)
+            DBConnect(this, OdooData.DBNAME, null, prefs.getInt("DBver",1))
 
         if(dbReload.deleteDataOnTableFromField(OdooData.TABLE_STOCK_BOX,"route",routeName)){
             thread {
@@ -302,7 +302,7 @@ class RoutesOrdersActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
         val cursor = db.getStockBoxesFromRoute(route)
         var items : StockBoxesDataModel?
@@ -370,7 +370,7 @@ class RoutesOrdersActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
         val matchingBoxes = db.getStockBox(decodedString,routeName)
         //If box found, get Id and change line color

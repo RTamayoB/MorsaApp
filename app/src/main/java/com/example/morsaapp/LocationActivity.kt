@@ -95,7 +95,7 @@ class LocationActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
         if(db.deleteDataOnTable(OdooData.TABLE_STOCK_ARRANGEMENT)){
             thread {
@@ -106,7 +106,7 @@ class LocationActivity : AppCompatActivity() {
                         applicationContext,
                         OdooData.DBNAME,
                         null,
-                        1
+                        prefs.getInt("DBver",1)
                     )
                     val stockJson = JSONArray(deferredStockReSync)
                     val result = db.fillTable(stockJson, OdooData.TABLE_STOCK_ARRANGEMENT)
@@ -152,7 +152,7 @@ class LocationActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
 
         val cursor = db.fillLocationsListView()

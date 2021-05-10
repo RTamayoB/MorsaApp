@@ -142,7 +142,7 @@ class RefundsActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
         if (db.deleteDataOnTable(OdooData.TABLE_STOCK_RETURN)) {
             thread {
@@ -202,7 +202,7 @@ class RefundsActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
         val refundCursor = db.fillRefundListView()
 

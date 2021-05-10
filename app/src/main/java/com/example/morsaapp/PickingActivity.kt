@@ -127,19 +127,13 @@ class PickingActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
         if(db.deleteDataOnTable(OdooData.TABLE_RACK)){
             thread {
                 try {
                     val reloadRacks: String = syncRacks()
                     Log.d("Returned Racks", reloadRacks)
-                    val db = DBConnect(
-                        applicationContext,
-                        OdooData.DBNAME,
-                        null,
-                        1
-                    )
                     val rackJson = JSONArray(reloadRacks)
                     val result = db.fillTable(rackJson, OdooData.TABLE_RACK)
                     if (result) {
@@ -186,7 +180,7 @@ class PickingActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            1
+            prefs.getInt("DBver",1)
         )
         val cursorRack = dbrack.stockRack
         Log.d("Picking Qty", cursorRack.count.toString())
