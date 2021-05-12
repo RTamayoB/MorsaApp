@@ -907,7 +907,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                 val replaced = idAsString.replace("[","")
                 Log.d("ProductId", replaced)
                 items.productId = replaced.toInt()
-
+                items.relabel = cursor.getString(cursor.getColumnIndex("product_relabel"))
                 items.incidencies = "0"
 
 

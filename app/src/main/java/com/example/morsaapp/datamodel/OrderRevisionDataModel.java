@@ -7,6 +7,7 @@ public class OrderRevisionDataModel {
     public int productId;
     public String incidencies;
     public int revisionQty = 0;
+    public String relabel;
 
     public int getProductId() {
         return productId;
@@ -46,5 +47,13 @@ public class OrderRevisionDataModel {
 
     public void setIncidencies(String incidencies) {
         this.incidencies = incidencies;
+    }
+
+    public String getRelabel() {
+        return relabel;
+    }
+
+    public void setRelabel(String relabel) {
+        this.relabel = relabel;
     }
 }

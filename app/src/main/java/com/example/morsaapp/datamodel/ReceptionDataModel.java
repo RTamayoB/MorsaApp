@@ -34,7 +34,7 @@ public class ReceptionDataModel {
     public ReceptionDataModel(Context ctx, String id, String num) {
         this.id = id;
         this.num = num;
-        DBConnect db = new DBConnect(ctx, OdooData.DBNAME,null,1);
+        DBConnect db = new DBConnect(ctx, OdooData.DBNAME,null,ctx.getSharedPreferences("startupPreferences", 0).getInt("DBver",1));
         String relatedId = "["+id+",\""+num+"\"]";
         Cursor cursor = db.getStockStatefromOrder(relatedId);
         while (cursor.moveToNext()){

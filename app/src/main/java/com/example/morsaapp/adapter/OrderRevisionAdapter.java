@@ -1,6 +1,10 @@
 package com.example.morsaapp.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,6 +59,16 @@ public class OrderRevisionAdapter extends BaseAdapter {
         object.setText(item.getProductName());
         qty.setText(item.getRevisionQty()+" / "+ item.getQty());
 
+        if (item.relabel.equals("true")){
+            object.setBackgroundColor(Color.parseColor("#ffa500"));
+            String original = object.getText().toString();
+            String relabel = " - Reetiquetado";
+            String myText = original + relabel;
+            Spannable span = new SpannableString(myText);
+            span.setSpan(new ForegroundColorSpan(Color.BLACK), 0, original.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            span.setSpan(new ForegroundColorSpan(Color.RED), original.length(), myText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            object.setText(span, TextView.BufferType.SPANNABLE);
+        }
 
         return convertView;
     }

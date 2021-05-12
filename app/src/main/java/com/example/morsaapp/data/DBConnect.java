@@ -3,6 +3,7 @@ package com.example.morsaapp.data;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -22,8 +23,10 @@ import java.util.Iterator;
  */
 public class DBConnect extends SQLiteOpenHelper {
 
+    public Context context;
     public DBConnect(@Nullable Context context, @Nullable String name, @Nullable android.database.sqlite.SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);
+        this.context = context;
     }
 
     @Override
@@ -50,25 +53,11 @@ public class DBConnect extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(android.database.sqlite.SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS "+ OdooData.TABLE_ORDER);
-        db.execSQL("DROP TABLE IF EXISTS "+ OdooData.TABLE_ITEMS);
-        db.execSQL("DROP TABLE IF EXISTS "+ OdooData.TABLE_STOCK);
-        db.execSQL("DROP TABLE IF EXISTS "+ OdooData.TABLE_STOCK_ITEMS);
-        db.execSQL("DROP TABLE IF EXISTS "+ OdooData.TABLE_STOCK_ISSUES);
-        db.execSQL("DROP TABLE IF EXISTS "+ OdooData.TABLE_ISSUES_LIST);
-        db.execSQL("DROP TABLE IF EXISTS "+ OdooData.TABLE_PRODUCT_PRODUCT);
-        db.execSQL("DROP TABLE IF EXISTS "+ OdooData.TABLE_USERS);
-        db.execSQL("DROP TABLE IF EXISTS "+ OdooData.TABLE_ROUTES);
-        db.execSQL("DROP TABLE IF EXISTS "+ OdooData.TABLE_STOCK_BOX);
-        db.execSQL("DROP TABLE IF EXISTS "+ OdooData.TABLE_RACK);
-        db.execSQL("DROP TABLE IF EXISTS " + OdooData.TABLE_INVENTORY_LINE);
-        db.execSQL("DROP TABLE IF EXISTS " + OdooData.TABLE_INVOICE);
-        db.execSQL("DROP TABLE IF EXISTS " + OdooData.TABLE_INVOICE_LINE);
-        db.execSQL("DROP TABLE IF EXISTS " + OdooData.TABLE_STOCK_ARRANGEMENT);
-        db.execSQL("DROP TABLE IF EXISTS " + OdooData.TABLE_STOCK_RETURN);
-        db.execSQL("DROP TABLE IF EXISTS " + OdooData.TABLE_STOCK_RETURN_LINE);
-        db.execSQL("DROP TABLE IF EXISTS " + OdooData.TABLE_RES_USERS);
-        onCreate(db);
+        Log.d("OnUpgrade", "Upgrading");
+        db.execSQL("ALTER TABLE "+OdooData.TABLE_STOCK_ITEMS+" ADD COLUMN product_relabel TEXT");
+        SharedPreferences prefs = context.getSharedPreferences("startupPreferences", 0);
+        int ver = prefs.getInt("DBver",1);
+        prefs.edit().putInt("DBver",ver+1).apply();
     }
 
     /**
@@ -315,7 +304,7 @@ public class DBConnect extends SQLiteOpenHelper {
 
     public Cursor fillStockitemsListView(String subId){
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT name, product_qty, price_unit, id , product_id, revision_qty, issues, product_description FROM "+ OdooData.TABLE_STOCK_ITEMS+" WHERE picking_id = '"+subId+"'",null);
+        return db.rawQuery("SELECT name, product_qty, price_unit, id , product_id, revision_qty, issues, product_description, product_relabel FROM "+ OdooData.TABLE_STOCK_ITEMS+" WHERE picking_id = '"+subId+"'",null);
     }
 
     public int changeStockState(String id){
