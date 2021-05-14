@@ -99,12 +99,22 @@ class RevisionActivity : AppCompatActivity() {
     }
 
     private fun refreshData(){
+        //TODO: Add check to not reload data "In inspection"
+        //Get all ids of pickings with in_inspection on null or false
+        //Delete
         val db = DBConnect(
             applicationContext,
             OdooData.DBNAME,
             null,
             prefs.getInt("DBver",1)
         )
+        val check = db.writableDatabase.rawQuery("SELECT id FROM stock_picking WHERE in_inspection == 'true'", null)
+        val list : ArrayList<String> = ArrayList()
+        while (check.moveToNext()){
+            list.add(check.getString(check.getColumnIndex("id")))
+        }
+        Log.d("In Inspection List", list.toString())
+        //db.writableDatabase.execSQL("DELETE FROM stock_picking WHERE id in $list")
         if(db.deleteDataOnTable(OdooData.TABLE_STOCK)){
             thread {
                 try {
@@ -166,11 +176,11 @@ class RevisionActivity : AppCompatActivity() {
         Log.d("Revision Qty", cursor.count.toString())
         datamodels.clear()
         while (cursor.moveToNext()) {
-            Log.d("Current inspection id", cursor.getString(0))
+            Log.d("Current inspection id", cursor.getString(cursor.getColumnIndex("id")))
             orders =
                 ReceptionDataModel(this, "0", "q")
-            orders.id = cursor.getString(0)
-            orders.num = cursor.getString(1)
+            orders.id = cursor.getString(cursor.getColumnIndex("id"))
+            orders.num = cursor.getString(cursor.getColumnIndex("name"))
             Log.d("ReturnId,Origin,Purcha",cursor.getString(cursor.getColumnIndex("return_id"))+"-"+
                     cursor.getString(cursor.getColumnIndex("origin"))+"-"+
                     cursor.getString(cursor.getColumnIndex("origin_invoice_purchase")))

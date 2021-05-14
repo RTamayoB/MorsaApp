@@ -167,12 +167,17 @@ class MainMenuActivity : AppCompatActivity() {
             }
         }
         */
-        if(prefs.getInt("DBver",1) != 2){
+        if(!prefs.contains("DBver")){
+            Log.d("Null","Yes")
+            prefs.edit().putInt("DBver",1).apply()
+        }
+
+        if(prefs.getInt("DBver",1) != 1){
             val db = DBConnect(
                 applicationContext,
                 OdooData.DBNAME,
                 null,
-                2
+                1
             ).writableDatabase
             Log.d("DB ver", db.version.toString())
         }

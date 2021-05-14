@@ -53,11 +53,16 @@ public class DBConnect extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(android.database.sqlite.SQLiteDatabase db, int oldVersion, int newVersion) {
-        Log.d("OnUpgrade", "Upgrading");
-        db.execSQL("ALTER TABLE "+OdooData.TABLE_STOCK_ITEMS+" ADD COLUMN product_relabel TEXT");
-        SharedPreferences prefs = context.getSharedPreferences("startupPreferences", 0);
-        int ver = prefs.getInt("DBver",1);
-        prefs.edit().putInt("DBver",ver+1).apply();
+        try{
+            Log.d("OnUpgrade", "Upgrading");
+            db.execSQL("ALTER TABLE "+OdooData.TABLE_STOCK+" ADD COLUMN in_inspection TEXT");
+            SharedPreferences prefs = context.getSharedPreferences("startupPreferences", 0);
+            int ver = prefs.getInt("DBver",1);
+            prefs.edit().putInt("DBver",ver+1).apply();
+        }catch (Exception e){
+            Log.d("Error",e.toString());
+        }
+
     }
 
     /**

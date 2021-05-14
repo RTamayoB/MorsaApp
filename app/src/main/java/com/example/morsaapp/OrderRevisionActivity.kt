@@ -7,8 +7,12 @@ import android.device.scanner.configuration.Triggering
 import android.graphics.Color
 import android.media.AudioManager
 import android.media.SoundPool
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.Vibrator
 import android.util.Log
 import android.view.Gravity
@@ -34,6 +38,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.apache.xmlrpc.XmlRpcException
+import org.apache.xmlrpc.XmlRpcHandler
+import org.apache.xmlrpc.XmlRpcRequest
 import org.json.JSONArray
 import java.io.*
 import java.lang.Exception
@@ -776,31 +782,68 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
          * and show the lines on the ListView
          */
 
-        if(dbReload.deleteDataOnTableFromField(OdooData.TABLE_STOCK_ITEMS,"picking_id",relatedId)){
-            thread {
-                val deferredStockItemsReSync: String =  syncInspectionItems(pickingId.toInt())
-
-                    val stockItemJson = JSONArray(deferredStockItemsReSync)
-                    val result = dbReload.fillTable(stockItemJson, OdooData.TABLE_STOCK_ITEMS)
-                    if (result) {
-                        runOnUiThread {
-                            progressBar.isVisible = false
-                            datamodels.clear()
-                            populateListView(relatedId)
-                            val adapter = orderRevisionLv.adapter as OrderRevisionAdapter
-                            adapter.notifyDataSetChanged()
-                            val customToast = CustomToast(this, this)
-                            customToast.show("Exito", 24.0F, Toast.LENGTH_LONG)
-                        }
-
-                    } else
-                        runOnUiThread {
-                            progressBar.isVisible = false
-                            val customToast = CustomToast(this, this)
-                            customToast.show("Sin Exito", 24.0F, Toast.LENGTH_LONG)
-                        }
+        val dbcheck = DBConnect(applicationContext, OdooData.DBNAME, null, prefs.getInt("DBver",1)).writableDatabase
+        val check = dbcheck.rawQuery("SELECT * FROM stock_picking WHERE id = ?", arrayOf(pickingId.toString()))
+        var in_inspection = false
+        Log.d("CHeck count", check.count.toString())
+        while (check.moveToNext()){
+            if (check.getString(check.getColumnIndex("in_inspection")) == null){
+                Log.d("In Inspection", "Twas null")
+                in_inspection = false
+            }
+            else if (check.getString(check.getColumnIndex("in_inspection")) == "true"){
+                in_inspection = true
             }
         }
+        check.close()
+        Log.d("In Inspection", in_inspection.toString())
+        if(!in_inspection){
+            //Reload data
+            if(dbReload.deleteDataOnTableFromField(OdooData.TABLE_STOCK_ITEMS,"picking_id",relatedId)){
+                thread {
+                    try{
+                        val deferredStockItemsReSync: String =  syncInspectionItems(pickingId.toInt())
+
+                        val stockItemJson = JSONArray(deferredStockItemsReSync)
+                        val result = dbReload.fillTable(stockItemJson, OdooData.TABLE_STOCK_ITEMS)
+                        if (result) {
+                            runOnUiThread {
+                                progressBar.isVisible = false
+                                datamodels.clear()
+                                populateListView(relatedId)
+                                val adapter = orderRevisionLv.adapter as OrderRevisionAdapter
+                                adapter.notifyDataSetChanged()
+                                val customToast = CustomToast(this, this)
+                                customToast.show("Exito", 24.0F, Toast.LENGTH_LONG)
+                            }
+
+                        } else
+                            runOnUiThread {
+                                progressBar.isVisible = false
+                                val customToast = CustomToast(this, this)
+                                customToast.show("Sin Exito", 24.0F, Toast.LENGTH_LONG)
+                            }
+                    }
+                    catch (e: Exception){
+                        runOnUiThread {
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Error General $e", 24.0F, Toast.LENGTH_LONG)
+                            progressBar.isVisible = false
+                        }
+                        Log.d("Error General",e.toString())
+                    }catch (xml: XmlRpcException){
+                        runOnUiThread {
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Error de Red $xml", 24.0F, Toast.LENGTH_LONG)
+                            progressBar.isVisible = false
+                        }
+                        Log.d("Error de Red",xml.toString())
+                    }
+                }
+            }
+        }
+
+
 
         val filter = IntentFilter()
         filter.addAction("android.intent.ACTION_DECODE_DATA")
@@ -1019,12 +1062,22 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         try {
             scanPopupWindow.dismiss()
             selectPopupWindow.dismiss()
-        }catch (e : Exception){
-            Log.d("NULL","Es nulo")
+        } catch (e: Exception) {
+            Log.d("NULL", "Es nulo")
         }
 
 
-        Log.d("Barcode",decodedString)
+        val db = DBConnect(
+            applicationContext,
+            OdooData.DBNAME,
+            null,
+            prefs.getInt("DBver", 1)
+        ).writableDatabase
+        val values = ContentValues()
+        values.put("in_inspection", "true")
+        db.update(OdooData.TABLE_STOCK, values, "id = ?", arrayOf(pickingId.toString()))
+
+        Log.d("Barcode", decodedString)
         var scannedProductIdSearch = 0
         /*
         val db = DBConnect(this, Utilities.DBNAME, null, 1).readableDatabase
@@ -1033,7 +1086,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         */
         var pedido: OrderRevisionDataModel
         val deferredProductId = GlobalScope.async { searchProduct(decodedString) }
-        var code : String
+        var code: String
         try{
             runBlocking {
                 if(deferredProductId.await() != "[]"){
@@ -1130,7 +1183,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
 
                     scanPopupWindow = PopupWindow(popupView, width, height, focusable)
 
-                    scanPopupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
+                    //scanPopupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
                 }
             }
         }
