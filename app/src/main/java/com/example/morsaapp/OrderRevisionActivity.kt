@@ -1087,34 +1087,40 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         var pedido: OrderRevisionDataModel
         val deferredProductId = GlobalScope.async { searchProduct(decodedString) }
         var code: String
+        var scannedCode : String = ""
         try{
             runBlocking {
-                if(deferredProductId.await() != "[]"){
-                    Log.d("Raw code result",deferredProductId.await().toString())
-                    val raw = deferredProductId.await()
-                    val parse1 = raw.replace("[","")
-                    val parse2 = parse1.replace("]","")
-                    code = parse2
-                    val list : List<String> = code.split(",").map { it.trim() }
-                    scannedProductIdSearch = list[0].toInt()
-                    Log.d("Scanned Product", scannedProductIdSearch.toString())
-                }
-                else{
-                    val customToast = CustomToast(applicationContext, this@OrderRevisionActivity)
-                    customToast.show("Producto no encontrado", 24.0F, Toast.LENGTH_LONG)
-                }
+                scannedCode = deferredProductId.await()
             }
+            if(scannedCode != "[]"){
+                Log.d("Raw code result",scannedCode)
+                scannedCode = scannedCode.replace("[","")
+                scannedCode = scannedCode.replace("]","")
+                val list = scannedCode.split(",").map { it.trim() }
+                scannedProductIdSearch = list[0].toInt()
+                Log.d("Scanned Product", scannedProductIdSearch.toString())
+                /*
+                val raw = scannedCode
+                val parse1 = raw.replace("[","")
+                val parse2 = parse1.replace("]","")
+                code = parse2
+                val list : List<String> = code.split(",").map { it.trim() }
+                scannedProductIdSearch = list[0].toInt()
+                Log.d("Scanned Product", scannedProductIdSearch.toString())
+                */
+            }
+            else{
+                val customToast = CustomToast(applicationContext, this@OrderRevisionActivity)
+                customToast.show("Producto no encontrado", 24.0F, Toast.LENGTH_LONG)
+                }
+
         }catch (e: Exception){
-            runOnUiThread {
-                val customToast = CustomToast(this, this)
-                customToast.show("Error General", 24.0F, Toast.LENGTH_LONG)
-            }
+            val customToast = CustomToast(this, this)
+            customToast.show("Error General", 24.0F, Toast.LENGTH_LONG)
             Log.d("Error General",e.toString())
         }catch (xml: XmlRpcException){
-            runOnUiThread {
-                val customToast = CustomToast(this, this)
-                customToast.show("Error encontrando Producto", 24.0F, Toast.LENGTH_LONG)
-            }
+            val customToast = CustomToast(this, this)
+            customToast.show("Error encontrando Producto", 24.0F, Toast.LENGTH_LONG)
             Log.d("Error de Red",xml.toString())
         }
 

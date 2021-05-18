@@ -734,13 +734,10 @@ public class OdooConn {
 
         List list = asList((Object[])models.execute("execute_kw", asList(
                 db,uid,pass,
-                "stock.return","search_read",
-                asList(asList(
-                        asList("state", "=", "draft"),
-                        asList("line_ids","!=", false)
-                )),
+                "stock.return.user","search_read",
+                emptyList(),
                 new HashMap(){{
-                    put("fields", asList("id", "name", "type_id", "partner_id", "date", "state", "amount_total"));
+                    put("fields", asList("id", "name", "user_id"));
                 }}
         )));
         Log.d("STOCK RETURN", list.toString());
@@ -828,15 +825,19 @@ public class OdooConn {
 
     public String reloadStockReturnLines(int return_id) throws XmlRpcException
     {
-
+        List<String> states = new ArrayList<>();
+        states.add("draft");
+        states.add("inspecting");
+        states.add("overdue");
         List list = asList((Object[])models.execute("execute_kw", asList(
                 db,uid,pass,
                 "stock.return.line","search_read",
                 asList(asList(
-                        asList("return_id","=",return_id)
+                        asList("return_id.state","in",states),
+                        asList("return_id.user_id","=", return_id)
                 )),
                 new HashMap(){{
-                    put("fields", asList("id", "product_id", "price_unit", "qty", "name", "return_id"));
+                    put("fields", asList("id", "name", "product_id", "qty", "state", "user_id", "accepted_qty", "rejected_qty"));
                 }}
         )));
         Log.d("STOCK RETURN LINE", list.toString());
@@ -844,6 +845,24 @@ public class OdooConn {
         String returned = gson.toJson(list);
 
         return  returned;
+    }
+
+    public List doRefund(int productId, HashMap<String, Integer> qty) throws XmlRpcException
+    {
+        List list = asList(
+                (Object[])models.execute("execute_kw", asList(
+                        db,uid,pass,
+                        "stock.return.line","update_inspected_qty",
+                        asList(
+                                productId,
+                                qty
+                        )
+                        )
+                )
+        );
+        Log.d("STOCK RETURN LINE", list.toString());
+
+        return  list;
     }
 
     //----------------------------

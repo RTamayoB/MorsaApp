@@ -55,7 +55,10 @@ public class DBConnect extends SQLiteOpenHelper {
     public void onUpgrade(android.database.sqlite.SQLiteDatabase db, int oldVersion, int newVersion) {
         try{
             Log.d("OnUpgrade", "Upgrading");
-            db.execSQL("ALTER TABLE "+OdooData.TABLE_STOCK+" ADD COLUMN in_inspection TEXT");
+            db.execSQL("DROP TABLE IF EXISTS "+OdooData.TABLE_STOCK_RETURN);
+            db.execSQL("DROP TABLE IF EXISTS "+OdooData.TABLE_STOCK_RETURN_LINE);
+            db.execSQL(OdooData.CREATE_TABLE_STOCK_RETURN);
+            db.execSQL(OdooData.CREATE_TABLE_STOCK_RETURN_LINE);
             SharedPreferences prefs = context.getSharedPreferences("startupPreferences", 0);
             int ver = prefs.getInt("DBver",1);
             prefs.edit().putInt("DBver",ver+1).apply();
@@ -181,7 +184,7 @@ public class DBConnect extends SQLiteOpenHelper {
 
     public Cursor fillRefundListView(){
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT id, name, type_id, partner_id, date, state, amount_total FROM "+ OdooData.TABLE_STOCK_RETURN,null);
+        return db.rawQuery("SELECT id, name, user_id FROM "+ OdooData.TABLE_STOCK_RETURN,null);
     }
 
     public Cursor getRoutes(){
@@ -218,7 +221,7 @@ public class DBConnect extends SQLiteOpenHelper {
     public Cursor fillRefundItemsListView(String subId){
         SQLiteDatabase db = this.getReadableDatabase();
 
-        return db.rawQuery("SELECT name, id , product_id , price_unit , qty, return_id FROM "+ OdooData.TABLE_STOCK_RETURN_LINE+" WHERE return_id ='"+subId+"'",null);
+        return db.rawQuery("SELECT id, name , product_id , qty, state, user_id, accepted_qty, rejected_qty FROM "+ OdooData.TABLE_STOCK_RETURN_LINE/*+" WHERE user_id ='"+subId+"'"*/,null);
     }
 
     public Cursor fillStockListView(){

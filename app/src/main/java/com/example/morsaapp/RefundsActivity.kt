@@ -34,6 +34,7 @@ class RefundsActivity : AppCompatActivity() {
     private lateinit var adapter : ReceptionAdapter //Adapter for the Listview of reception
 
     lateinit var prefs : SharedPreferences
+    var userId : Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,36 +54,11 @@ class RefundsActivity : AppCompatActivity() {
         refundsLv!!.setOnItemClickListener { _, _, position, _ ->
             val intent = Intent(applicationContext, RefundDetailsActivity::class.java)
             val model : ReceptionDataModel = refundsLv.getItemAtPosition(position) as ReceptionDataModel
-            val id = model.getId()
-            val name = model.getNum()
-            val displayName = model.displayName
-            //val purchaseId = model.purchaseId
-            //val number = model.number
-            Log.d("Box", model.box)
-            val boxSeparated = model.box.split(System.lineSeparator())
-            val supplier = boxSeparated[1].split(" ")[1].toString()
-            val total = model.total
-            val address = boxSeparated[0].toString()
-            Log.d("Supp", supplier)
-            Log.d("Add", address)
-            intent.putExtra("ID",id)
-            intent.putExtra("Display Name", displayName)
-            //intent.putExtra("Purchase Id", purchaseId)
-            //intent.putExtra("Number", number)
-            intent.putExtra("Name",name)
-            intent.putExtra("Supplier",supplier )
-            intent.putExtra("Total", total)
-            intent.putExtra("Address", address)
-            /*
-            Log.d("Ref", model.ref)
-            if (model.ref == "false"){
-                intent.putExtra("Ref","")
-            }
-            else{
-                val ref = model.ref
-                intent.putExtra("Ref", " ($ref)")
-            }
-            */
+            intent.putExtra("ID",model.getId())
+            intent.putExtra("Display Name", model.getDisplayName())
+            intent.putExtra("Name",model.getNum())
+            intent.putExtra("Number", model.num)
+            intent.putExtra("UserId", userId)
             startActivity(intent)
             finish()
         }
@@ -214,22 +190,15 @@ class RefundsActivity : AppCompatActivity() {
                 null,
                 null
             )
-            orders.id = refundCursor.getString(0)
-            orders.num = refundCursor.getString(refundCursor.getColumnIndex("name"))
-            val date = refundCursor.getString(refundCursor.getColumnIndex("date"))
-            Log.d("Date", date)
-            //val dateSeparator = date.split(" ")
-            orders.date = date
-            //orders.time = dateSeparator[1]
-            orders.displayName = refundCursor.getString(refundCursor.getColumnIndex("name"))
-            val partnerRaw = refundCursor.getString(refundCursor.getColumnIndex("partner_id")).toString()
-            val typeRaw = refundCursor.getString(refundCursor.getColumnIndex("type_id")).toString()
-            Log.d("Partner", partnerRaw)
-            Log.d("Type", typeRaw)
-            val partner = partnerRaw.substring(partnerRaw.indexOf("]")+1, partnerRaw.indexOf("\"]"))
-            val type = typeRaw.substring(typeRaw.indexOf("]")+1, typeRaw.indexOf("\"]"))
-            orders.box = "Tipo: $type"+System.getProperty("line.separator")+"Cliente: $partner"
-            orders.total = refundCursor.getString(refundCursor.getColumnIndex("amount_total"))
+            orders.id = refundCursor.getString(refundCursor.getColumnIndex("id"))
+            var rawUser = refundCursor.getString(refundCursor.getColumnIndex("user_id"))
+            rawUser = rawUser.replace("[","")
+            rawUser = rawUser.replace("]","")
+            rawUser = rawUser.replace("\"","")
+            val user = rawUser.split(",")
+            userId = user[0].toInt()
+            orders.num = user[1]
+            orders.displayName = refundCursor.getString(refundCursor.getColumnIndex("user_id"))
             /*
             orders.ref = cursor.getString(8)
             var relatedId = "[$id,\"$name\"]"

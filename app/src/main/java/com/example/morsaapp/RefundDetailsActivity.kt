@@ -40,7 +40,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
 
     private var user : String? = ""
     private var pass : String? = ""
-    private var invoiceId : String? = ""
+    private var userId : Int = 0
 
     //Inspection variables
     lateinit var scanPopupWindow : PopupWindow
@@ -83,19 +83,15 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
         registerReceiver(mScanReceiver, filter)
 
         val intent : Intent = intent
-        invoiceId = intent.getStringExtra("ID")
+        userId = intent.getIntExtra("UserId",1)
         pickingId = intent.getStringExtra("ID")!!
         //val purchaseId = intent.getStringExtra("Purchase Id")
         val number = intent.getStringExtra("Number")
         val displayName = intent.getStringExtra("Display Name")
         val realDisplayName = displayName.replace("/","\\/")
         val name = intent.getStringExtra("Name")
-        val supplier = intent.getStringExtra("Supplier")
-        Log.d("Supplier", supplier)
-        val total = intent.getStringExtra("Total")
-        val address = intent.getStringExtra("Address")
         //val ref = intent.getStringExtra("Ref")
-        val relatedId = "[$invoiceId,\"$realDisplayName\"]"
+        val relatedId = "[$userId,\"$number\"]"
         Log.d("RelatedId", relatedId)
 
         val partnerTxt = findViewById<TextView>(R.id.partner_txt)
@@ -103,10 +99,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
         val totalTxt = findViewById<TextView>(R.id.total_txt)
         val motiveTxt = findViewById<TextView>(R.id.motive_txt)
 
-        partnerTxt.text = supplier
         invoiceTxt.text = name
-        totalTxt.text = "$$total MXN"
-        motiveTxt.text = address
 
         refundDetailsLv = findViewById(R.id.product_lv)
         progressBar = findViewById(R.id.progressBar_invoice)
@@ -114,7 +107,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
         /**
          * Downloads the moves for this invoice
          */
-        refreshData(relatedId)
+        refreshData(userId)
 
         val confirmPurchase = findViewById<Button>(R.id.button)
         confirmPurchase.setOnClickListener {
@@ -124,8 +117,8 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
                 .setMessage("Recibir Garantia/Devolución?")
                 .setPositiveButton("Aceptar"){ _, _ ->
                     try {
-                        Log.d("Id", invoiceId.toString())
-                        val deferredTest: Deferred<List<Any>> = GlobalScope.async { confirmStockReturn(invoiceId.toString().toInt()) }
+                        Log.d("Id", userId.toString())
+                        val deferredTest: Deferred<List<Any>> = GlobalScope.async { confirmStockReturn(userId.toString().toInt()) }
                         var result = ""
                         runBlocking {
                             result = deferredTest.await()[1].toString()
@@ -207,7 +200,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
         builder.show()
     }
 
-    private fun refreshData(relatedId: String){
+    private fun refreshData(relatedId: Int){
         val db = DBConnect(
             applicationContext,
             OdooData.DBNAME,
@@ -217,8 +210,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
         if(db.deleteDataOnTable(OdooData.TABLE_STOCK_RETURN_LINE)){
             thread {
                 try {
-                    val id = invoiceId!!.toInt()
-                    val deferredStockReturnLine: String = syncStockReturnLines(id)
+                    val deferredStockReturnLine: String = syncStockReturnLines(relatedId)
                     val stockLineJson = JSONArray(deferredStockReturnLine)
                     //Insert data
                     val stockLineUpdate =
@@ -229,7 +221,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
                         runOnUiThread {
                             progressBar.isVisible = false
                             datamodels.clear()
-                            populateListView(relatedId)
+                            populateListView(relatedId.toString())
                             val adapter = refundDetailsLv.adapter as OrderRevisionAdapter
                             adapter.notifyDataSetChanged()
                             val customToast = CustomToast(this, this)
@@ -283,14 +275,20 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
             name = name.replace("]", "")
             var myId = productId[0]
             myId = myId.replace("[","")
+
+            items.Id = refundItemsCursor.getString(refundItemsCursor.getColumnIndex("id")).toInt()
             items.productName = name
             items.productId = myId.toInt()
             items.qty = refundItemsCursor.getInt(refundItemsCursor.getColumnIndex("qty"))
+            val acceptedQty = refundItemsCursor.getInt(refundItemsCursor.getColumnIndex("accepted_qty")).toInt()
+            val rejectedQty = refundItemsCursor.getInt(refundItemsCursor.getColumnIndex("rejected_qty")).toInt()
+            Log.d("Values ", "$acceptedQty-$rejectedQty")
+            items.revisionQty = acceptedQty+rejectedQty
             items.incidencies = "0"
             //items.product = name +" x "+refundItemsCursor.getString(4) +"\n" +
                     refundItemsCursor.getString(3) +" c/u "
             //items.imports = refundItemsCursor.getString(3) + " MXN"
-
+            items.relabel = "false"
 
             datamodels.add(items)
         }
@@ -323,33 +321,33 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
         var pedido: OrderRevisionDataModel
         val deferredProductId = GlobalScope.async { searchProduct(decodedString) }
         var code : String
+        var scannedCode : String = ""
         try{
             runBlocking {
-                if(deferredProductId.await() != "[]"){
-                    Log.d("Raw code result",deferredProductId.await().toString())
-                    val raw = deferredProductId.await()
-                    val parse1 = raw.replace("[","")
-                    val parse2 = parse1.replace("]","")
-                    code = parse2
-                    val list : List<String> = code.split(",").map { it.trim() }
-                    scannedProductIdSearch = list[0].toInt()
-                    Log.d("Scanned Product", scannedProductIdSearch.toString())
-                }
-                else{
-                    val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
-                    customToast.show("Producto no encontrado", 24.0F, Toast.LENGTH_LONG)
-                }
+                scannedCode = deferredProductId.await()
+            }
+            if(scannedCode!= "[]"){
+                Log.d("Raw code result",scannedCode)
+                scannedCode = scannedCode.replace("[","")
+                scannedCode = scannedCode.replace("]","")
+                val list = scannedCode.split(",").map { it.trim() }
+                scannedProductIdSearch = list[0].toInt()
+                Log.d("Scanned Product", scannedProductIdSearch.toString())
+            }
+            else{
+                val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
+                customToast.show("Producto no encontrado", 24.0F, Toast.LENGTH_LONG)
             }
         }catch (e: java.lang.Exception){
             runOnUiThread {
                 val customToast = CustomToast(this, this)
-                customToast.show("Error General", 24.0F, Toast.LENGTH_LONG)
+                customToast.show("Error General", 14.0F, Toast.LENGTH_LONG)
             }
             Log.d("Error General",e.toString())
         }catch (xml: XmlRpcException){
             runOnUiThread {
                 val customToast = CustomToast(this, this)
-                customToast.show("Error encontrando Producto", 24.0F, Toast.LENGTH_LONG)
+                customToast.show("Error encontrando Producto", 14.0F, Toast.LENGTH_LONG)
             }
             Log.d("Error de Red",xml.toString())
         }
@@ -359,69 +357,71 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
             val productId = pedido.productId
             Log.d("Product Id and Name", productId.toString()+ pedido.productName)
             if(scannedProductIdSearch == productId){
-                Log.d("Match in", productId.toString())
-                if(activeModeId != pedido.Id){
-                    markedAsExcedent = false
-                }
-                activeModeId = pedido.Id
-                if ((pedido.revisionQty >= pedido.qty) && !markedAsExcedent){
-                    val builder = AlertDialog.Builder(this)
-                    builder.setTitle("Producto Excede Cantidad")
-                        .setMessage("¿Desea agregar los siguientes productos a excedente?")
-                        .setPositiveButton("Aceptar"){ _, _ ->
-                            markedAsExcedent = true
-
-                        }
-                        .setNegativeButton("Cancelar"){ dialog, _ ->
+                val builder = AlertDialog.Builder(this)
+                builder.setTitle("Producto - ${pedido.productName}")
+                    .setMessage("¿Aceptar o Rechazar Producto?")
+                    .setPositiveButton("Aceptar"){ dialog, _ ->
+                        try{
+                            val qty : HashMap<String, Int> = HashMap()
+                            qty["accepted"] = 1
+                            val refund = GlobalScope.async { doRefund(pedido.Id, qty) }
+                            var result =""
+                            runBlocking {
+                                Log.d("Refund Result", refund.await())
+                                result = refund.await()
+                            }
+                            if(result.equals("[true, Successful Update]")){
+                                pedido.revisionQty++
+                                val adapter = refundDetailsLv.adapter as OrderRevisionAdapter
+                                adapter.notifyDataSetChanged()
+                            }
+                            else{
+                                val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
+                                customToast.show("Error en Petición", 14.0F, Toast.LENGTH_LONG)
+                            }
                             dialog.dismiss()
+                        }catch(e : Exception){
+                            Log.d("Error General", e.toString())
+                            val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
+                            customToast.show(e.toString(), 14.0F, Toast.LENGTH_LONG)
+                        }catch (xml : XmlRpcException){
+                            Log.d("Error Red", xml.toString())
+                            val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
+                            customToast.show(xml.toString(), 14.0F, Toast.LENGTH_LONG)
                         }
-                        .show()
-                }
-                else {
-                    setScannedQuantity(productId)
-                    pedido.revisionQty++
-                    val arrayAdapter = refundDetailsLv.adapter as OrderRevisionAdapter
-                    arrayAdapter.dataSet[i] = pedido
-                    arrayAdapter.notifyDataSetChanged()
-                    productScannedId = pedido.Id
 
-                    val db = DBConnect(
-                        applicationContext,
-                        OdooData.DBNAME,
-                        null,
-                        prefs.getInt("DBver",1)
-                    ).writableDatabase
-                    val contentValues = ContentValues()
-                    contentValues.put("revision_qty", pedido.revisionQty)
-
-                    db.update(OdooData.TABLE_STOCK_ITEMS, contentValues, "id = "+pedido.Id,null)
-                    Log.d("Updated", "Done")
-
-                    //inflate the layout of popup window
-                    val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-                    val popupView: View = inflater.inflate(R.layout.issues_scan_popup, null)
-
-                    scanIssuesLv = popupView.findViewById(R.id.direct_incidencies_lv)
-                    val scannedProduct = popupView.findViewById<TextView>(R.id.product_chosed_txt)
-                    scannedProduct.text = pedido.productName
-
-                    val noIssuesBtn = popupView.findViewById<Button>(R.id.no_incidencies_btn)
-                    noIssuesBtn.setOnClickListener {
-                        scanPopupWindow.dismiss()
                     }
-
-                    scanIssuesDataModel.clear()
-                    populateScanIssuesListView(returnID)
-
-                    //create the popup window
-                    val width: Int = LinearLayout.LayoutParams.WRAP_CONTENT
-                    val height: Int = LinearLayout.LayoutParams.WRAP_CONTENT
-                    val focusable = true
-
-                    scanPopupWindow = PopupWindow(popupView, width, height, focusable)
-
-                    scanPopupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
-                }
+                    .setNegativeButton("Rechazat"){ dialog, _ ->
+                        try{
+                            val qty : HashMap<String, Int> = HashMap()
+                            qty["rejected"] = 1
+                            val refund = GlobalScope.async { doRefund(pedido.Id, qty) }
+                            var result =""
+                            runBlocking {
+                                Log.d("Refund Result", refund.await())
+                                result = refund.await()
+                            }
+                            if(result.equals("[true, Successful Update]")){
+                                pedido.revisionQty++
+                                val adapter = refundDetailsLv.adapter as OrderRevisionAdapter
+                                adapter.notifyDataSetChanged()
+                            }
+                            else{
+                                val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
+                                customToast.show("Error en Petición", 14.0F, Toast.LENGTH_LONG)
+                            }
+                            dialog.dismiss()
+                        }catch(e : Exception){
+                            Log.d("Error General", e.toString())
+                            val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
+                            customToast.show(e.toString(), 14.0F, Toast.LENGTH_LONG)
+                        }catch (xml : XmlRpcException){
+                            Log.d("Error Red", xml.toString())
+                            val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
+                            customToast.show(xml.toString(), 14.0F, Toast.LENGTH_LONG)
+                        }
+                    }
+                    .show()
             }
         }
     }
@@ -525,6 +525,17 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
         odoo.authenticateOdoo()
         val invoiceLine = odoo.reloadStockReturnLines(returnId)
         return invoiceLine
+    }
+
+    fun doRefund(productId : Int, qty : HashMap<String, Int>) : String{
+        val odoo = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
+        odoo.authenticateOdoo()
+        val invoiceLine = odoo.doRefund(productId, qty)
+        return invoiceLine.toString()
     }
 
     override fun showPopup(value: Int, moveId: Int, Name: String?) {
