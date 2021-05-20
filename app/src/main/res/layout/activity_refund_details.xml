@@ -17,7 +17,7 @@
         android:background="@drawable/invoice_lv_top_dbl"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/invoice_lbl">
+        app:layout_constraintTop_toBottomOf="@+id/in_lbl">
 
         <TableRow
             android:layout_width="match_parent"
@@ -25,12 +25,23 @@
             android:layout_weight="0">
 
             <TextView
-                android:id="@+id/object_lbl"
+                android:id="@+id/invoice_lbl"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight=".8"
+                android:layout_weight=".4"
+                android:fontFamily="@font/lato_bold"
+                android:text="Folio"
+                android:textColor="#ffffff"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/product_lbl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight=".4"
                 android:fontFamily="@font/lato_bold"
                 android:text="@string/product_lv_lbl"
+                android:textAlignment="center"
                 android:textColor="#ffffff"
                 android:textSize="16sp" />
 
@@ -117,7 +128,7 @@
         app:layout_constraintTop_toBottomOf="@+id/motive_txt" />
 
     <TextView
-        android:id="@+id/invoice_lbl"
+        android:id="@+id/in_lbl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
@@ -161,7 +172,7 @@
         android:fontFamily="@font/lato_bold"
         android:textColor="#2f3983"
         android:textSize="18sp"
-        app:layout_constraintStart_toEndOf="@+id/invoice_lbl"
+        app:layout_constraintStart_toEndOf="@+id/in_lbl"
         app:layout_constraintTop_toBottomOf="@+id/partner_lbl" />
 
     <ImageView

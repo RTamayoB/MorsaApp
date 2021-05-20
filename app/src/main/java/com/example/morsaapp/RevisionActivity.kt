@@ -108,12 +108,7 @@ class RevisionActivity : AppCompatActivity() {
             null,
             prefs.getInt("DBver",1)
         )
-        val check = db.writableDatabase.rawQuery("SELECT id FROM stock_picking WHERE in_inspection == 'true'", null)
-        val list : ArrayList<String> = ArrayList()
-        while (check.moveToNext()){
-            list.add(check.getString(check.getColumnIndex("id")))
-        }
-        Log.d("In Inspection List", list.toString())
+
         //db.writableDatabase.execSQL("DELETE FROM stock_picking WHERE id in $list")
         if(db.deleteDataOnTable(OdooData.TABLE_STOCK)){
             thread {

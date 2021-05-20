@@ -10,17 +10,11 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
-import com.example.morsaapp.adapter.InvoiceAdapter
-import com.example.morsaapp.adapter.IssuesPopupAdapter
-import com.example.morsaapp.adapter.OrderRevisionAdapter
-import com.example.morsaapp.adapter.ScanIssuesAdapter
+import com.example.morsaapp.adapter.*
 import com.example.morsaapp.data.DBConnect
 import com.example.morsaapp.data.OdooConn
 import com.example.morsaapp.data.OdooData
-import com.example.morsaapp.datamodel.InvoiceDataModel
-import com.example.morsaapp.datamodel.IssuesPopupDataModel
-import com.example.morsaapp.datamodel.OrderRevisionDataModel
-import com.example.morsaapp.datamodel.ScanIssuesDataModel
+import com.example.morsaapp.datamodel.*
 import com.google.gson.Gson
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
@@ -31,9 +25,9 @@ import org.json.JSONArray
 import kotlin.concurrent.thread
 
 class RefundDetailsActivity : AppCompatActivity(), Definable {
-    var datamodels = ArrayList<OrderRevisionDataModel>()
+    var datamodels = ArrayList<RefundDetailsDataModel>()
     lateinit var refundDetailsLv : ListView
-    lateinit var adapter : OrderRevisionAdapter
+    lateinit var adapter : RefundDetailsAdapter
     lateinit var progressBar: ProgressBar
 
     lateinit var prefs : SharedPreferences
@@ -222,7 +216,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
                             progressBar.isVisible = false
                             datamodels.clear()
                             populateListView(relatedId.toString())
-                            val adapter = refundDetailsLv.adapter as OrderRevisionAdapter
+                            val adapter = refundDetailsLv.adapter as RefundDetailsAdapter
                             adapter.notifyDataSetChanged()
                             val customToast = CustomToast(this, this)
                             customToast.show("Lista Actualizada", 24.0F, Toast.LENGTH_LONG)
@@ -263,11 +257,11 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
             prefs.getInt("DBver",1)
         )
         val refundItemsCursor = db.fillRefundItemsListView(id)
-        var items : OrderRevisionDataModel?
+        var items : RefundDetailsDataModel?
 
 
         while (refundItemsCursor.moveToNext()) {
-            items = OrderRevisionDataModel()
+            items = RefundDetailsDataModel()
             val productId = refundItemsCursor.getString(2).split(",")
             Log.d("ProductId",productId.toString())
             var name = productId[1]
@@ -278,17 +272,13 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
 
             items.Id = refundItemsCursor.getString(refundItemsCursor.getColumnIndex("id")).toInt()
             items.productName = name
+            items.name = refundItemsCursor.getString(refundItemsCursor.getColumnIndex("name"))
             items.productId = myId.toInt()
             items.qty = refundItemsCursor.getInt(refundItemsCursor.getColumnIndex("qty"))
             val acceptedQty = refundItemsCursor.getInt(refundItemsCursor.getColumnIndex("accepted_qty")).toInt()
             val rejectedQty = refundItemsCursor.getInt(refundItemsCursor.getColumnIndex("rejected_qty")).toInt()
             Log.d("Values ", "$acceptedQty-$rejectedQty")
             items.revisionQty = acceptedQty+rejectedQty
-            items.incidencies = "0"
-            //items.product = name +" x "+refundItemsCursor.getString(4) +"\n" +
-                    refundItemsCursor.getString(3) +" c/u "
-            //items.imports = refundItemsCursor.getString(3) + " MXN"
-            items.relabel = "false"
 
             datamodels.add(items)
         }
@@ -298,7 +288,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
     }
 
     private fun obtainList() {
-        adapter = OrderRevisionAdapter(this,datamodels,null)
+        adapter = RefundDetailsAdapter(datamodels,this)
         refundDetailsLv.adapter = adapter
     }
 

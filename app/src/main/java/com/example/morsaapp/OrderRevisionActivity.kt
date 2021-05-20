@@ -1,6 +1,7 @@
 package com.example.morsaapp
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.*
 import android.device.ScanManager
 import android.device.scanner.configuration.Triggering
@@ -23,6 +24,7 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.isVisible
+import androidx.fragment.app.DialogFragment
 import com.example.morsaapp.adapter.IssuesPopupAdapter
 import com.example.morsaapp.adapter.OrderRevisionAdapter
 import com.example.morsaapp.adapter.ScanIssuesAdapter
@@ -34,6 +36,7 @@ import com.example.morsaapp.datamodel.OrderRevisionDataModel
 import com.example.morsaapp.datamodel.ScanIssuesDataModel
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_main_menu.*
+import kotlinx.android.synthetic.main.no_product_popup.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -342,6 +345,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
     lateinit var pickingId : String
     var labelCount : Int = 0
     var markedAsExcedent : Boolean = false
+    lateinit var exceedDialog : AlertDialog.Builder
 
     lateinit var progressBar: ProgressBar
 
@@ -353,6 +357,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         setSupportActionBar(toolbar)
         supportActionBar?.title = "Revisión de Orden"
 
+        exceedDialog = AlertDialog.Builder(this)
         prefs = this.getSharedPreferences("startupPreferences", 0)
         progressBar = findViewById(R.id.progressBar_revision)
 
@@ -782,24 +787,8 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
          * and show the lines on the ListView
          */
 
-        val dbcheck = DBConnect(applicationContext, OdooData.DBNAME, null, prefs.getInt("DBver",1)).writableDatabase
-        val check = dbcheck.rawQuery("SELECT * FROM stock_picking WHERE id = ?", arrayOf(pickingId.toString()))
-        var in_inspection = false
-        Log.d("CHeck count", check.count.toString())
-        while (check.moveToNext()){
-            if (check.getString(check.getColumnIndex("in_inspection")) == null){
-                Log.d("In Inspection", "Twas null")
-                in_inspection = false
-            }
-            else if (check.getString(check.getColumnIndex("in_inspection")) == "true"){
-                in_inspection = true
-            }
-        }
-        check.close()
-        Log.d("In Inspection", in_inspection.toString())
-        if(!in_inspection){
-            //Reload data
-            if(dbReload.deleteDataOnTableFromField(OdooData.TABLE_STOCK_ITEMS,"picking_id",relatedId)){
+        //Reload data
+        if(dbReload.deleteDataOnTableFromField(OdooData.TABLE_STOCK_ITEMS,"picking_id",relatedId)){
                 thread {
                     try{
                         val deferredStockItemsReSync: String =  syncInspectionItems(pickingId.toInt())
@@ -841,7 +830,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                     }
                 }
             }
-        }
+
 
 
 
@@ -1066,17 +1055,6 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
             Log.d("NULL", "Es nulo")
         }
 
-
-        val db = DBConnect(
-            applicationContext,
-            OdooData.DBNAME,
-            null,
-            prefs.getInt("DBver", 1)
-        ).writableDatabase
-        val values = ContentValues()
-        values.put("in_inspection", "true")
-        db.update(OdooData.TABLE_STOCK, values, "id = ?", arrayOf(pickingId.toString()))
-
         Log.d("Barcode", decodedString)
         var scannedProductIdSearch = 0
         /*
@@ -1134,8 +1112,9 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                 }
                 activeModeId = pedido.Id
                 if ((pedido.revisionQty >= pedido.qty) && !markedAsExcedent){
-                    val builder = AlertDialog.Builder(this)
-                    builder.setTitle("Producto Excede Cantidad")
+
+
+                    exceedDialog.setTitle("Producto Excede Cantidad")
                         .setMessage("¿Desea agregar los siguientes productos a excedente?")
                         .setPositiveButton("Aceptar"){ _, _ ->
                             markedAsExcedent = true
