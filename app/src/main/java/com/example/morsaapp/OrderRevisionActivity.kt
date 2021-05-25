@@ -1,19 +1,14 @@
 package com.example.morsaapp
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.*
 import android.device.ScanManager
 import android.device.scanner.configuration.Triggering
 import android.graphics.Color
 import android.media.AudioManager
 import android.media.SoundPool
-import android.net.ConnectivityManager
-import android.net.NetworkInfo
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.os.Vibrator
 import android.util.Log
 import android.view.Gravity
@@ -24,7 +19,6 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.isVisible
-import androidx.fragment.app.DialogFragment
 import com.example.morsaapp.adapter.IssuesPopupAdapter
 import com.example.morsaapp.adapter.OrderRevisionAdapter
 import com.example.morsaapp.adapter.ScanIssuesAdapter
@@ -41,14 +35,13 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.apache.xmlrpc.XmlRpcException
-import org.apache.xmlrpc.XmlRpcHandler
-import org.apache.xmlrpc.XmlRpcRequest
 import org.json.JSONArray
 import java.io.*
 import java.lang.Exception
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.concurrent.thread
+import com.example.morsaapp.Key
 
 
 class OrderRevisionActivity : AppCompatActivity(), Definable {
@@ -146,6 +139,10 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                     val value = intent.getStringExtra("barcode_string")
                     Log.d("INTENT VALUE", value)
                 displayScanResult(value, "")
+                /*val r = Runnable {
+                    displayScanResult(value,"")
+                }
+                Handler(Looper.getMainLooper()).postDelayed(r,30000)*/
                 //mScanManager.stopDecode()
             }
         }
@@ -348,6 +345,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
     lateinit var exceedDialog : AlertDialog.Builder
 
     lateinit var progressBar: ProgressBar
+    val multiKeyMap: MutableMap<Key<*, *, *>, Int> = java.util.HashMap()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -802,8 +800,26 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                 populateListView(relatedId)
                                 val adapter = orderRevisionLv.adapter as OrderRevisionAdapter
                                 adapter.notifyDataSetChanged()
+
+                                thread {
+                                    for (i in 0 until orderRevisionLv.adapter.count) {
+                                        val item =
+                                            orderRevisionLv.adapter.getItem(i) as OrderRevisionDataModel
+                                        val barcodeList: String = searchProductById(item.productId)
+                                        Log.d("Barcode", barcodeList)
+                                        val barcodeJson = JSONArray(barcodeList)
+                                        val key1 = barcodeJson.getJSONObject(0).getString("barcode")
+                                        val key2 = barcodeJson.getJSONObject(0).getString("hs_code")
+                                        val key3 = barcodeJson.getJSONObject(0).getString("partner_barcode")
+                                        val keys = Key(key1,key2,key3)
+                                        multiKeyMap[keys] = item.productId
+
+                                    }
+                                }
+
                                 val customToast = CustomToast(this, this)
                                 customToast.show("Exito", 24.0F, Toast.LENGTH_LONG)
+
                             }
 
                         } else
@@ -830,9 +846,6 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                     }
                 }
             }
-
-
-
 
         val filter = IntentFilter()
         filter.addAction("android.intent.ACTION_DECODE_DATA")
@@ -1066,7 +1079,8 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         val deferredProductId = GlobalScope.async { searchProduct(decodedString) }
         var code: String
         var scannedCode : String = ""
-        try{
+
+        /*try{
             runBlocking {
                 scannedCode = deferredProductId.await()
             }
@@ -1100,13 +1114,21 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
             val customToast = CustomToast(this, this)
             customToast.show("Error encontrando Producto", 24.0F, Toast.LENGTH_LONG)
             Log.d("Error de Red",xml.toString())
+        }*/
+
+        for ((barcodes, id) in multiKeyMap){
+            if(barcodes.key1 == decodedString || barcodes.key2 == decodedString || barcodes.key3 == decodedString){
+                scannedProductIdSearch = id
+            }
         }
 
+        var isProduct = false
         for(i in 0 until orderRevisionLv.adapter.count){
             pedido = orderRevisionLv.adapter.getItem(i) as OrderRevisionDataModel
             val productId = pedido.productId
             Log.d("Product Id and Name", productId.toString()+ pedido.productName)
             if(scannedProductIdSearch == productId){
+                isProduct = true
                 if(activeModeId != pedido.Id){
                     markedAsExcedent = false
                 }
@@ -1168,9 +1190,13 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
 
                     scanPopupWindow = PopupWindow(popupView, width, height, focusable)
 
-                    //scanPopupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
+                    scanPopupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
                 }
             }
+        }
+        if(!isProduct){
+            val customToast = CustomToast(applicationContext, this@OrderRevisionActivity)
+            customToast.show("Producto no encontrado", 24.0F, Toast.LENGTH_LONG)
         }
     }
 
@@ -1342,6 +1368,16 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         )
         odooConn.authenticateOdoo()
         return odooConn.searchProduct(product_id)
+    }
+
+    private fun searchProductById(product_id : Int): String {
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
+        odooConn.authenticateOdoo()
+        return odooConn.searchProductById(product_id)
     }
 
     private fun getStockMoveIssue() : String

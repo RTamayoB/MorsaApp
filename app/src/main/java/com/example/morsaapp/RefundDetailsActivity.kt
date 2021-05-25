@@ -308,7 +308,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
         val cursor = db.rawQuery("SELECT id FROM "+Utilities.TABLE_PRODUCT_PRODUCT+" where barcode = ? OR default_code = ?", arrayOf(decodedData, decodedData))
 
         */
-        var pedido: OrderRevisionDataModel
+        var pedido: RefundDetailsDataModel
         val deferredProductId = GlobalScope.async { searchProduct(decodedString) }
         var code : String
         var scannedCode : String = ""
@@ -342,11 +342,13 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
             Log.d("Error de Red",xml.toString())
         }
 
+        var isproduct  = false
         for(i in 0 until refundDetailsLv.adapter.count){
-            pedido = refundDetailsLv.adapter.getItem(i) as OrderRevisionDataModel
+            pedido = refundDetailsLv.adapter.getItem(i) as RefundDetailsDataModel
             val productId = pedido.productId
             Log.d("Product Id and Name", productId.toString()+ pedido.productName)
             if(scannedProductIdSearch == productId){
+                isproduct = true
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle("Producto - ${pedido.productName}")
                     .setMessage("¿Aceptar o Rechazar Producto?")
@@ -413,6 +415,10 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
                     }
                     .show()
             }
+        }
+        if(!isproduct){
+            val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
+            customToast.show("Producto no Encontrado", 24.0F, Toast.LENGTH_LONG)
         }
     }
 

@@ -55,8 +55,10 @@ public class DBConnect extends SQLiteOpenHelper {
     public void onUpgrade(android.database.sqlite.SQLiteDatabase db, int oldVersion, int newVersion) {
         try{
             Log.d("OnUpgrade", "Upgrading");
+            db.execSQL("DROP TABLE IF EXISTS "+OdooData.TABLE_STOCK_ITEMS);
             db.execSQL("DROP TABLE IF EXISTS "+OdooData.TABLE_STOCK_RETURN);
             db.execSQL("DROP TABLE IF EXISTS "+OdooData.TABLE_STOCK_RETURN_LINE);
+            db.execSQL(OdooData.CREATE_TABLE_STOCK_ITEMS);
             db.execSQL(OdooData.CREATE_TABLE_STOCK_RETURN);
             db.execSQL(OdooData.CREATE_TABLE_STOCK_RETURN_LINE);
             SharedPreferences prefs = context.getSharedPreferences("startupPreferences", 0);

@@ -24,12 +24,13 @@
 
                 <TextView
                     android:id="@+id/re_stock_origin_txt"
-                    android:layout_width="110dp"
+                    android:layout_width="108dp"
                     android:layout_height="match_parent"
                     android:background="@drawable/invoice_lv_dbl"
                     android:fontFamily="@font/lato_regular"
                     android:padding="4dp"
                     android:text="TextView"
+                    android:textColor="#000000"
                     android:textSize="12sp" />
             </TableRow>
 
@@ -44,6 +45,7 @@
                     android:background="@drawable/invoice_lv_dbl"
                     android:fontFamily="@font/lato_regular"
                     android:padding="4dp"
+                    android:textColor="#000000"
                     android:text="Machine Machine Machine"
                     android:textSize="12sp" />
             </TableRow>
@@ -59,6 +61,7 @@
                     android:background="@drawable/invoice_lv_dbl"
                     android:fontFamily="@font/lato_regular"
                     android:padding="4dp"
+                    android:textColor="#000000"
                     android:text="TextView"
                     android:textSize="12sp" />
             </TableRow>
@@ -69,12 +72,13 @@
 
                 <TextView
                     android:id="@+id/re_stock_destiny_txt"
-                    android:layout_width="90dp"
-                    android:padding="4dp"
+                    android:layout_width="96dp"
                     android:layout_height="match_parent"
                     android:background="@drawable/invoice_lv_dbl"
                     android:fontFamily="@font/lato_regular"
+                    android:padding="4dp"
                     android:text="TextView"
+                    android:textColor="#000000"
                     android:textSize="12sp" />
             </TableRow>
 
