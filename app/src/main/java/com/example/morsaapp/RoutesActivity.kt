@@ -69,6 +69,7 @@ class RoutesActivity : AppCompatActivity() {
             val action = intent?.action
 
             if(action == resources.getString(R.string.activity_intent_action)){
+                Log.d("Reciever","On")
                 /*soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
                 mVibrator.vibrate(100)
 

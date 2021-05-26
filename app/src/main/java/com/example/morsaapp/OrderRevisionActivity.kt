@@ -10,6 +10,7 @@ import android.media.SoundPool
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Vibrator
+import android.text.InputType
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -42,6 +43,7 @@ import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.concurrent.thread
 import com.example.morsaapp.Key
+import com.example.morsaapp.datamodel.ReceptionDataModel
 
 
 class OrderRevisionActivity : AppCompatActivity(), Definable {
@@ -850,6 +852,28 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         val filter = IntentFilter()
         filter.addAction("android.intent.ACTION_DECODE_DATA")
         registerReceiver(mScanReceiver, filter)
+
+        orderRevisionLv.isClickable = true
+        orderRevisionLv.setOnItemClickListener { _, view, position, _ ->
+            val model : OrderRevisionDataModel = orderRevisionLv.getItemAtPosition(position) as OrderRevisionDataModel
+            val countBuilder = AlertDialog.Builder(this)
+            countBuilder.setTitle("Producto ${model.productName}")
+            val count = EditText(this)
+            count.inputType = InputType.TYPE_CLASS_NUMBER
+            countBuilder.setView(count)
+            countBuilder.setMessage("Ingrese la cantidad:")
+            countBuilder.setPositiveButton("Ingresar") { dialog, which ->
+                val number = count.text.toString().toInt()
+                setScannedQuantityByPop(number)
+                model.revisionQty = number
+                val arrayAdapter = orderRevisionLv.adapter as OrderRevisionAdapter
+                arrayAdapter.notifyDataSetChanged()
+            }
+            countBuilder.setNegativeButton("Cancelar") { dialog, _ ->
+                dialog.dismiss()
+            }
+            countBuilder.show()
+        }
     }
 
     fun syncInspectionItems(pickingId: Int) : String{
@@ -1281,6 +1305,32 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
             else{
                 //iterate and check which one correspond to the id we are manipulating
                 finalHashMap[pickingId.toInt()]?.get(activeModeId)?.put("qty",(intQty as Int)+1)
+
+            }
+        }
+        Log.d("HashMap Result", finalHashMap.toString())
+        return true
+    }
+
+    fun setScannedQuantityByPop(num: Int):Boolean{
+        var hmFinalPickingId = finalHashMap[pickingId.toInt()]
+        var issuesQtyHm = hmFinalPickingId?.get(activeModeId)
+        //If the id of the active move is not a key in hashmap, we will make a key from it and assign a hashmap with a "issues" key that will have a list with the scanned issue and 1 (default) issue.
+        if(issuesQtyHm == null){
+            hmFinalPickingId?.put(activeModeId, hashMapOf("qty" to num))
+            //Test
+        }
+        //If the id of the active move is a key in hashmap.
+        else{
+            var intQty=issuesQtyHm.get("qty")
+            //qty is not a key, then make a key and assign a list with the scan issue and 1 (default)
+            if (intQty == null) {
+                issuesQtyHm.put("qty",num)
+            }
+            //qty is a key, take the previous value of that qty and add 1 to it.
+            else{
+                //iterate and check which one correspond to the id we are manipulating
+                finalHashMap[pickingId.toInt()]?.get(activeModeId)?.put("qty",num)
 
             }
         }
