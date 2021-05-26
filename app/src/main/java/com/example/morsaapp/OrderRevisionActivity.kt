@@ -856,6 +856,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         orderRevisionLv.isClickable = true
         orderRevisionLv.setOnItemClickListener { _, view, position, _ ->
             val model : OrderRevisionDataModel = orderRevisionLv.getItemAtPosition(position) as OrderRevisionDataModel
+            activeModeId = model.Id
             val countBuilder = AlertDialog.Builder(this)
             countBuilder.setTitle("Producto ${model.productName}")
             val count = EditText(this)
