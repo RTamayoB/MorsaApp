@@ -100,7 +100,7 @@ class RevisionActivity : AppCompatActivity() {
     }
 
     private fun refreshData(){
-        
+
         val db = DBConnect(
             applicationContext,
             OdooData.DBNAME,
