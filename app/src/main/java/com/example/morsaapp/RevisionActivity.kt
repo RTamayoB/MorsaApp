@@ -2,7 +2,6 @@ package com.example.morsaapp
 
 import android.content.Intent
 import android.content.SharedPreferences
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -10,6 +9,7 @@ import android.view.MenuItem
 import android.widget.ListView
 import android.widget.SearchView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.morsaapp.adapter.RevisionAdapter
 import com.example.morsaapp.data.DBConnect
@@ -48,10 +48,11 @@ class RevisionActivity : AppCompatActivity() {
             val model : ReceptionDataModel = pedidosLv.getItemAtPosition(position) as ReceptionDataModel
             val id = model.getId()
             val name = model.num
-            intent.putExtra("ID",id)
-            intent.putExtra("ReturnId",model.returnId)
+            intent.putExtra("ID", id)
+            intent.putExtra("ReturnId", model.returnId)
             Log.d("Stock Picking Id", id)
             intent.putExtra("Name", name)
+            intent.putExtra("InInspection",model.inInspection)
             startActivity(intent)
             finish()
         }
@@ -80,11 +81,11 @@ class RevisionActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.reception_menu,menu)
+        menuInflater.inflate(R.menu.reception_menu, menu)
 
         val searchItem : MenuItem? = menu?.findItem(R.id.action_search)
         val searchView : SearchView = searchItem?.actionView as SearchView
-        searchView.setOnQueryTextListener(object :SearchView.OnQueryTextListener{
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return false
             }
@@ -99,21 +100,40 @@ class RevisionActivity : AppCompatActivity() {
     }
 
     private fun refreshData(){
-        //TODO: Add check to not reload data "In inspection"
-        //Get all ids of pickings with in_inspection on null or false
-        //Delete
+        
         val db = DBConnect(
             applicationContext,
             OdooData.DBNAME,
             null,
-            prefs.getInt("DBver",1)
+            prefs.getInt("DBver", 1)
         )
+        val cursor = db.writableDatabase.rawQuery(
+            "SELECT id from ${OdooData.TABLE_STOCK} WHERE in_inspection == 'true'",
+            null
+        )
+        val list = ArrayList<String>()
+        while (cursor.moveToNext()){
+            Log.d("Picking with inspection",cursor.getString(0))
+            list.add(cursor.getString(0))
+        }
 
+        for (i in 0 until list.size) {
+            list.set(i, "'" + list.get(i).toString() + "'")
+        }
+        Log.d("List", list.toString())
+
+        val intList = ArrayList<Int>()
+        for (i in 0 until list.size) {
+            val value = list[i].replace("'","")
+            intList.add(value.toInt())
+        }
         //db.writableDatabase.execSQL("DELETE FROM stock_picking WHERE id in $list")
-        if(db.deleteDataOnTable(OdooData.TABLE_STOCK)){
+        var realList = list.toString().replace("[","(")
+        realList = realList.replace("]",")")
+        if(db.deleteDataOnTableNotIn(OdooData.TABLE_STOCK, "id", realList)){
             thread {
                 try {
-                    val deferredStockReSync: String = syncInspections()
+                    val deferredStockReSync: String = syncInspectionsByList(intList)
                     Log.d("Returned Stock", deferredStockReSync)
                     val stockJson = JSONArray(deferredStockReSync)
                     val result = db.fillTable(stockJson, OdooData.TABLE_STOCK)
@@ -140,14 +160,14 @@ class RevisionActivity : AppCompatActivity() {
                         customToast.show("Error General $e", 24.0F, Toast.LENGTH_LONG)
                         swipeRefreshLayout.isRefreshing = false
                     }
-                    Log.d("Error General",e.toString())
+                    Log.d("Error General", e.toString())
                 }catch (xml: XmlRpcException){
                     runOnUiThread {
                         val customToast = CustomToast(this, this)
                         customToast.show("Error de Red $xml", 24.0F, Toast.LENGTH_LONG)
                         swipeRefreshLayout.isRefreshing = false
                     }
-                    Log.d("Error de Red",xml.toString())
+                    Log.d("Error de Red", xml.toString())
                 }
             }
 
@@ -163,7 +183,7 @@ class RevisionActivity : AppCompatActivity() {
             applicationContext,
             OdooData.DBNAME,
             null,
-            prefs.getInt("DBver",1)
+            prefs.getInt("DBver", 1)
         )
         val cursor = db.fillStockListView()
         var orders : ReceptionDataModel?
@@ -176,9 +196,12 @@ class RevisionActivity : AppCompatActivity() {
                 ReceptionDataModel(this, "0", "q")
             orders.id = cursor.getString(cursor.getColumnIndex("id"))
             orders.num = cursor.getString(cursor.getColumnIndex("name"))
-            Log.d("ReturnId,Origin,Purcha",cursor.getString(cursor.getColumnIndex("return_id"))+"-"+
-                    cursor.getString(cursor.getColumnIndex("origin"))+"-"+
-                    cursor.getString(cursor.getColumnIndex("origin_invoice_purchase")))
+            Log.d(
+                "ReturnId,Origin,Purcha",
+                cursor.getString(cursor.getColumnIndex("return_id")) + "-" +
+                        cursor.getString(cursor.getColumnIndex("origin")) + "-" +
+                        cursor.getString(cursor.getColumnIndex("origin_invoice_purchase"))
+            )
             if (cursor.getString(cursor.getColumnIndex("return_id")) == "false"){
                 orders.returnId = false
             }
@@ -224,6 +247,11 @@ class RevisionActivity : AppCompatActivity() {
             val correctId = relatedId.replace("/", "\\/")
             val cursor2 = db.fillStockitemsListView(correctId)
             orders.box = "Cajas: "+cursor2.count
+            orders.inInspection = if(cursor.getString(cursor.getColumnIndex("in_inspection")) == "true"){
+                "true"
+            } else{
+                "false"
+            }
 
             datamodels.add(orders)
         }
@@ -246,6 +274,18 @@ class RevisionActivity : AppCompatActivity() {
         )
         odoo.authenticateOdoo()
         val stockPicking = odoo.inspections
+        Log.d("OrderList", stockPicking)
+        return stockPicking
+    }
+
+    fun syncInspectionsByList(list: List<Int>) : String{
+        val odoo = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
+        odoo.authenticateOdoo()
+        val stockPicking = odoo.getInspectionsByList(list)
         Log.d("OrderList", stockPicking)
         return stockPicking
     }

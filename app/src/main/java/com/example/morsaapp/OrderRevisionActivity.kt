@@ -787,11 +787,16 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
          * and show the lines on the ListView
          */
 
-        //Reload data
-        if(dbReload.deleteDataOnTableFromField(OdooData.TABLE_STOCK_ITEMS,"picking_id",relatedId)){
+        Log.d("InInspection", intent.getStringExtra("InInspection"))
+
+
+        if(intent.getStringExtra("InInspection") != "true") {
+            //Reload data
+            if (dbReload.deleteDataOnTableFromField(OdooData.TABLE_STOCK_ITEMS, "picking_id", relatedId)) {
                 thread {
-                    try{
-                        val deferredStockItemsReSync: String =  syncInspectionItems(pickingId.toInt())
+                    try {
+                        val deferredStockItemsReSync: String =
+                            syncInspectionItems(pickingId.toInt())
 
                         val stockItemJson = JSONArray(deferredStockItemsReSync)
                         val result = dbReload.fillTable(stockItemJson, OdooData.TABLE_STOCK_ITEMS)
@@ -812,8 +817,9 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                         val barcodeJson = JSONArray(barcodeList)
                                         val key1 = barcodeJson.getJSONObject(0).getString("barcode")
                                         val key2 = barcodeJson.getJSONObject(0).getString("hs_code")
-                                        val key3 = barcodeJson.getJSONObject(0).getString("partner_barcode")
-                                        val keys = Key(key1,key2,key3)
+                                        val key3 = barcodeJson.getJSONObject(0)
+                                            .getString("partner_barcode")
+                                        val keys = Key(key1, key2, key3)
                                         multiKeyMap[keys] = item.productId
 
                                     }
@@ -830,24 +836,51 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                 val customToast = CustomToast(this, this)
                                 customToast.show("Sin Exito", 24.0F, Toast.LENGTH_LONG)
                             }
-                    }
-                    catch (e: Exception){
+                    } catch (e: Exception) {
                         runOnUiThread {
                             val customToast = CustomToast(this, this)
                             customToast.show("Error General $e", 24.0F, Toast.LENGTH_LONG)
                             progressBar.isVisible = false
                         }
-                        Log.d("Error General",e.toString())
-                    }catch (xml: XmlRpcException){
+                        Log.d("Error General", e.toString())
+                    } catch (xml: XmlRpcException) {
                         runOnUiThread {
                             val customToast = CustomToast(this, this)
                             customToast.show("Error de Red $xml", 24.0F, Toast.LENGTH_LONG)
                             progressBar.isVisible = false
                         }
-                        Log.d("Error de Red",xml.toString())
+                        Log.d("Error de Red", xml.toString())
                     }
                 }
             }
+        }
+        else{
+            progressBar.isVisible = false
+            datamodels.clear()
+            populateListView(relatedId)
+            val adapter = orderRevisionLv.adapter as OrderRevisionAdapter
+            adapter.notifyDataSetChanged()
+
+            thread {
+                for (i in 0 until orderRevisionLv.adapter.count) {
+                    val item =
+                        orderRevisionLv.adapter.getItem(i) as OrderRevisionDataModel
+                    val barcodeList: String = searchProductById(item.productId)
+                    Log.d("Barcode", barcodeList)
+                    val barcodeJson = JSONArray(barcodeList)
+                    val key1 = barcodeJson.getJSONObject(0).getString("barcode")
+                    val key2 = barcodeJson.getJSONObject(0).getString("hs_code")
+                    val key3 = barcodeJson.getJSONObject(0)
+                        .getString("partner_barcode")
+                    val keys = Key(key1, key2, key3)
+                    multiKeyMap[keys] = item.productId
+
+                }
+            }
+
+            val customToast = CustomToast(this, this)
+            customToast.show("Exito", 24.0F, Toast.LENGTH_LONG)
+        }
 
         val filter = IntentFilter()
         filter.addAction("android.intent.ACTION_DECODE_DATA")
@@ -865,10 +898,76 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
             countBuilder.setMessage("Ingrese la cantidad:")
             countBuilder.setPositiveButton("Ingresar") { dialog, which ->
                 val number = count.text.toString().toInt()
-                setScannedQuantityByPop(number)
-                model.revisionQty = number
-                val arrayAdapter = orderRevisionLv.adapter as OrderRevisionAdapter
-                arrayAdapter.notifyDataSetChanged()
+                if(number > model.qty){
+                    val moreBuilder = AlertDialog.Builder(this)
+                    moreBuilder.setMessage("La cantidad ingresada es mayor a la establecida en la factura. ¿Desea registrar Sobrantes?")
+                    moreBuilder.setPositiveButton("Aceptar"){ dialog, which ->
+                        setScannedQuantityByPop(number)
+                        model.revisionQty = number
+                        val arrayAdapter = orderRevisionLv.adapter as OrderRevisionAdapter
+                        arrayAdapter.notifyDataSetChanged()
+
+                        val db = DBConnect(
+                            applicationContext,
+                            OdooData.DBNAME,
+                            null,
+                            prefs.getInt("DBver",1)
+                        ).writableDatabase
+                        val contentValues = ContentValues()
+                        contentValues.put("revision_qty", model.revisionQty)
+
+                        db.update(OdooData.TABLE_STOCK_ITEMS, contentValues, "id = "+model.Id,null)
+                        Log.d("Updated", "Done")
+                    }
+                    moreBuilder.setNegativeButton("Cancelar"){ dialog, which ->
+                        dialog.dismiss()
+                    }
+                    moreBuilder.show()
+                }
+                else if(number < model.qty){
+                    val moreBuilder = AlertDialog.Builder(this)
+                    moreBuilder.setMessage("La cantidad ingresada es menor a la establecida en la factura. ¿Desea registrar Faltantes?")
+                    moreBuilder.setPositiveButton("Aceptar"){ dialog, which ->
+                        setScannedQuantityByPop(number)
+                        model.revisionQty = number
+                        val arrayAdapter = orderRevisionLv.adapter as OrderRevisionAdapter
+                        arrayAdapter.notifyDataSetChanged()
+
+                        val db = DBConnect(
+                            applicationContext,
+                            OdooData.DBNAME,
+                            null,
+                            prefs.getInt("DBver",1)
+                        ).writableDatabase
+                        val contentValues = ContentValues()
+                        contentValues.put("revision_qty", model.revisionQty)
+
+                        db.update(OdooData.TABLE_STOCK_ITEMS, contentValues, "id = "+model.Id,null)
+                        Log.d("Updated", "Done")
+                    }
+                    moreBuilder.setNegativeButton("Cancelar"){ dialog, which ->
+                        dialog.dismiss()
+                    }
+                    moreBuilder.show()
+                }
+                else{
+                    setScannedQuantityByPop(number)
+                    model.revisionQty = number
+                    val arrayAdapter = orderRevisionLv.adapter as OrderRevisionAdapter
+                    arrayAdapter.notifyDataSetChanged()
+
+                    val db = DBConnect(
+                        applicationContext,
+                        OdooData.DBNAME,
+                        null,
+                        prefs.getInt("DBver",1)
+                    ).writableDatabase
+                    val contentValues = ContentValues()
+                    contentValues.put("revision_qty", model.revisionQty)
+
+                    db.update(OdooData.TABLE_STOCK_ITEMS, contentValues, "id = "+model.Id,null)
+                    Log.d("Updated", "Done")
+                }
             }
             countBuilder.setNegativeButton("Cancelar") { dialog, _ ->
                 dialog.dismiss()
@@ -1085,6 +1184,11 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         //val decodedSource = initiatingIntent.getStringExtra(resources.getString(R.string.datawedge_intent_key_source))
         //val decodedData = initiatingIntent.getStringExtra(resources.getString(R.string.datawedge_intent_key_data))
         //val decodedLabelType = initiatingIntent.getStringExtra(resources.getString(R.string.datawedge_intent_key_label_type))
+
+        val db = DBConnect(applicationContext, OdooData.DBNAME, null, prefs.getInt("DBver",1)).writableDatabase
+        val values = ContentValues()
+        values.put("in_inspection","true")
+        db.update(OdooData.TABLE_STOCK,values,"id = $pickingId",null)
 
         try {
             scanPopupWindow.dismiss()

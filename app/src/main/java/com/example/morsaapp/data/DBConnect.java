@@ -229,7 +229,7 @@ public class DBConnect extends SQLiteOpenHelper {
     public Cursor fillStockListView(){
         SQLiteDatabase db = this.getReadableDatabase();
 
-        return db.rawQuery("SELECT id, name, group_id, partner_id, date_done, origin_invoice_purchase, return_id, origin FROM "+ OdooData.TABLE_STOCK+" /*WHERE state = 'done' AND group_id != 'false' AND origin_invoice_purchase != ''*/ ORDER BY origin_invoice_purchase ASC",null); //group_id != false is temporal fix
+        return db.rawQuery("SELECT id, name, group_id, partner_id, date_done, origin_invoice_purchase, return_id, origin, in_inspection FROM "+ OdooData.TABLE_STOCK+" /*WHERE state = 'done' AND group_id != 'false' AND origin_invoice_purchase != ''*/ ORDER BY origin_invoice_purchase ASC",null); //group_id != false is temporal fix
     }
 
     public Cursor getStockBoxesFromRoute(String route){
@@ -409,6 +409,18 @@ public class DBConnect extends SQLiteOpenHelper {
             Log.d("Deleting...", "In "+tableName+" with field "+field+" and value " + value);
             SQLiteDatabase db = this.getWritableDatabase();
             db.delete(tableName, field+" = '"+value+"'",null);
+            return true;
+        }catch (Exception e) {
+            Log.d("Error", e.toString());
+            return false;
+        }
+    }
+
+    public boolean deleteDataOnTableNotIn(String tableName, String field, String value){
+        try {
+            Log.d("Deleting...", "In "+tableName+" with field "+field+" and value " + value);
+            SQLiteDatabase db = this.getWritableDatabase();
+            db.execSQL("DELETE FROM "+tableName+" WHERE "+field+" NOT IN "+value);
             return true;
         }catch (Exception e) {
             Log.d("Error", e.toString());

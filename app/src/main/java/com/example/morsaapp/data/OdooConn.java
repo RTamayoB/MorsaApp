@@ -508,6 +508,32 @@ public class OdooConn {
         return  returned;
     }
 
+    public String getInspectionsByList(List<Integer> idList) throws XmlRpcException
+    {
+        List list = asList((Object[])models.execute("execute_kw", asList(
+                db,uid,pass,
+                "stock.picking","search_read",
+                asList(asList(
+                        asList("id","not in",idList),
+                        asList("move_arrangement_ids","=",false),
+                        asList("picking_type_code", "=", "incoming"),
+                        asList("state","=","done"),
+                        asList("group_id","!=",false),
+                        "|",
+                        asList("origin_invoice_purchase","!=",""),
+                        asList("return_id","!=",false)
+                )),
+                new HashMap() {{
+                    put("fields", asList("id", "name", "group_id", "partner_id", "state", "issues_set", "date_done", "purchase_id", "sequence", "origin_invoice_purchase","return_id", "origin"));
+                }}
+        )));
+        Log.d("STOCK PICKING", list.toString());
+        Gson gson = new Gson();
+        String returned = gson.toJson(list);
+
+        return  returned;
+    }
+
     public String getStockMove(List<Integer> idList) throws XmlRpcException
     {
         List list = asList((Object[])models.execute("execute_kw", asList(

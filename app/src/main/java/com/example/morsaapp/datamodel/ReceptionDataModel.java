@@ -19,6 +19,7 @@ public class ReceptionDataModel {
     public String total;
     public String number;
     public boolean returnId;
+    public String inInspection;
 
     public String getRef() {
         return ref;
