@@ -102,7 +102,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="v6.4.1"
+        android:text="v6.4.2"
         app:layout_constraintEnd_toEndOf="@+id/logo_img"
         app:layout_constraintTop_toBottomOf="@+id/logo_img" />
 

@@ -3,10 +3,10 @@ package com.example.morsaapp
 import java.util.HashMap
 import kotlin.jvm.JvmStatic
 
-class Key<K1, K2, K3>(key1: K1, key2: K2, key3: K3) {
-    var key1: K1? = key1
-    var key2: K2? = key2
-    var key3: K3 = key3
+class Key<String>(key1: String, key2: String, key3: String) {
+    var key1: String? = key1
+    var key2: String? = key2
+    var key3: String? = key3
     override fun equals(o: Any?): Boolean {
         if (this === o) {
             return true
@@ -14,7 +14,7 @@ class Key<K1, K2, K3>(key1: K1, key2: K2, key3: K3) {
         if (o == null || javaClass != o.javaClass) {
             return false
         }
-        val key = o as Key<*, *, *>
+        val key = o as Key<String>
         if (key1 != key.key1) {
             return false
         }
@@ -30,30 +30,8 @@ class Key<K1, K2, K3>(key1: K1, key2: K2, key3: K3) {
         return result
     }
 
-    override fun toString(): String {
-        return "[$key1, $key2]"
+    override fun toString(): kotlin.String {
+        return "[$key1, $key2, $key3]"
     }
 
-}
-
-internal object Main {
-    @JvmStatic
-    fun main(args: Array<String>) {
-        //  Create a `HashMap` with `Key` as key
-        val multiKeyMap: MutableMap<Key<*, *, *>, String> = HashMap()
-
-        // [key1, key2] -> value1
-        val k12: Key<*, *, *> = Key<Any?, Any?, Any?>("key1", "key2", "key3")
-        multiKeyMap[k12] = "value1"
-
-        // [key3, key4] -> value2
-        val k34: Key<*, *, *> = Key<Any?, Any?, Any?>("key4", "key5", "key6")
-        multiKeyMap[k34] = "value2"
-
-        // print multikey map
-        println(multiKeyMap)
-
-        // print value corresponding to key1 and key2
-        println(multiKeyMap[k12])
-    }
 }

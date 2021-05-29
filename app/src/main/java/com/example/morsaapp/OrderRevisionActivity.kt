@@ -44,6 +44,7 @@ import kotlin.collections.HashMap
 import kotlin.concurrent.thread
 import com.example.morsaapp.Key
 import com.example.morsaapp.datamodel.ReceptionDataModel
+import org.json.JSONObject
 
 
 class OrderRevisionActivity : AppCompatActivity(), Definable {
@@ -347,7 +348,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
     lateinit var exceedDialog : AlertDialog.Builder
 
     lateinit var progressBar: ProgressBar
-    val multiKeyMap: MutableMap<Key<*, *, *>, Int> = java.util.HashMap()
+    val multiKeyMap: MutableMap<Key<String>, Int> = java.util.HashMap()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -812,14 +813,15 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                     for (i in 0 until orderRevisionLv.adapter.count) {
                                         val item =
                                             orderRevisionLv.adapter.getItem(i) as OrderRevisionDataModel
-                                        val barcodeList: String = searchProductById(item.productId)
-                                        Log.d("Barcode", barcodeList)
+                                        val barcodeList: List<Any> = searchProductById(item.productId)
+                                        Log.d("Barcode", barcodeList.toString())
                                         val barcodeJson = JSONArray(barcodeList)
                                         val key1 = barcodeJson.getJSONObject(0).getString("barcode")
                                         val key2 = barcodeJson.getJSONObject(0).getString("hs_code")
                                         val key3 = barcodeJson.getJSONObject(0)
                                             .getString("partner_barcode")
                                         val keys = Key(key1, key2, key3)
+                                        Log.d("Saved keys",keys.toString())
                                         multiKeyMap[keys] = item.productId
 
                                     }
@@ -863,16 +865,18 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
 
             thread {
                 for (i in 0 until orderRevisionLv.adapter.count) {
-                    val item =
-                        orderRevisionLv.adapter.getItem(i) as OrderRevisionDataModel
-                    val barcodeList: String = searchProductById(item.productId)
-                    Log.d("Barcode", barcodeList)
+                    val item = orderRevisionLv.adapter.getItem(i) as OrderRevisionDataModel
+                    val barcodeList: List<Any> = searchProductById(item.productId)
+                    Log.d("Barcode", barcodeList.toString())
                     val barcodeJson = JSONArray(barcodeList)
-                    val key1 = barcodeJson.getJSONObject(0).getString("barcode")
-                    val key2 = barcodeJson.getJSONObject(0).getString("hs_code")
-                    val key3 = barcodeJson.getJSONObject(0)
-                        .getString("partner_barcode")
+                    val obj : JSONObject = barcodeJson.getJSONObject(0)
+                    Log.d("OBJ",obj.toString())
+                    Log.d("Barcode get", obj.get("barcode").toString())
+                    val key1  = obj.getString("barcode")
+                    val key2 = obj.getString("hs_code")
+                    val key3= obj.getString("partner_barcode")
                     val keys = Key(key1, key2, key3)
+                    Log.d("Saved keys",keys.toString())
                     multiKeyMap[keys] = item.productId
 
                 }
@@ -1246,7 +1250,9 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         }*/
 
         for ((barcodes, id) in multiKeyMap){
-            if(barcodes.key1 == decodedString || barcodes.key2 == decodedString || barcodes.key3 == decodedString){
+            Log.d("Product",id.toString()+" - "+barcodes.toString())
+            if(barcodes.key1.toString() == decodedString || barcodes.key2.toString() == decodedString || barcodes.key3.toString() == decodedString){
+                Log.d("Scan Match", id.toString())
                 scannedProductIdSearch = id
             }
         }
@@ -1255,7 +1261,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         for(i in 0 until orderRevisionLv.adapter.count){
             pedido = orderRevisionLv.adapter.getItem(i) as OrderRevisionDataModel
             val productId = pedido.productId
-            Log.d("Product Id and Name", productId.toString()+ pedido.productName)
+            Log.d("Product Id and Name", productId.toString()+" - "+ pedido.productName)
             if(scannedProductIdSearch == productId){
                 isProduct = true
                 if(activeModeId != pedido.Id){
@@ -1525,14 +1531,14 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         return odooConn.searchProduct(product_id)
     }
 
-    private fun searchProductById(product_id : Int): String {
+    private fun searchProductById(product_id : Int): List<Any> {
         val odooConn = OdooConn(
             prefs.getString("User", ""),
             prefs.getString("Pass", ""),
             this
         )
         odooConn.authenticateOdoo()
-        return odooConn.searchProductById(product_id)
+        return odooConn.searchProductById(product_id) as List<Any>
     }
 
     private fun getStockMoveIssue() : String

@@ -118,7 +118,7 @@ public class OdooConn {
         return list.toString();
     }
 
-    public String searchProductById(Integer productId) throws XmlRpcException
+    public List searchProductById(Integer productId) throws XmlRpcException
     {
         List list = asList((Object[])models.execute("execute_kw", asList(
                 db,uid,pass,
@@ -131,7 +131,7 @@ public class OdooConn {
                     put("fields",asList("partner_barcode","barcode","hs_code"));
                 }}
         )));
-        return list.toString();
+        return list;
     }
 
     public String searchProductName(String barcode) throws XmlRpcException
