@@ -350,7 +350,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
     lateinit var progressBar: ProgressBar
     val multiKeyMap: MutableMap<Key<String>, Int> = java.util.HashMap()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+        override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_order_revision)
         val toolbar : Toolbar = findViewById(R.id.order_revision_tb)

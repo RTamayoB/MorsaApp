@@ -8,13 +8,14 @@ import android.util.Log
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
-import androidx.work.*
 import com.example.morsaapp.adapter.InvoiceAdapter
 import com.example.morsaapp.data.DBConnect
 import com.example.morsaapp.data.OdooConn
 import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.InvoiceDataModel
-import com.example.morsaapp.workmanager.ReceptionWorker
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import org.apache.xmlrpc.XmlRpcException
 import org.json.JSONArray
 import kotlin.collections.ArrayList
@@ -82,21 +83,32 @@ class InvoiceActivity : AppCompatActivity() {
                 .setMessage("Recibir Orden de Compra?")
                 .setPositiveButton("Aceptar"){ _, _ ->
                     try {
+                        progressBar.isVisible = true
+                        thread{
+                            try {
+                                val send = confirmInvoice(purchaseId.toInt(), number)
+                                if (send.isNotEmpty()) {
+                                    progressBar.isVisible = false
+                                    val intent =
+                                        Intent(applicationContext, MainMenuActivity::class.java)
+                                    startActivity(intent)
+                                    finish()
+                                }
+                            }catch (e : Exception){
+                                runOnUiThread {
+                                    progressBar.isVisible = false
+                                    Log.d("ERROR", e.toString())
+                                    val customToast = CustomToast(this, this)
+                                    customToast.show("Error en Petición $e", 24.0F, Toast.LENGTH_LONG)
+                                }
+                            }
+                        }
+                        /*
+                        thread {
+                            val sendInvoice = confirmInvoice(purchaseId.toInt(),number)
+                            Log.d("Invoice Result", sendInvoice.toString())
+                        }*/
 
-                        val workManager = WorkManager.getInstance(application)
-                        val builder = Data.Builder()
-                        builder.putInt("Id",purchaseId.toInt())
-                        builder.putString("Number",number)
-                        builder.putString("User", user)
-                        builder.putString("Pass", pass)
-                        val constraints = Constraints.Builder()
-                            .setRequiredNetworkType(NetworkType.CONNECTED)
-                            .build()
-                        val request = OneTimeWorkRequestBuilder<ReceptionWorker>()
-                            .setInputData(builder.build())
-                            .setConstraints(constraints)
-                            .build()
-                        workManager.enqueue(request)
                         /*
                         val deferredTest: Deferred<List<Any>> =
                             GlobalScope.async { confirmInvoice(purchaseId.toInt()) }
@@ -126,11 +138,8 @@ class InvoiceActivity : AppCompatActivity() {
                                 editor.putString("InvoiceIds", list.toString())
                             }
                         }
-
                          */
-                        val intent = Intent(applicationContext, MainMenuActivity::class.java)
-                        startActivity(intent)
-                        finish()
+
                     }catch (e : XmlRpcException){
                         Log.d("XMLRPC ERROR", e.toString())
                         val customToast = CustomToast(this, this)
@@ -279,5 +288,11 @@ class InvoiceActivity : AppCompatActivity() {
         odoo.authenticateOdoo()
         val invoiceLine = odoo.reloadInvoiceLines(invoiceId)
         return invoiceLine
+    }
+
+    private fun confirmInvoice(id: Int, number: String?): List<Any> {
+        val odooConn = OdooConn(user, pass, this)
+        odooConn.authenticateOdoo()
+        return odooConn.confirmInvoice(id, number) as List<Any>
     }
 }
