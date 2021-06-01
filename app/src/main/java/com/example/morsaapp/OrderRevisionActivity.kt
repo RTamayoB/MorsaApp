@@ -901,76 +901,96 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
             countBuilder.setView(count)
             countBuilder.setMessage("Ingrese la cantidad:")
             countBuilder.setPositiveButton("Ingresar") { dialog, which ->
-                val number = count.text.toString().toInt()
-                if(number > model.qty){
-                    val moreBuilder = AlertDialog.Builder(this)
-                    moreBuilder.setMessage("La cantidad ingresada es mayor a la establecida en la factura. ¿Desea registrar Sobrantes?")
-                    moreBuilder.setPositiveButton("Aceptar"){ dialog, which ->
-                        setScannedQuantityByPop(number)
-                        model.revisionQty = number
-                        val arrayAdapter = orderRevisionLv.adapter as OrderRevisionAdapter
-                        arrayAdapter.notifyDataSetChanged()
+                if(count.text.toString() != "") {
+                    val number = count.text.toString().toInt()
+                        if (number > model.qty) {
+                            val moreBuilder = AlertDialog.Builder(this)
+                            moreBuilder.setMessage("La cantidad ingresada es mayor a la establecida en la factura. ¿Desea registrar Sobrantes?")
+                            moreBuilder.setPositiveButton("Aceptar") { dialog, which ->
+                                setScannedQuantityByPop(number)
+                                model.revisionQty = number
+                                val arrayAdapter = orderRevisionLv.adapter as OrderRevisionAdapter
+                                arrayAdapter.notifyDataSetChanged()
 
-                        val db = DBConnect(
-                            applicationContext,
-                            OdooData.DBNAME,
-                            null,
-                            prefs.getInt("DBver",1)
-                        ).writableDatabase
-                        val contentValues = ContentValues()
-                        contentValues.put("revision_qty", model.revisionQty)
+                                val db = DBConnect(
+                                    applicationContext,
+                                    OdooData.DBNAME,
+                                    null,
+                                    prefs.getInt("DBver", 1)
+                                ).writableDatabase
+                                val contentValues = ContentValues()
+                                contentValues.put("revision_qty", model.revisionQty)
 
-                        db.update(OdooData.TABLE_STOCK_ITEMS, contentValues, "id = "+model.Id,null)
-                        Log.d("Updated", "Done")
-                    }
-                    moreBuilder.setNegativeButton("Cancelar"){ dialog, which ->
-                        dialog.dismiss()
-                    }
-                    moreBuilder.show()
-                }
-                else if(number < model.qty){
-                    val moreBuilder = AlertDialog.Builder(this)
-                    moreBuilder.setMessage("La cantidad ingresada es menor a la establecida en la factura. ¿Desea registrar Faltantes?")
-                    moreBuilder.setPositiveButton("Aceptar"){ dialog, which ->
-                        setScannedQuantityByPop(number)
-                        model.revisionQty = number
-                        val arrayAdapter = orderRevisionLv.adapter as OrderRevisionAdapter
-                        arrayAdapter.notifyDataSetChanged()
+                                db.update(
+                                    OdooData.TABLE_STOCK_ITEMS,
+                                    contentValues,
+                                    "id = " + model.Id,
+                                    null
+                                )
+                                Log.d("Updated", "Done")
+                            }
+                            moreBuilder.setNegativeButton("Cancelar") { dialog, which ->
+                                dialog.dismiss()
+                            }
+                            moreBuilder.show()
+                        } else if (number < model.qty) {
+                            val moreBuilder = AlertDialog.Builder(this)
+                            moreBuilder.setMessage("La cantidad ingresada es menor a la establecida en la factura. ¿Desea registrar Faltantes?")
+                            moreBuilder.setPositiveButton("Aceptar") { dialog, which ->
+                                setScannedQuantityByPop(number)
+                                model.revisionQty = number
+                                val arrayAdapter = orderRevisionLv.adapter as OrderRevisionAdapter
+                                arrayAdapter.notifyDataSetChanged()
 
-                        val db = DBConnect(
-                            applicationContext,
-                            OdooData.DBNAME,
-                            null,
-                            prefs.getInt("DBver",1)
-                        ).writableDatabase
-                        val contentValues = ContentValues()
-                        contentValues.put("revision_qty", model.revisionQty)
+                                val db = DBConnect(
+                                    applicationContext,
+                                    OdooData.DBNAME,
+                                    null,
+                                    prefs.getInt("DBver", 1)
+                                ).writableDatabase
+                                val contentValues = ContentValues()
+                                contentValues.put("revision_qty", model.revisionQty)
 
-                        db.update(OdooData.TABLE_STOCK_ITEMS, contentValues, "id = "+model.Id,null)
-                        Log.d("Updated", "Done")
-                    }
-                    moreBuilder.setNegativeButton("Cancelar"){ dialog, which ->
-                        dialog.dismiss()
-                    }
-                    moreBuilder.show()
-                }
-                else{
-                    setScannedQuantityByPop(number)
-                    model.revisionQty = number
-                    val arrayAdapter = orderRevisionLv.adapter as OrderRevisionAdapter
-                    arrayAdapter.notifyDataSetChanged()
+                                db.update(
+                                    OdooData.TABLE_STOCK_ITEMS,
+                                    contentValues,
+                                    "id = " + model.Id,
+                                    null
+                                )
+                                Log.d("Updated", "Done")
+                            }
+                            moreBuilder.setNegativeButton("Cancelar") { dialog, which ->
+                                dialog.dismiss()
+                            }
+                            moreBuilder.show()
+                        } else {
+                            setScannedQuantityByPop(number)
+                            model.revisionQty = number
+                            val arrayAdapter = orderRevisionLv.adapter as OrderRevisionAdapter
+                            arrayAdapter.notifyDataSetChanged()
 
-                    val db = DBConnect(
-                        applicationContext,
-                        OdooData.DBNAME,
-                        null,
-                        prefs.getInt("DBver",1)
-                    ).writableDatabase
-                    val contentValues = ContentValues()
-                    contentValues.put("revision_qty", model.revisionQty)
+                            val db = DBConnect(
+                                applicationContext,
+                                OdooData.DBNAME,
+                                null,
+                                prefs.getInt("DBver", 1)
+                            ).writableDatabase
+                            val contentValues = ContentValues()
+                            contentValues.put("revision_qty", model.revisionQty)
 
-                    db.update(OdooData.TABLE_STOCK_ITEMS, contentValues, "id = "+model.Id,null)
-                    Log.d("Updated", "Done")
+                            db.update(
+                                OdooData.TABLE_STOCK_ITEMS,
+                                contentValues,
+                                "id = " + model.Id,
+                                null
+                            )
+                            Log.d("Updated", "Done")
+                        }
+
+                }else{
+                    dialog.dismiss()
+                    val customToast = CustomToast(this, this)
+                    customToast.show("Ingrese una cantidad", 24.0F, Toast.LENGTH_LONG)
                 }
             }
             countBuilder.setNegativeButton("Cancelar") { dialog, _ ->

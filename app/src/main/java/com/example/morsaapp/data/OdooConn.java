@@ -102,7 +102,7 @@ public class OdooConn {
     {
         List list = asList((Object[])models.execute("execute_kw", asList(
                 db,uid,pass,
-                "product.product", "search_read",
+                "product.product", "search",
                 asList(asList(
                         "|",
                         asList("barcode", "=", barcode),
@@ -110,10 +110,8 @@ public class OdooConn {
                         asList("hs_code","=",barcode),
                         asList("partner_barcode","=",barcode)
                 )),
-                //emptyMap
-                new HashMap() {{
-                    put("fields",asList("barcode","hs_code"));
-                }}
+                emptyMap()
+
         )));
         return list.toString();
     }

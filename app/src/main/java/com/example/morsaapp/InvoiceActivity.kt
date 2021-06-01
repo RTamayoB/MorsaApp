@@ -88,9 +88,10 @@ class InvoiceActivity : AppCompatActivity() {
                             try {
                                 val send = confirmInvoice(purchaseId.toInt(), number)
                                 if (send.isNotEmpty()) {
-                                    progressBar.isVisible = false
-                                    val intent =
-                                        Intent(applicationContext, MainMenuActivity::class.java)
+                                    runOnUiThread {
+                                        progressBar.isVisible = false
+                                    }
+                                    val intent = Intent(applicationContext, MainMenuActivity::class.java)
                                     startActivity(intent)
                                     finish()
                                 }
