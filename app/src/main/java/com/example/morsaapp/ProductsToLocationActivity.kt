@@ -265,11 +265,19 @@ class ProductsToLocationActivity : AppCompatActivity() {
             Log.d("Error de Red",xml.toString())
         }
 
+        for(i in 0 until productToLocationLv.adapter.count) {
+            val item = productToLocationLv.adapter.getItem(i) as ProductsToLocationDataModel
+            item.originScanned = false
+        }
+
         for(i in 0 until productToLocationLv.adapter.count){
             val item = productToLocationLv.adapter.getItem(i) as ProductsToLocationDataModel
             Log.d("Item Id", item.productId)
             if(decodedString == item.location){
                 scan1 = decodedString
+                item.originScanned = true
+                val adapterModifier = productToLocationLv.adapter as ProductsToLocationAdapter
+                adapterModifier.notifyDataSetChanged()
                 val customToast = CustomToast(this, this)
                 customToast.show("Escanee un Producto", 24.0F, Toast.LENGTH_LONG)
             }
@@ -296,29 +304,33 @@ class ProductsToLocationActivity : AppCompatActivity() {
 //                    if(num.toInt() > item.total_qty){
 //                        dialog.dismiss()
 //                    }
-                    if(item.qty <= item.total_qty){
-                        item.qty = item.qty.toInt() + num.toInt()
-                        val db = DBConnect(
-                            this,
-                            OdooData.DBNAME,
-                            null,
-                            prefs.getInt("DBver",1)
-                        ).writableDatabase
+                    val total = item.qty + num.toInt()
+                    if(total > item.total_qty){
+                        val customToast = CustomToast(this, this)
+                        customToast.show("Excedio la cantidad", 24.0F, Toast.LENGTH_LONG)
+                    }
+                    else {
+                        val db = DBConnect(this, OdooData.DBNAME, null, prefs.getInt("DBver", 1)).writableDatabase
                         val contentValues = ContentValues()
-                        contentValues.put("quantity_done",num.toInt())
-                        db.update(OdooData.TABLE_STOCK_ITEMS,contentValues, "id="+item.id,null)
-                        item.isLineScanned = 2
-                        val adapterModifier = productToLocationLv.adapter as ProductsToLocationAdapter
+                        contentValues.put("quantity_done", num.toInt())
+                        db.update(OdooData.TABLE_STOCK_ITEMS, contentValues, "id=" + item.id, null)
+                        item.qty = total
+                        val adapterModifier =
+                            productToLocationLv.adapter as ProductsToLocationAdapter
                         adapterModifier.notifyDataSetChanged()
                         thread {
                             try {
-                                val moves: List<Any> = setMoves(item.id, item.qty)
+                                val moves: List<Any> = setMoves(item.id, num.toInt())
                                 Log.d("Final Result", moves.toString())
                                 runOnUiThread {
                                     val customToast = CustomToast(this, this)
-                                    customToast.show(moves[1].toString(), 24.0F, Toast.LENGTH_LONG)
+                                    customToast.show(
+                                        moves[1].toString(),
+                                        24.0F,
+                                        Toast.LENGTH_LONG
+                                    )
                                 }
-                            }catch (e: Exception) {
+                            } catch (e: Exception) {
                                 runOnUiThread {
                                     val customToast = CustomToast(this, this)
                                     customToast.show("Error: $e", 24.0F, Toast.LENGTH_LONG)
@@ -326,15 +338,24 @@ class ProductsToLocationActivity : AppCompatActivity() {
                                 Log.d("Error General", e.toString())
                             }
                         }
-                    }else if(item.qty == item.total_qty){
-                        item.isLineScanned = 1
-                        val adapterModifier = productToLocationLv.adapter as ProductsToLocationAdapter
-                        adapterModifier.notifyDataSetChanged()
-                    }
-                    else{
-                        val customToast = CustomToast(this, this)
-                        customToast.show("Excediste la cantidad total", 24.0F, Toast.LENGTH_LONG)
-                        item.qty = 0
+                        if (total < item.total_qty) {
+                            item.isLineScanned = 2
+                            val adapterModifier = productToLocationLv.adapter as ProductsToLocationAdapter
+                            adapterModifier.notifyDataSetChanged()
+                        } else if (total == item.total_qty) {
+                            item.isLineScanned = 1
+                            val adapterModifier =
+                                productToLocationLv.adapter as ProductsToLocationAdapter
+                            adapterModifier.notifyDataSetChanged()
+                        } else {
+                            val customToast = CustomToast(this, this)
+                            customToast.show(
+                                "Excediste la cantidad total",
+                                24.0F,
+                                Toast.LENGTH_LONG
+                            )
+                            item.qty = 0
+                        }
                     }
                 }
                 builder.setNegativeButton("Cancel"){dialog, which ->

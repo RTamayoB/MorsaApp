@@ -892,6 +892,12 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
 
         orderRevisionLv.isClickable = true
         orderRevisionLv.setOnItemClickListener { _, view, position, _ ->
+
+            val db = DBConnect(applicationContext, OdooData.DBNAME, null, prefs.getInt("DBver",1)).writableDatabase
+            val values = ContentValues()
+            values.put("in_inspection","true")
+            db.update(OdooData.TABLE_STOCK,values,"id = $pickingId",null)
+
             val model : OrderRevisionDataModel = orderRevisionLv.getItemAtPosition(position) as OrderRevisionDataModel
             activeModeId = model.Id
             val countBuilder = AlertDialog.Builder(this)
@@ -1078,12 +1084,18 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                         finalHashMap[pickingId.toInt()]?.put(items.Id, hashMapOf("issues" to issuesN))
                         finalHashMap[pickingId.toInt()]?.get(items.Id)?.put("qty", items.revisionQty)
                     }
+                    Log.d("Issues", finalHashMap[pickingId.toInt()]?.get(items.Id)?.get("issues").toString())
+                    Log.d("Qty", finalHashMap[pickingId.toInt()]?.get(items.Id)?.get("qty").toString())
                     //finalHashMap[pickingId.toInt()]?.get(items.Id)?.put("issues", issuesN)
                     //finalHashMap[pickingId.toInt()]?.get(items.Id)?.put("qty", items.revisionQty)
                     //finalHashMap[pickingId.toInt()]?.put(items.Id, hmpIssues)
                     //finalHashMap[pickingId.toInt()]?.put(items.Id, hmpQty)
-                    Log.d("Added",finalHashMap[pickingId.toInt()]?.get(items.Id)?.get("issues").toString())
+                    Log.d("Issues of Picking",finalHashMap[pickingId.toInt()].toString())
                 }
+                finalHashMap[pickingId.toInt()]?.put(items.Id, hashMapOf())
+            finalHashMap[pickingId.toInt()]?.get(items.Id)?.put("qty",items.revisionQty)
+            Log.d("Issues", finalHashMap[pickingId.toInt()]?.get(items.Id)?.get("issues").toString())
+            Log.d("Qty", finalHashMap[pickingId.toInt()]?.get(items.Id)?.get("qty").toString())
                 val mixedName  = cursor.getString(cursor.getColumnIndex("product_id"))
                 val separateName : Array<String> = mixedName.split(",").toTypedArray()
                 val arrayofNames : Array<String> = separateName[1].toString().split(" ").toTypedArray()
@@ -1119,6 +1131,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
             this
         )
         orderRevisionLv.adapter = adapter
+        Log.d("Issues of Picking",finalHashMap[pickingId.toInt()].toString())
     }
 
 
