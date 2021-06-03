@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Vibrator
 import android.text.InputType
+import android.text.Layout
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -44,6 +45,7 @@ import kotlin.collections.HashMap
 import kotlin.concurrent.thread
 import com.example.morsaapp.Key
 import com.example.morsaapp.datamodel.ReceptionDataModel
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.json.JSONObject
 
 
@@ -361,6 +363,8 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         exceedDialog = AlertDialog.Builder(this)
         prefs = this.getSharedPreferences("startupPreferences", 0)
         progressBar = findViewById(R.id.progressBar_revision)
+
+            val reportExtraFAB = findViewById<FloatingActionButton>(R.id.report_extra_fab)
 
         supportActionBar?.subtitle = prefs.getString("User","")
 
@@ -1004,6 +1008,72 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
             }
             countBuilder.show()
         }
+
+          reportExtraFAB.setOnClickListener {
+              val reportDialog = AlertDialog.Builder(this)
+              reportDialog.setTitle("Reportar Equivocados")
+              reportDialog.setTitle("Anote la informacion del producto que desea reportar:")
+              val reportView = layoutInflater.inflate(R.layout.extra_issues_popup, null)
+              reportDialog.setView(reportView)
+              reportDialog.setPositiveButton("Enviar") {dialog, which ->
+                  val name = reportView.findViewById<EditText>(R.id.extra_product_edt).text
+                  val qty = reportView.findViewById<EditText>(R.id.extra_qty_edt).text
+                  val selectedId : Int = reportView.findViewById<RadioGroup>(R.id.extra_rdgrup).checkedRadioButtonId
+                  var option: Int
+                  if(selectedId != -1){
+                      val selectedRadio = reportView.findViewById<RadioButton>(selectedId)
+                      if(selectedRadio.text.toString().equals("Cambiado")){
+                          option = 1
+                      }
+                      else if(selectedRadio.text.toString().equals("Adicional")){
+                          option = 2
+                      }
+                      else{
+                          option = 0
+                      }
+                  }
+                  else{
+                    option = 0
+                  }
+                  if(name == null || qty == null || option == 0){
+                      val customToast = CustomToast(applicationContext, this@OrderRevisionActivity)
+                      customToast.show("Tiene que llenar todos los campos", 24.0F, Toast.LENGTH_LONG)
+                  }
+                  else{
+                      dialog.dismiss()
+                      thread {
+                          try {
+                              val sendExtras : List<Any> = sendExtras(pickingId.toInt(),name.toString(),qty.toString().toInt(),option)
+                              Log.d("Result",sendExtras.toString())
+                              if(sendExtras.toList()[0] == true){
+                                  Log.d("Result","Success")
+                                  runOnUiThread {
+                                      val customToast = CustomToast(applicationContext, this@OrderRevisionActivity)
+                                      customToast.show("Producto Reportado", 24.0F, Toast.LENGTH_LONG)
+                                  }
+                              }
+                              else{
+                                  runOnUiThread {
+                                      val customToast = CustomToast(applicationContext, this@OrderRevisionActivity)
+                                      customToast.show("Error de peticion", 24.0F, Toast.LENGTH_LONG)
+                                  }
+                              }
+                          }catch (e : Exception){
+                              runOnUiThread {
+                                  Log.d("Error in Extra",e.toString())
+                                  val customToast = CustomToast(applicationContext, this@OrderRevisionActivity)
+                                  customToast.show("Error de Red: $e", 24.0F, Toast.LENGTH_LONG)
+                              }
+
+                          }
+                      }
+                  }
+              }
+              reportDialog.setNegativeButton("Cancelar") { dialog, _ ->
+                  dialog.dismiss()
+              }
+              reportDialog.show()
+          }
     }
 
     fun syncInspectionItems(pickingId: Int) : String{
@@ -1584,5 +1654,16 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         odooConn.authenticateOdoo()
         val noIds = emptyList<Int>()
         return odooConn.stockMoveIssue
+    }
+
+    private fun sendExtras(pickingId: Int, name: String, qty: Int, type : Int) : List<Any>
+    {
+        val odooConn = OdooConn(
+            prefs.getString("User", ""),
+            prefs.getString("Pass", ""),
+            this
+        )
+        odooConn.authenticateOdoo()
+        return odooConn.sendExtras(pickingId,name, qty, type) as List<Any>
     }
 }

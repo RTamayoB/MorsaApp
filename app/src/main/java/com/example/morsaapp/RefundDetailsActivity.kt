@@ -346,8 +346,11 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
         for(i in 0 until refundDetailsLv.adapter.count){
             pedido = refundDetailsLv.adapter.getItem(i) as RefundDetailsDataModel
             val productId = pedido.productId
-            Log.d("Product Id and Name", productId.toString()+ pedido.productName)
+            Log.d("Product Id and Name",pedido.Id.toString()+" - "+productId.toString()+" - "+pedido.productName)
             if(scannedProductIdSearch == productId){
+                val item = pedido
+                val ID = pedido.Id
+                Log.d("Found Product", pedido.productName+" - "+ID.toString())
                 isproduct = true
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle("Producto - ${pedido.productName}")
@@ -356,16 +359,18 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
                         try{
                             val qty : HashMap<String, Int> = HashMap()
                             qty["accepted"] = 1
-                            val refund = GlobalScope.async { doRefund(pedido.Id, qty) }
+                            val refund = GlobalScope.async { doRefund(ID, qty) }
                             var result =""
                             runBlocking {
                                 Log.d("Refund Result", refund.await())
                                 result = refund.await()
                             }
                             if(result.equals("[true, Successful Update]")){
-                                pedido.revisionQty++
-                                val adapter = refundDetailsLv.adapter as OrderRevisionAdapter
+                                item.revisionQty++
+                                val adapter = refundDetailsLv.adapter as RefundDetailsAdapter
                                 adapter.notifyDataSetChanged()
+                                val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
+                                customToast.show("Aceptado", 24.0F, Toast.LENGTH_LONG)
                             }
                             else{
                                 val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
@@ -383,20 +388,23 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
                         }
 
                     }
-                    .setNegativeButton("Rechazat"){ dialog, _ ->
+                    .setNegativeButton("Rechazar"){ dialog, _ ->
                         try{
                             val qty : HashMap<String, Int> = HashMap()
                             qty["rejected"] = 1
-                            val refund = GlobalScope.async { doRefund(pedido.Id, qty) }
+                            Log.d("Id", pedido.Id.toString())
+                            val refund = GlobalScope.async { doRefund(ID, qty) }
                             var result =""
                             runBlocking {
                                 Log.d("Refund Result", refund.await())
                                 result = refund.await()
                             }
                             if(result.equals("[true, Successful Update]")){
-                                pedido.revisionQty++
-                                val adapter = refundDetailsLv.adapter as OrderRevisionAdapter
+                                item.revisionQty++
+                                val adapter = refundDetailsLv.adapter as RefundDetailsAdapter
                                 adapter.notifyDataSetChanged()
+                                val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
+                                customToast.show("Rechazado", 24.0F, Toast.LENGTH_LONG)
                             }
                             else{
                                 val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)

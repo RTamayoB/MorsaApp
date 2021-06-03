@@ -618,6 +618,25 @@ public class OdooConn {
         return  returned;
     }
 
+    public List sendExtras(int pickingId, String name, int qty, int type) throws XmlRpcException
+    {
+        List list = asList((Object[])models.execute("execute_kw", asList(
+                db,uid,pass,
+                "stock.picking","synchronized_mistaken_product",
+                asList(
+                        pickingId,
+                        name,
+                        qty,
+                        type
+                )
+        )));
+        Log.d("Send Extras", list.toString());
+        Gson gson = new Gson();
+        String returned = gson.toJson(list);
+
+        return  list;
+    }
+
     public String getStockLocation() throws XmlRpcException
     {
         List list = asList((Object[])models.execute("execute_kw", asList(
