@@ -293,11 +293,21 @@ class PickingMovesActivity : AppCompatActivity() {
             try{
                 val missingProducts = HashMap<Int, Int>()
                 for (i in 0 until popupListViewGlobal.adapter.count){
-                val item = popupListViewGlobal.adapter.getItem(i) as MissingProductsDatamodel
-                if(item.isChecked){
-                    missingProducts[item.id] = item.missingQty
+                    val item = popupListViewGlobal.adapter.getItem(i) as MissingProductsDatamodel
+                    if(item.isChecked){
+                        Log.d("Item Id", item.id.toString())
+                        for (j in 0 until pickingMovesLv.adapter.count) {
+                            val itemlist = pickingMovesLv.adapter.getItem(j) as ProductsToLocationDataModel
+                            Log.d("List Id", itemlist.id.toString())
+                            if(itemlist.stockMoveName == item.name){
+                                itemlist.lineScanned = 3
+                            }
+                        }
+                        missingProducts[item.id] = item.missingQty
+                    }
                 }
-                }
+                val adapterModifier = pickingMovesLv.adapter as ProductsToLocationAdapter
+                adapterModifier.notifyDataSetChanged()
                 Log.d("RACK AND MISSING PROD", rackId + missingProducts.toString())
                 try {
                     val deferredNofity: Deferred<List<String>> =
@@ -310,6 +320,11 @@ class PickingMovesActivity : AppCompatActivity() {
                 }catch (e: Exception) {
                     Log.d("Error General", e.toString())
                 }
+
+
+
+
+
                 popupWindow.dismiss()
             }catch (e: XmlRpcException){
                 Log.d("XMLRPC ERROR", e.toString())
@@ -804,7 +819,7 @@ class PickingMovesActivity : AppCompatActivity() {
         if(!scanResult){
             val customToast = CustomToast(this, this)
             customToast.show(
-                "Codigo de barras inválido, se escaneo - $decodedString",
+                "Producto no corresponde al pedido"/*, se escaneo - $decodedString"*/,
                 24.0F,
                 Toast.LENGTH_LONG
             )

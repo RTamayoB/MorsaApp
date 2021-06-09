@@ -13,6 +13,7 @@ import com.example.morsaapp.data.DBConnect
 import com.example.morsaapp.data.OdooConn
 import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.InvoiceDataModel
+import com.example.morsaapp.datamodel.OrderRevisionDataModel
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -25,6 +26,8 @@ class InvoiceActivity : AppCompatActivity() {
 
     var datamodels = ArrayList<InvoiceDataModel>()
     lateinit var invoiceLv : ListView
+    lateinit var linesTxt : TextView
+    lateinit var pzsTxt : TextView
     lateinit var adapter : InvoiceAdapter
     lateinit var progressBar: ProgressBar
 
@@ -61,6 +64,8 @@ class InvoiceActivity : AppCompatActivity() {
         val invoiceTxt = findViewById<TextView>(R.id.invoice_txt)
         val totalTxt = findViewById<TextView>(R.id.total_txt)
         val addressTxt = findViewById<TextView>(R.id.address_txt)
+        linesTxt = findViewById<TextView>(R.id.lines_txt)
+        pzsTxt = findViewById<TextView>(R.id.pzs_txt)
 
         supplierTxt.text = supplier
         invoiceTxt.text = name
@@ -74,6 +79,8 @@ class InvoiceActivity : AppCompatActivity() {
          * Downloads the moves for this invoice
          */
         refreshData(relatedId)
+
+
 
         val confirmPurchase = findViewById<Button>(R.id.button)
         confirmPurchase.setOnClickListener {
@@ -207,6 +214,15 @@ class InvoiceActivity : AppCompatActivity() {
                             populateListView(relatedId)
                             val adapter = invoiceLv.adapter as InvoiceAdapter
                             adapter.notifyDataSetChanged()
+
+                            linesTxt.setText(invoiceLv.adapter.count.toString())
+                            var pzsQty = 0
+                            for(i in 0 until invoiceLv.adapter.count) {
+                                val pedido = invoiceLv.adapter.getItem(i) as InvoiceDataModel
+                                pzsQty += pedido.qty
+                            }
+                            pzsTxt.setText(pzsQty.toString())
+
                             val customToast = CustomToast(this, this)
                             customToast.show("Lista Actualizada", 24.0F, Toast.LENGTH_LONG)
                         }
@@ -255,7 +271,7 @@ class InvoiceActivity : AppCompatActivity() {
             items.product = name +" x "+invoiceItemsCursor.getString(1) +"\n" +
                     invoiceItemsCursor.getString(2) +" c/u "
             items.imports = invoiceItemsCursor.getString(3) + " MXN"
-
+            items.qty = invoiceItemsCursor.getInt(1)
 
             datamodels.add(items)
         }

@@ -7,12 +7,16 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
+import android.view.View
 import android.widget.ImageButton
+import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import com.example.morsaapp.data.DBConnect
 import com.example.morsaapp.data.OdooConn
 import com.example.morsaapp.data.OdooData
+import org.json.JSONArray
 import java.lang.Exception
+import kotlin.concurrent.thread
 
 class MainMenuActivity : AppCompatActivity() {
 
@@ -110,7 +114,7 @@ class MainMenuActivity : AppCompatActivity() {
             }
         }
 
-        /*
+/*
         /**
          * Check the current logged in user with the res.user table
          * If user exists (lock in case 2 users with same username, right now check is with username) return the line in res.users
@@ -118,18 +122,19 @@ class MainMenuActivity : AppCompatActivity() {
          */
         val loggedUser : String? = prefs.getString("User","")
         //Look for user and temporaly save it to check for permissions
-        val db = DBConnect(applicationContext, Utilities.DBNAME, null, 1)
-        if(db.deleteDataOnTable(Utilities.TABLE_RES_USERS)){
+        val db = DBConnect(applicationContext, OdooData.DBNAME, null, prefs.getInt("DBver",1))
+        if(db.deleteDataOnTable(OdooData.TABLE_RES_USERS)){
             thread {
                 val matchingUsers: String = getPermissions(loggedUser)
                 val usersjson = JSONArray(matchingUsers)
                 //Insert data
-                val userUpdate = db.fillTable(usersjson, Utilities.TABLE_RES_USERS)
+                val userUpdate = db.fillTable(usersjson, OdooData.TABLE_RES_USERS)
                 if (userUpdate) {
                     //Once it has been saved, run the cursor and block the permissions
                     runOnUiThread {
                         val cursor = db.lookForUser(loggedUser)
                         if(cursor.count == 1){
+                            Log.d("Setting","Permissions")
                             //Blocking permision
                             while (cursor.moveToNext()){
                                 if(cursor.getString(cursor.getColumnIndex("in_group_56")) == "false"){
@@ -166,7 +171,7 @@ class MainMenuActivity : AppCompatActivity() {
                     }
             }
         }
-        */
+*/
         if(!prefs.contains("DBver")){
             Log.d("Null","Yes")
             prefs.edit().putInt("DBver",4).apply()

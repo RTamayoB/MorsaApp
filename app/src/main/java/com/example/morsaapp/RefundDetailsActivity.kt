@@ -280,6 +280,14 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
             Log.d("Values ", "$acceptedQty-$rejectedQty")
             items.revisionQty = acceptedQty+rejectedQty
 
+            if(items.revisionQty < items.qty && items.revisionQty > 0){
+                items.lineScanned = 1
+            }
+            else if(items.revisionQty == items.qty){
+                items.lineScanned = 2
+            }
+
+
             datamodels.add(items)
         }
         obtainList()
@@ -367,6 +375,12 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
                             }
                             if(result.equals("[true, Successful Update]")){
                                 item.revisionQty++
+                                if(item.revisionQty < item.qty && item.revisionQty > 0){
+                                    item.lineScanned = 1
+                                }
+                                else if(item.revisionQty == item.qty){
+                                    item.lineScanned = 2
+                                }
                                 val adapter = refundDetailsLv.adapter as RefundDetailsAdapter
                                 adapter.notifyDataSetChanged()
                                 val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
@@ -389,37 +403,52 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
 
                     }
                     .setNegativeButton("Rechazar"){ dialog, _ ->
-                        try{
-                            val qty : HashMap<String, Int> = HashMap()
-                            qty["rejected"] = 1
-                            Log.d("Id", pedido.Id.toString())
-                            val refund = GlobalScope.async { doRefund(ID, qty) }
-                            var result =""
-                            runBlocking {
-                                Log.d("Refund Result", refund.await())
-                                result = refund.await()
-                            }
-                            if(result.equals("[true, Successful Update]")){
-                                item.revisionQty++
-                                val adapter = refundDetailsLv.adapter as RefundDetailsAdapter
-                                adapter.notifyDataSetChanged()
+                        val confirmBuilder = AlertDialog.Builder(this)
+                        confirmBuilder.setTitle("Rechazar Producto")
+                        confirmBuilder.setMessage("¿Seguro que desea rechazar producto?")
+                        confirmBuilder.setPositiveButton("Rechazar") { dialog, which ->
+                            try{
+                                val qty : HashMap<String, Int> = HashMap()
+                                qty["rejected"] = 1
+                                Log.d("Id", pedido.Id.toString())
+                                val refund = GlobalScope.async { doRefund(ID, qty) }
+                                var result =""
+                                runBlocking {
+                                    Log.d("Refund Result", refund.await())
+                                    result = refund.await()
+                                }
+                                if(result.equals("[true, Successful Update]")){
+                                    item.revisionQty++
+                                    if(item.revisionQty < item.qty && item.revisionQty > 0){
+                                        item.lineScanned = 1
+                                    }
+                                    else if(item.revisionQty == item.qty){
+                                        item.lineScanned = 2
+                                    }
+                                    val adapter = refundDetailsLv.adapter as RefundDetailsAdapter
+                                    adapter.notifyDataSetChanged()
+                                    val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
+                                    customToast.show("Rechazado", 24.0F, Toast.LENGTH_LONG)
+                                }
+                                else{
+                                    val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
+                                    customToast.show("Error en Petición", 14.0F, Toast.LENGTH_LONG)
+                                }
+                                dialog.dismiss()
+                            }catch(e : Exception){
+                                Log.d("Error General", e.toString())
                                 val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
-                                customToast.show("Rechazado", 24.0F, Toast.LENGTH_LONG)
-                            }
-                            else{
+                                customToast.show(e.toString(), 14.0F, Toast.LENGTH_LONG)
+                            }catch (xml : XmlRpcException){
+                                Log.d("Error Red", xml.toString())
                                 val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
-                                customToast.show("Error en Petición", 14.0F, Toast.LENGTH_LONG)
+                                customToast.show(xml.toString(), 14.0F, Toast.LENGTH_LONG)
                             }
-                            dialog.dismiss()
-                        }catch(e : Exception){
-                            Log.d("Error General", e.toString())
-                            val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
-                            customToast.show(e.toString(), 14.0F, Toast.LENGTH_LONG)
-                        }catch (xml : XmlRpcException){
-                            Log.d("Error Red", xml.toString())
-                            val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
-                            customToast.show(xml.toString(), 14.0F, Toast.LENGTH_LONG)
                         }
+                        confirmBuilder.setNegativeButton("Cancelar") { dialog, which ->
+                            dialog.dismiss()
+                        }
+                        confirmBuilder.show()
                     }
                     .show()
             }

@@ -850,6 +850,13 @@ public class OdooConn {
 
         List list = asList((Object[])models.execute("execute_kw", asList(
                 db,uid,pass,
+                "res.groups","search_read",
+                emptyList(),
+                emptyMap()
+        )));
+        /*
+        List list = asList((Object[])models.execute("execute_kw", asList(
+                db,uid,pass,
                 "res.users","search_read",
                 asList(asList(
                         asList("login","=",user)
@@ -857,8 +864,8 @@ public class OdooConn {
                 new HashMap(){{
                     put("fields", asList("id", "login", "name", "display_name", "in_group_56", "in_group_57", "in_group_58", "in_group_59", "in_group_60"));
                 }}
-        )));
-        Log.d("INVOICE LINE", list.toString());
+        )));*/
+        Log.d("USERS", list.toString());
         Gson gson = new Gson();
         String returned = gson.toJson(list);
 

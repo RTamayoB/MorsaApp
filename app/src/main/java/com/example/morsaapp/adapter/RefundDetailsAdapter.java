@@ -1,6 +1,7 @@
 package com.example.morsaapp.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,6 +54,24 @@ public class RefundDetailsAdapter extends BaseAdapter {
         productTxt.setText(item.productName);
         refundsQtyTxt.setText(item.getRevisionQty()+" / "+ item.getQty());
 
+        if(item.lineScanned == 1){
+            invoiceTxt.setTextColor(Color.WHITE);
+            productTxt.setTextColor(Color.WHITE);
+            refundsQtyTxt.setTextColor(Color.WHITE);
+
+            invoiceTxt.setBackgroundColor(Color.parseColor("#ffa500"));
+            productTxt.setBackgroundColor(Color.parseColor("#ffa500"));
+            refundsQtyTxt.setBackgroundColor(Color.parseColor("#ffa500"));
+        }
+        else if(item.lineScanned == 2){
+            invoiceTxt.setTextColor(Color.WHITE);
+            productTxt.setTextColor(Color.WHITE);
+            refundsQtyTxt.setTextColor(Color.WHITE);
+
+            invoiceTxt.setBackgroundColor(Color.parseColor("#008f39"));
+            productTxt.setBackgroundColor(Color.parseColor("#008f39"));
+            refundsQtyTxt.setBackgroundColor(Color.parseColor("#008f39"));
+        }
         return convertView;
     }
 }

@@ -7,6 +7,7 @@ public class RefundDetailsDataModel {
     public int productId;
     public int qty;
     public int revisionQty = 0;
+    public int lineScanned = 0;
 
     public int getId() {
         return Id;
@@ -54,5 +55,13 @@ public class RefundDetailsDataModel {
 
     public void setRevisionQty(int revisionQty) {
         this.revisionQty = revisionQty;
+    }
+
+    public int getLineScanned() {
+        return lineScanned;
+    }
+
+    public void setLineScanned(int lineScanned) {
+        this.lineScanned = lineScanned;
     }
 }

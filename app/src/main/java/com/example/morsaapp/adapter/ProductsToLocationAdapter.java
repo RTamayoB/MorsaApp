@@ -85,6 +85,17 @@ public class    ProductsToLocationAdapter extends BaseAdapter {
             qty.setBackgroundColor(Color.parseColor("#ffa500"));
             origin.setBackgroundColor(Color.parseColor("#ffa500"));
         }
+        else if(item.lineScanned == 3){
+            product.setTextColor(Color.WHITE);
+            location.setTextColor(Color.WHITE);
+            qty.setTextColor(Color.WHITE);
+            origin.setTextColor(Color.WHITE);
+
+            product.setBackgroundColor(Color.parseColor("#ba3200"));
+            location.setBackgroundColor(Color.parseColor("#ba3200"));
+            qty.setBackgroundColor(Color.parseColor("#ba3200"));
+            origin.setBackgroundColor(Color.parseColor("#ba3200"));
+        }
 
         return convertView;
     }
