@@ -17,6 +17,7 @@ import android.widget.ListView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
+import androidx.preference.PreferenceManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.morsaapp.adapter.ReStockAdapter
 import com.example.morsaapp.data.DBConnect
@@ -67,7 +68,8 @@ class ReStockActivity : AppCompatActivity() {
                 Log.i("debug", "----codetype--$temp")
                 barcodeStr = String(barcode, 0, barcodelen)
                 Log.d("Result", barcodeStr)*/
-                    val value = intent.getStringExtra("barcode_string")
+                val serverPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+                val value = intent.getStringExtra(serverPrefs.getString("scanner_key","data"))
                 displayScanResult(value)
                 //mScanManager.stopDecode()
             }

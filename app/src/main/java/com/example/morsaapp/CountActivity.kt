@@ -1,38 +1,36 @@
 package com.example.morsaapp
 
-import android.content.*
-import android.media.SoundPool
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import android.os.Vibrator
-import android.text.InputType
-import android.util.Log
-import android.widget.*
-import androidx.appcompat.app.AlertDialog
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
-import org.json.JSONArray
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 //
+import android.content.*
 import android.device.ScanManager
 import android.device.scanner.configuration.PropertyID
 import android.device.scanner.configuration.Triggering
 import android.media.AudioManager
+import android.media.SoundPool
+import android.os.Bundle
+import android.os.Vibrator
+import android.text.InputType
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.*
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.preference.PreferenceManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.morsaapp.adapter.CountAdapter
 import com.example.morsaapp.data.DBConnect
 import com.example.morsaapp.data.OdooConn
 import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.CountDataModel
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import org.apache.xmlrpc.XmlRpcException
-import java.lang.Exception
+import org.json.JSONArray
 import kotlin.concurrent.thread
 
 
@@ -71,7 +69,8 @@ class CountActivity : AppCompatActivity() {
                 Log.i("debug", "----codetype--$temp")
                 barcodeStr = String(barcode, 0, barcodelen)
                 Log.d("Result", barcodeStr)*/
-                    val value = intent.getStringExtra("barcode_string")
+                val serverPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+                val value = intent.getStringExtra(serverPrefs.getString("scanner_key","data"))
                 displayScanResult(value, "")
                 //mScanManager.stopDecode()
             }

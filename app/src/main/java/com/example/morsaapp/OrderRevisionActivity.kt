@@ -21,6 +21,7 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.isVisible
+import androidx.preference.PreferenceManager
 import com.example.morsaapp.adapter.IssuesPopupAdapter
 import com.example.morsaapp.adapter.OrderRevisionAdapter
 import com.example.morsaapp.adapter.ScanIssuesAdapter
@@ -57,6 +58,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         val baos = ByteArrayOutputStream()
         val oos = ObjectOutputStream(baos)
         oos.writeObject(o)
+        oos.close()
         oos.close()
         return org.apache.ws.commons.util.Base64.encode(baos.toByteArray())
     }
@@ -141,8 +143,9 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                 //Log.i("debug", "----codetype--$temp")
                 //barcodeStr = String(barcode, 0, barcodelen)
                 //Log.d("Result", barcodeStr)
-                    val value = intent.getStringExtra("barcode_string")
-                    Log.d("INTENT VALUE", value)
+                val serverPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+                val value = intent.getStringExtra(serverPrefs.getString("scanner_key","data"))
+                Log.d("INTENT VALUE", value)
                 displayScanResult(value, "")
                 /*val r = Runnable {
                     displayScanResult(value,"")

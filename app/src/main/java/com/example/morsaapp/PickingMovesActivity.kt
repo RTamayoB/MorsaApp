@@ -13,6 +13,7 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.preference.PreferenceManager
 import com.example.morsaapp.adapter.MissingProductsAdapter
 import com.example.morsaapp.adapter.ProductsToLocationAdapter
 import com.example.morsaapp.data.DBConnect
@@ -66,7 +67,8 @@ class PickingMovesActivity : AppCompatActivity() {
             val action = intent?.action
 
             if(action == resources.getString(R.string.activity_intent_action)){
-                val value = intent.getStringExtra("barcode_string")
+                val serverPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+                val value = intent.getStringExtra(serverPrefs.getString("scanner_key","data"))
                 displayScanResult(value!!)
             }
         }
@@ -496,11 +498,11 @@ class PickingMovesActivity : AppCompatActivity() {
                     orders.lineScanned = 2
                 }
                 datamodels.add(orders)
-
                 productsHashMap[orders.id] = listOf(orders.qty, orders.total_qty)
             }
         }
-
+        datamodels.sort()
+        datamodels.reverse()
         obtainList()
         db.close()
     }
@@ -727,6 +729,9 @@ class PickingMovesActivity : AppCompatActivity() {
                     builder.setTitle("Confirmar Picking")
                     builder.setPositiveButton("Ok") { _, _ ->
                         try {
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Enviando Picking...", 24.0F, Toast.LENGTH_LONG)
+                            progressBar.isVisible = true
                             //Iterar por Hashmap para enviar los datos de el picking
                                 Log.d("Map", productsHashMap.toString())
                             var countingDone = false
@@ -766,6 +771,7 @@ class PickingMovesActivity : AppCompatActivity() {
                                             this,
                                             PickingActivity::class.java
                                         )
+                                        progressBar.isVisible = false
                                         finish()
                                         startActivity(goBackToMenuIntent)
                                     }

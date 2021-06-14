@@ -10,6 +10,7 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
+import androidx.preference.PreferenceManager
 import com.example.morsaapp.adapter.*
 import com.example.morsaapp.data.DBConnect
 import com.example.morsaapp.data.OdooConn
@@ -57,7 +58,8 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
             val action = intent?.action
 
             if(action == resources.getString(R.string.activity_intent_action)){
-                val value = intent.getStringExtra("barcode_string")
+                val serverPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+                val value = intent.getStringExtra(serverPrefs.getString("scanner_key","data"))
                 displayScanResult(value!!)
             }
         }

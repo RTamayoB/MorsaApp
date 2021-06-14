@@ -1,6 +1,6 @@
 package com.example.morsaapp.datamodel;
 
-public class ProductsToLocationDataModel {
+public class ProductsToLocationDataModel implements Comparable<ProductsToLocationDataModel> {
     public int id;
     public String origin;
     public boolean originScanned;
@@ -90,5 +90,20 @@ public class ProductsToLocationDataModel {
 
     public void setLineScanned(int lineScanned) {
         this.lineScanned = lineScanned;
+    }
+
+    @Override
+    public int compareTo(ProductsToLocationDataModel o) {
+        String loc1 = origin.replace("-","");
+        String loc2 = o.origin.replace("-","");
+        if(Integer.parseInt(loc1) > Integer.parseInt(loc2)){
+            return 1;
+        }
+        else if(Integer.parseInt(loc1) < Integer.parseInt(loc2)){
+            return -1;
+        }
+        else {
+            return 0;
+        }
     }
 }

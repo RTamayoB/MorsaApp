@@ -15,11 +15,21 @@
     </PreferenceCategory>
     <PreferenceCategory android:title="Rango de Busqueda (Dias)">
 
+        <EditTextPreference
+            app:key="inspection_days"
+            app:title="Inpección"
+            android:inputType="number"
+            app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
-    <EditTextPreference
-        app:key="inspection_days"
-        app:title="Inpección"
-        android:inputType="number"
-        app:useSimpleSummaryProvider="true" />
+
+    <PreferenceCategory
+        android:title="Settings del Scanner">
+
+        <EditTextPreference
+            app:key="scanner_key"
+            app:title="Clave"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
 
 </PreferenceScreen>

@@ -17,6 +17,7 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
+import androidx.preference.PreferenceManager
 import com.example.morsaapp.adapter.RoutesAdapter
 import com.example.morsaapp.data.DBConnect
 import com.example.morsaapp.data.OdooConn
@@ -68,18 +69,13 @@ class RoutesActivity : AppCompatActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
 
+            Log.d("Action", action.toString())
+
             if(action == resources.getString(R.string.activity_intent_action)){
                 Log.d("Reciever","On")
-                /*soundPool.play(soundid, 1.0f, 1.0f, 0, 0, 1.0f)
-                mVibrator.vibrate(100)
-
-                val barcode  = intent!!.getByteArrayExtra(ScanManager.DECODE_DATA_TAG)
-                val barcodelen = intent?.getIntExtra(ScanManager.BARCODE_LENGTH_TAG, 0)
-                val temp = intent.getByteExtra(ScanManager.BARCODE_TYPE_TAG, 0.toByte())
-                Log.i("debug", "----codetype--$temp")
-                barcodeStr = String(barcode, 0, barcodelen)
-                Log.d("Result", barcodeStr)*/
-                    val value = intent.getStringExtra("barcode_string")
+                val serverPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+                val value = intent.getStringExtra(serverPrefs.getString("scanner_key","data"))
+                Log.d("Value", value.toString())
                 displayScanResult(value)
                 //mScanManager.stopDecode()
             }

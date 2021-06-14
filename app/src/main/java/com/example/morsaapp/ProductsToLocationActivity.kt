@@ -15,6 +15,7 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.isVisible
+import androidx.preference.PreferenceManager
 import com.example.morsaapp.adapter.ProductsToLocationAdapter
 import com.example.morsaapp.data.DBConnect
 import com.example.morsaapp.data.OdooConn
@@ -65,7 +66,8 @@ class ProductsToLocationActivity : AppCompatActivity() {
                 Log.i("debug", "----codetype--$temp")
                 barcodeStr = String(barcode, 0, barcodelen)
                 Log.d("Result", barcodeStr)*/
-                    val value = intent.getStringExtra("barcode_string")
+                val serverPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+                val value = intent.getStringExtra(serverPrefs.getString("scanner_key","data"))
                 displayScanResult(value, "")
                 //mScanManager.stopDecode()
             }

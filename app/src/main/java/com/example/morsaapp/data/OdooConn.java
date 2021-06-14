@@ -734,7 +734,7 @@ public class OdooConn {
                         )
                 ),
                 new HashMap(){{
-                    put("fields", asList("id", "display_name", "name", "done_picking", "picking_ids", "create_date", "order_type"));
+                    put("fields", asList("id", "display_name", "name", "done_picking", "picking_ids", "create_date", "order_type", "state"));
                 }}
 
         )));

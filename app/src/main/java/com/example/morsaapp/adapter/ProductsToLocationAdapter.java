@@ -12,6 +12,7 @@ import com.example.morsaapp.datamodel.ProductsToLocationDataModel;
 import com.example.morsaapp.R;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class    ProductsToLocationAdapter extends BaseAdapter {
 
@@ -98,9 +99,5 @@ public class    ProductsToLocationAdapter extends BaseAdapter {
         }
 
         return convertView;
-    }
-
-    public void colorOrigin(){
-
     }
 }
