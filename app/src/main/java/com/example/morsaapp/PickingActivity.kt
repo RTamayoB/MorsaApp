@@ -15,6 +15,7 @@ import com.example.morsaapp.data.DBConnect
 import com.example.morsaapp.data.OdooConn
 import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.PickingDataModel
+import com.example.morsaapp.datamodel.ProductsToLocationDataModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -30,6 +31,7 @@ class PickingActivity : AppCompatActivity() {
     lateinit var pickingLv : ListView
 
     var timers : HashMap<String, Long> = HashMap<String, Long>()
+    var closedracks : HashMap<String, Boolean> = HashMap<String, Boolean>()
 
     lateinit var prefs : SharedPreferences
     lateinit var swipeRefreshLayout : SwipeRefreshLayout
@@ -52,6 +54,23 @@ class PickingActivity : AppCompatActivity() {
         return gson.fromJson(json, type)
     }
 
+    private fun getRackHashMap(context : Context): HashMap<String, Boolean> {
+        val prefs: SharedPreferences = context.getSharedPreferences("startupPreferences", 0)
+        val gson = Gson()
+        val json = prefs.getString("racks", "")
+        val type = object : TypeToken<HashMap<String?, Boolean?>?>() {}.type
+        return gson.fromJson(json, type)
+    }
+
+    private fun saveRackHashMap(obj: Any?, context : Context) {
+        val prefs: SharedPreferences = context.getSharedPreferences("startupPreferences", 0)
+        val editor = prefs.edit()
+        val gson = Gson()
+        val json = gson.toJson(obj)
+        editor.putString("racks", json)
+        editor.apply()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_picking)
@@ -70,6 +89,7 @@ class PickingActivity : AppCompatActivity() {
         }
 
         timers = getHashMap("timers", this)
+        closedracks = getRackHashMap(this)
 
         pickingLv = findViewById(R.id.the_picking_lv)
 
@@ -93,6 +113,7 @@ class PickingActivity : AppCompatActivity() {
         }
 
         swipeRefreshLayout.isRefreshing = true
+        datamodels.clear()
         refreshData()
 
         //Iterate trough lv and eliminate from the timers list
@@ -145,6 +166,21 @@ class PickingActivity : AppCompatActivity() {
                             adapter.notifyDataSetChanged()
                             val customToast = CustomToast(this, this)
                             customToast.show("Exito", 24.0F, Toast.LENGTH_LONG)
+
+                            //Delete the racks that dont appear on the list
+                            for (i in 0 until pickingLv.adapter.count){
+                                val item = pickingLv.adapter.getItem(i) as PickingDataModel
+                                var hasId = false
+                                for((myId,value) in closedracks) {
+                                    if(item.id == myId){
+                                        hasId = true
+                                    }
+                                }
+                                if(!hasId){
+                                    closedracks.remove(item.id)
+                                }
+                            }
+                            saveRackHashMap(closedracks,this)
                         }
                     } else {
                         runOnUiThread {
@@ -200,6 +236,7 @@ class PickingActivity : AppCompatActivity() {
                 Log.d("Value", temp[array])
                 tempArrayList.add(temp[array])
             }
+
             idList.addAll(tempArrayList)
             var finalList = idList.toString()
             finalList = finalList.replace("[","(")
@@ -208,7 +245,22 @@ class PickingActivity : AppCompatActivity() {
             racks.name = cursorRack.getString(cursorRack.getColumnIndex("display_name"))
             racks.id = cursorRack.getString(cursorRack.getColumnIndex("id"))
             racks.date = cursorRack.getString(cursorRack.getColumnIndex("create_date"))
-            racks.box = "1 (Temp)"
+            if(closedracks.isNullOrEmpty()){
+                racks.box = "Abierto"
+            }
+            else {
+                for ((myId, value) in closedracks) {
+                    if (myId == racks.id) {
+                        if (value) {
+                            racks.box = "Cerrado"
+                        } else {
+                            racks.box = "Abierto"
+                        }
+                    } else {
+                        racks.box = "Abierto"
+                    }
+                }
+            }
             racks.orderType = cursorRack.getString(cursorRack.getColumnIndex("order_type"))
             //Check if local
             datamodels.add(racks)

@@ -20,6 +20,7 @@ import com.example.morsaapp.data.DBConnect
 import com.example.morsaapp.data.OdooConn
 import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.MissingProductsDatamodel
+import com.example.morsaapp.datamodel.PickingDataModel
 import com.example.morsaapp.datamodel.ProductsToLocationDataModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.gson.Gson
@@ -58,6 +59,7 @@ class PickingMovesActivity : AppCompatActivity() {
 
     //Timer Data
     var timers : HashMap<String, Long> = HashMap()
+    var missings : HashMap<String, Boolean> = HashMap()
     public lateinit var timerTxt : TextView
 
     lateinit var prefs : SharedPreferences
@@ -76,7 +78,7 @@ class PickingMovesActivity : AppCompatActivity() {
 
     private lateinit var progressBar: ProgressBar
 
-    private fun saveHashMap(obj: Any?, context : Context) {
+    private fun saveTimerHashMap(obj: Any?, context : Context) {
         val prefs: SharedPreferences = context.getSharedPreferences("startupPreferences", 0)
         val editor = prefs.edit()
         val gson = Gson()
@@ -85,11 +87,28 @@ class PickingMovesActivity : AppCompatActivity() {
         editor.apply()
     }
 
-    private fun getHashMap(context : Context): HashMap<String, Long> {
+    private fun getTimerHashMap(context : Context): HashMap<String, Long> {
         val prefs: SharedPreferences = context.getSharedPreferences("startupPreferences", 0)
         val gson = Gson()
         val json = prefs.getString("timers", "")
         val type = object : TypeToken<HashMap<String?, Long?>?>() {}.type
+        return gson.fromJson(json, type)
+    }
+
+    private fun saveHashMap(map: String, obj: Any?, context : Context) {
+        val prefs: SharedPreferences = context.getSharedPreferences("startupPreferences", 0)
+        val editor = prefs.edit()
+        val gson = Gson()
+        val json = gson.toJson(obj)
+        editor.putString(map, json)
+        editor.apply()
+    }
+
+    private fun getHashMap(map: String, context : Context): HashMap<String, Boolean> {
+        val prefs: SharedPreferences = context.getSharedPreferences("startupPreferences", 0)
+        val gson = Gson()
+        val json = prefs.getString(map, "")
+        val type = object : TypeToken<HashMap<String?, Boolean?>?>() {}.type
         return gson.fromJson(json, type)
     }
 
@@ -101,12 +120,15 @@ class PickingMovesActivity : AppCompatActivity() {
         prefs = this.getSharedPreferences("startupPreferences", 0)
 
 
-        if(getHashMap(this).isEmpty()){
+        if(getTimerHashMap(this).isEmpty()){
             Log.d("Was","Empty")
-            saveHashMap(timers,this)
+            saveTimerHashMap(timers,this)
         }
 
-        timers = getHashMap(this)
+        timers = getTimerHashMap(this)
+        missings = getHashMap("missings", this)
+
+        Log.d("All Missings",missings.toString())
 
         pickingMovesLv = findViewById(R.id.picking_moves_lv)
         progressBar = findViewById(R.id.picking_move_progress)
@@ -180,6 +202,21 @@ class PickingMovesActivity : AppCompatActivity() {
                 val adapter = pickingMovesLv.adapter as ProductsToLocationAdapter
                 adapter.notifyDataSetChanged()
                 progressBar.isVisible = false
+
+                //Delete the missings that dont appear on the list
+                for (i in 0 until pickingMovesLv.adapter.count){
+                    val item = pickingMovesLv.adapter.getItem(i) as ProductsToLocationDataModel
+                    var hasId = false
+                    for((myId,value) in missings) {
+                        if(item.id.toString() == myId){
+                            hasId = true
+                        }
+                    }
+                    if(!hasId){
+                        missings.remove(item.id.toString())
+                    }
+                }
+                saveHashMap("missings", missings,this)
             }
         }
 
@@ -274,7 +311,7 @@ class PickingMovesActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         super.onBackPressed()
-        saveHashMap(timers, this)
+        saveTimerHashMap(timers, this)
         finish()
         val intent  = Intent(this, PickingActivity::class.java)
         startActivity(intent)
@@ -303,9 +340,13 @@ class PickingMovesActivity : AppCompatActivity() {
                             Log.d("List Id", itemlist.id.toString())
                             if(itemlist.stockMoveName == item.name){
                                 itemlist.lineScanned = 3
+                                missings[itemlist.id.toString()] = true
+                                saveHashMap("missings",missings,this)
+                                Log.d("Missing", item.id.toString())
                             }
                         }
                         missingProducts[item.id] = item.missingQty
+                        //Add to missings for saving
                     }
                 }
                 val adapterModifier = pickingMovesLv.adapter as ProductsToLocationAdapter
@@ -496,6 +537,17 @@ class PickingMovesActivity : AppCompatActivity() {
                 }
                 else if(orders.qty > 0 && orders.qty < orders.total_qty){
                     orders.lineScanned = 2
+                }
+                missings = getHashMap("missings",this)
+                Log.d("Missings at populate", missings.toString())
+                Log.d("Line Id", orders.id.toString())
+                for((myId, value) in missings){
+                    if(myId == orders.id.toString()){
+                        if(value){
+                            Log.d("Missing in", myId)
+                            orders.lineScanned = 3
+                        }
+                    }
                 }
                 datamodels.add(orders)
                 productsHashMap[orders.id] = listOf(orders.qty, orders.total_qty)
@@ -767,6 +819,9 @@ class PickingMovesActivity : AppCompatActivity() {
                                         Log.d("Error General", e.toString())
                                     }
                                     if(!countingDone){
+                                        val racks = getHashMap("racks", this)
+                                        racks[rackId] = true
+                                        saveHashMap("racks", racks,this)
                                         val goBackToMenuIntent = Intent(
                                             this,
                                             PickingActivity::class.java

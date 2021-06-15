@@ -46,6 +46,7 @@ class LoginActivity : AppCompatActivity() {
         val isDBLoaded = prefs.getBoolean("databaseLoaded", false)
         if (!isDBLoaded) {
             saveHashMap("timers", HashMap<String, Long>(), this)
+            saveHashMap("racks", HashMap<String, Boolean>(), this)
             val db2 = DBConnect(
                 applicationContext,
                 OdooData.DBNAME,
@@ -53,6 +54,14 @@ class LoginActivity : AppCompatActivity() {
                 prefs.getInt("DBver",1)
             ).writableDatabase
             db2.execSQL("INSERT INTO " + OdooData.TABLE_STOCK_ITEMS + " (revision_qty) VALUES (0)")
+        }
+        if(prefs.getString("racks","").isNullOrEmpty()){
+            Log.d("Saved","Racks")
+            saveHashMap("racks", HashMap<String, Boolean>(), this)
+        }
+        if(prefs.getString("missings","").isNullOrEmpty()){
+            Log.d("Saved","Missings")
+            saveHashMap("missings", HashMap<String, Boolean>(), this)
         }
         val editor = prefs.edit()
         editor.putBoolean("databaseLoaded", true)
