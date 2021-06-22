@@ -4,6 +4,7 @@ import android.content.*
 import android.device.ScanManager
 import android.device.scanner.configuration.PropertyID
 import android.device.scanner.configuration.Triggering
+import android.graphics.Color
 import android.media.AudioManager
 import android.media.SoundPool
 import androidx.appcompat.app.AppCompatActivity
@@ -109,11 +110,12 @@ class RoutesActivity : AppCompatActivity() {
         setContentView(R.layout.activity_routes)
         val toolbar : Toolbar = findViewById(R.id.routes_toolbar)
         setSupportActionBar(toolbar)
+        toolbar.setSubtitleTextColor(Color.WHITE)
         supportActionBar?.title = "Rutas"
 
         prefs = this.getSharedPreferences("startupPreferences", 0)
 
-        //initScan()
+        supportActionBar?.subtitle = prefs.getString("User","")
 
         val filter = IntentFilter()
         filter.addAction(resources.getString(R.string.activity_intent_action))

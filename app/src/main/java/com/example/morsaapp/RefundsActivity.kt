@@ -2,6 +2,7 @@ package com.example.morsaapp
 
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -41,9 +42,12 @@ class RefundsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_refunds)
         val toolbar : Toolbar = findViewById(R.id.refunds_toolbar)
         setSupportActionBar(toolbar)
+        toolbar.setSubtitleTextColor(Color.WHITE)
         supportActionBar?.title = "Devoluciones"
 
         prefs = this.getSharedPreferences("startupPreferences", 0)
+
+        supportActionBar?.subtitle = prefs.getString("User","")
 
         swipeRefreshLayout = findViewById(R.id.refunds_lv_refresh)
 

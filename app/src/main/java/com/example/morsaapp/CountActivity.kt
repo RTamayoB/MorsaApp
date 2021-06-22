@@ -5,6 +5,7 @@ import android.content.*
 import android.device.ScanManager
 import android.device.scanner.configuration.PropertyID
 import android.device.scanner.configuration.Triggering
+import android.graphics.Color
 import android.media.AudioManager
 import android.media.SoundPool
 import android.os.Bundle
@@ -16,6 +17,7 @@ import android.view.MenuItem
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.view.isVisible
 import androidx.preference.PreferenceManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -102,12 +104,15 @@ class   CountActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_count)
-        setSupportActionBar(findViewById(R.id.count_tb))
-
-        //initScan()
-
+        val toolbar : Toolbar = findViewById(R.id.count_tb)
+        setSupportActionBar(toolbar)
+        toolbar.setSubtitleTextColor(Color.WHITE)
+        toolbar.setTitleTextColor(Color.WHITE)
+        supportActionBar?.title = "Conteo Cíclico"
 
         prefs = this.getSharedPreferences("startupPreferences", 0)
+
+        supportActionBar?.subtitle = prefs.getString("User","")
 
         val filter = IntentFilter()
         filter.addAction(resources.getString(R.string.activity_intent_action))

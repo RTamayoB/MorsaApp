@@ -2,6 +2,7 @@ package com.example.morsaapp
 
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -37,9 +38,12 @@ class LocationActivity : AppCompatActivity() {
         setContentView(R.layout.activity_location)
         val toolbar : Toolbar = findViewById(R.id.location_toolbar)
         setSupportActionBar(toolbar)
-        supportActionBar?.title = "Acomodo de Pickings Aprobados"
+        toolbar.setSubtitleTextColor(Color.WHITE)
+        supportActionBar?.title = "Acomodo"
 
         prefs = this.getSharedPreferences("startupPreferences", 0)
+
+        supportActionBar?.subtitle = prefs.getString("User","")
 
         swipeRefreshLayout = findViewById(R.id.location_lv_refresh)
 

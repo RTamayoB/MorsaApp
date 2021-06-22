@@ -2,6 +2,7 @@ package com.example.morsaapp
 
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -9,6 +10,7 @@ import android.view.MenuItem
 import android.widget.ListView
 import android.widget.SearchView
 import android.widget.Toast
+import android.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.morsaapp.adapter.RevisionAdapter
@@ -33,10 +35,14 @@ class RevisionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_revision)
-        setSupportActionBar(findViewById(R.id.revision_toolbar))
+        val toolbar : androidx.appcompat.widget.Toolbar = findViewById(R.id.revision_toolbar)
+        setSupportActionBar(toolbar)
+        toolbar.setSubtitleTextColor(Color.WHITE)
         supportActionBar?.title = "Inspección"
 
         prefs = this.getSharedPreferences("startupPreferences", 0)
+
+        supportActionBar?.subtitle = prefs.getString("User","")
 
         val syncRevisionFAB = findViewById<FloatingActionButton>(R.id.sync_revision_fab)
         pedidosLv = findViewById(R.id.revision_lv)

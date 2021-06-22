@@ -2,6 +2,7 @@ package com.example.morsaapp
 
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -37,9 +38,13 @@ class ReceptionActivity : AppCompatActivity() {
         setContentView(R.layout.activity_reception)
         val toolbar : Toolbar = findViewById(R.id.reception_toolbar)
         setSupportActionBar(toolbar)
+        toolbar.setSubtitleTextColor(Color.WHITE)
+
         supportActionBar?.title = "Pedidos"
 
         prefs = this.getSharedPreferences("startupPreferences", 0)
+
+        supportActionBar?.subtitle = prefs.getString("User","")
 
         swipeRefreshLayout = findViewById(R.id.pedidos_lv_refresh)
 

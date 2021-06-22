@@ -87,7 +87,6 @@ class MainMenuActivity : AppCompatActivity() {
             val intent = Intent(applicationContext, CountActivity::class.java)
             countBtn.isClickable = false
             startActivity(intent)
-            finish()
         }
 
         routeBtn.setOnClickListener {
@@ -116,7 +115,7 @@ class MainMenuActivity : AppCompatActivity() {
             try{
                 val intent = Intent(applicationContext, SettingsActivity::class.java)
                 startActivity(intent)
-                
+
             }catch (e : Exception){
                 Log.d("Error", e.toString())
             }

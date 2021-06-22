@@ -4,6 +4,7 @@ import android.content.*
 import android.device.ScanManager
 import android.device.scanner.configuration.PropertyID
 import android.device.scanner.configuration.Triggering
+import android.graphics.Color
 import android.media.AudioManager
 import android.media.SoundPool
 import androidx.appcompat.app.AppCompatActivity
@@ -103,10 +104,13 @@ class ReStockActivity : AppCompatActivity() {
         setContentView(R.layout.activity_re_stock)
         val toolbar: Toolbar = findViewById(R.id.re_stock_toolbar)
         setSupportActionBar(toolbar)
+        toolbar.setSubtitleTextColor(Color.WHITE)
         supportActionBar?.title = "Reabastecimiento"
 
         swipeRefreshLayout = findViewById(R.id.re_stock_lv_refresh)
         prefs = this.getSharedPreferences("startupPreferences", 0)
+
+        supportActionBar?.subtitle = prefs.getString("User","")
 
         /*
         val filter = IntentFilter()

@@ -369,7 +369,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
 
             val reportExtraFAB = findViewById<FloatingActionButton>(R.id.report_extra_fab)
 
-        supportActionBar?.subtitle = prefs.getString("User","")
+        //supportActionBar?.subtitle = prefs.getString("User","")
 
         /*
         val filter = IntentFilter()
