@@ -9,6 +9,7 @@ public class CountDataModel /*implements Comparable<CountDataModel>*/ {
     public String theoricalQty;
     public String totalQty;
     public boolean isCounted;
+    public boolean isLocation;
     public boolean isReported;
 
     public Integer getLineId() {

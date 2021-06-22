@@ -794,49 +794,45 @@ class PickingMovesActivity : AppCompatActivity() {
                                 //Escanear producto con su cantidad y
                                 if (qty <= totalQty) {
                                     Log.d("Done picking process", donePickingProcess.toString())
-                                    try {
-                                        runBlocking {
+                                    thread {
+                                        try {
+                                            Log.d("Product", product.key.toString() + " - " + qty.toString())
+                                            val deferredReStock = sendReStock(product.key, qty)
 
-                                            Log.d(
-                                                "Product",
-                                                product.key.toString() + " - " + qty.toString()
-                                            )
-                                            val deferredReStock: Deferred<List<Any>> =
-                                                GlobalScope.async { sendReStock(product.key, qty) }
+                                            Log.d("Final Result", deferredReStock.toString())
 
-                                            Log.d(
-                                                "Final Result",
-                                                deferredReStock.await().toString()
-                                            )
-
-                                            if ((deferredReStock.await()[1].toString()) != "Movimento exitoso") {
+                                            if ((deferredReStock[1].toString()) != "Movimento exitoso") {
                                                 countingDone = false
                                             }
 
                                             //Toast.makeText(applicationContext, deferredReStock.await()[1], Toast.LENGTH_LONG).show()
+
+                                        } catch (e: Exception) {
+                                            Log.d("Error General", e.toString())
                                         }
-                                    }catch (e: Exception){
-                                        Log.d("Error General", e.toString())
-                                    }
-                                    if(!countingDone){
-                                        val racks = getHashMap("racks", this)
-                                        racks[rackId] = true
-                                        saveHashMap("racks", racks,this)
-                                        val goBackToMenuIntent = Intent(
-                                            this,
-                                            PickingActivity::class.java
-                                        )
-                                        progressBar.isVisible = false
-                                        finish()
-                                        startActivity(goBackToMenuIntent)
-                                    }
-                                    else{
-                                        val customToast = CustomToast(this, this)
-                                        customToast.show(
-                                            "Error al finalizar Picking",
-                                            24.0F,
-                                            Toast.LENGTH_LONG
-                                        )
+                                        if (!countingDone) {
+                                            val racks = getHashMap("racks", this)
+                                            racks[rackId] = true
+                                            saveHashMap("racks", racks, this)
+                                            val goBackToMenuIntent = Intent(
+                                                this,
+                                                PickingActivity::class.java
+                                            )
+                                            runOnUiThread {
+                                                progressBar.isVisible = false
+                                            }
+                                            finish()
+                                            startActivity(goBackToMenuIntent)
+                                        } else {
+                                            runOnUiThread {
+                                                val customToast = CustomToast(this, this)
+                                                customToast.show(
+                                                    "Error al finalizar Picking",
+                                                    24.0F,
+                                                    Toast.LENGTH_LONG
+                                                )
+                                            }
+                                        }
                                     }
                                 } else {
                                     Log.d("Exceeded", "Excedio cantidad total")

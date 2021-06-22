@@ -314,7 +314,7 @@ public class DBConnect extends SQLiteOpenHelper {
 
     public Cursor fillStockitemsListView(String subId){
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT name, product_qty, price_unit, id , product_id, revision_qty, issues, product_description, product_relabel FROM "+ OdooData.TABLE_STOCK_ITEMS+" WHERE picking_id = '"+subId+"'",null);
+        return db.rawQuery("SELECT name, product_qty, price_unit, id , product_id, revision_qty, issues, product_description, product_relabel FROM "+ OdooData.TABLE_STOCK_ITEMS+" WHERE picking_id = '"+subId+"' ORDER BY name",null);
     }
 
     public int changeStockState(String id){

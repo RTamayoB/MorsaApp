@@ -47,6 +47,15 @@
                 android:text="Codigo"
                 android:textColor="#FFFFFF" />
 
+            <TextView
+                android:id="@+id/pzqty_lbl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight=".20"
+                android:fontFamily="@font/lato_bold"
+                android:text="Ctd."
+                android:textColor="#FFFFFF" />
+
         </TableRow>
 
     </TableLayout>

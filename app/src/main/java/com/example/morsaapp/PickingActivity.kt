@@ -112,10 +112,6 @@ class PickingActivity : AppCompatActivity() {
             refreshData()
         }
 
-        swipeRefreshLayout.isRefreshing = true
-        datamodels.clear()
-        refreshData()
-
         //Iterate trough lv and eliminate from the timers list
         /*
         val ite = timers.iterator()
@@ -134,6 +130,8 @@ class PickingActivity : AppCompatActivity() {
         }
         saveHashMap("timers",timers,this)
         */
+
+        refreshData()
     }
 
     override fun onBackPressed() {
@@ -144,12 +142,7 @@ class PickingActivity : AppCompatActivity() {
     }
 
     private fun refreshData(){
-        val db = DBConnect(
-            applicationContext,
-            OdooData.DBNAME,
-            null,
-            prefs.getInt("DBver",1)
-        )
+        val db = DBConnect(applicationContext, OdooData.DBNAME, null, prefs.getInt("DBver",1))
         if(db.deleteDataOnTable(OdooData.TABLE_RACK)){
             thread {
                 try {

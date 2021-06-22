@@ -70,6 +70,12 @@ public class OrderRevisionAdapter extends BaseAdapter {
             object.setText(span, TextView.BufferType.SPANNABLE);
         }
 
+        //if 1 colr qty green
+        if(item.lineScanned == 1){
+            qty.setBackgroundColor(Color.parseColor("#008f39"));
+            qty.setTextColor(Color.WHITE);
+        }
+
         return convertView;
     }
 }

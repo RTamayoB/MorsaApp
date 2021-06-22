@@ -105,6 +105,12 @@ public class OdooConn {
                 "product.product", "search",
                 asList(asList(
                         "|",
+                        asList("alternative_barcode_1", "=",barcode),
+                        "|",
+                        asList("alternative_barcode_2", "=",barcode),
+                        "|",
+                        asList("alternative_barcode_3", "=",barcode),
+                        "|",
                         asList("barcode", "=", barcode),
                         "|",
                         asList("hs_code","=",barcode),

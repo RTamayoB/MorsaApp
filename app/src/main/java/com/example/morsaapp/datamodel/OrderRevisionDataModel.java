@@ -8,6 +8,7 @@ public class OrderRevisionDataModel {
     public String incidencies;
     public int revisionQty = 0;
     public String relabel;
+    public int lineScanned = 0;
 
     public int getProductId() {
         return productId;

@@ -46,26 +46,28 @@ class MainMenuActivity : AppCompatActivity() {
 
         receptionBtn.setOnClickListener {
             val intent = Intent(applicationContext, ReceptionActivity::class.java)
+            receptionBtn.isClickable = false
             startActivity(intent)
             finish()
         }
 
         revisionBtn.setOnClickListener {
             val intent = Intent(applicationContext, RevisionActivity::class.java)
+            revisionBtn.isClickable = false
             startActivity(intent)
             finish()
         }
 
         transferBtn.setOnClickListener {
-
             val intent = Intent(applicationContext, LocationActivity::class.java)
+            transferBtn.isClickable = false
             startActivity(intent)
             finish()
         }
 
         reStockBtn.setOnClickListener {
-
             val intent = Intent(applicationContext, ReStockActivity::class.java)
+            reStockBtn.isClickable = false
             startActivity(intent)
             finish()
         }
@@ -73,6 +75,7 @@ class MainMenuActivity : AppCompatActivity() {
         pickingBtn.setOnClickListener {
             try {
                 val intent = Intent(applicationContext, PickingActivity::class.java)
+                pickingBtn.isClickable = false
                 startActivity(intent)
                 finish()
             }catch (e : Exception){
@@ -82,12 +85,15 @@ class MainMenuActivity : AppCompatActivity() {
 
         countBtn.setOnClickListener {
             val intent = Intent(applicationContext, CountActivity::class.java)
+            countBtn.isClickable = false
             startActivity(intent)
+            finish()
         }
 
         routeBtn.setOnClickListener {
             try{
             val intent = Intent(applicationContext, RoutesActivity::class.java)
+                routeBtn.isClickable = false
             startActivity(intent)
             finish()
             }catch (e : Exception){
@@ -98,6 +104,7 @@ class MainMenuActivity : AppCompatActivity() {
         refundsBtn.setOnClickListener {
             try{
                 val intent = Intent(applicationContext, RefundsActivity::class.java)
+                refundsBtn.isClickable = false
                 startActivity(intent)
                 finish()
             }catch (e : Exception){
@@ -109,6 +116,7 @@ class MainMenuActivity : AppCompatActivity() {
             try{
                 val intent = Intent(applicationContext, SettingsActivity::class.java)
                 startActivity(intent)
+                
             }catch (e : Exception){
                 Log.d("Error", e.toString())
             }

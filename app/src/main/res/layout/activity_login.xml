@@ -39,16 +39,16 @@
 
     <EditText
         android:id="@+id/password_txt"
-        android:background="@drawable/login_buttons_dbl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
+        android:background="@drawable/login_buttons_dbl"
         android:ems="10"
-        android:textCursorDrawable="@null"
+        android:fontFamily="@font/lato_regular"
         android:hint="@string/password_hint"
         android:inputType="textPassword"
         android:textColorHint="#d8d8d8"
-        android:fontFamily="@font/lato_regular"
+        android:textCursorDrawable="@null"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/username_txt" />
@@ -102,7 +102,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="v6.9"
+        android:text="v7.2"
         app:layout_constraintEnd_toEndOf="@+id/logo_img"
         app:layout_constraintTop_toBottomOf="@+id/logo_img" />
 

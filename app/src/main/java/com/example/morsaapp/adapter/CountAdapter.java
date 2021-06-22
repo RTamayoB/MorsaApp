@@ -51,16 +51,24 @@ public class CountAdapter extends BaseAdapter implements Filterable {
 
         TextView location = convertView.findViewById(R.id.location_txt);
         TextView code = convertView.findViewById(R.id.code_txt);
+        TextView qty = convertView.findViewById(R.id.pzqty_txt);
 
         location.setText(item.location);
         code.setText(item.code);
+        qty.setText(item.totalQty);
 
         if(item.isCounted){
             location.setBackgroundColor(Color.parseColor("#008f39"));
             location.setTextColor(Color.WHITE);
             code.setBackgroundColor(Color.parseColor("#008f39"));
             code.setTextColor(Color.WHITE);
+            qty.setBackgroundColor(Color.parseColor("#008f39"));
+            qty.setTextColor(Color.WHITE);
             //convertView.setBackgroundColor(Color.parseColor("#008f39"));
+        }
+
+        if(item.isLocation){
+            location.setBackgroundColor(Color.CYAN);
         }
 
         if (item.isReported){
@@ -68,6 +76,8 @@ public class CountAdapter extends BaseAdapter implements Filterable {
             location.setTextColor(Color.WHITE);
             code.setBackgroundColor(Color.parseColor("#FF8000"));
             code.setTextColor(Color.WHITE);
+            qty.setBackgroundColor(Color.parseColor("#FF8000"));
+            qty.setTextColor(Color.WHITE);
         }
 
         return convertView;

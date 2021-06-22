@@ -999,7 +999,11 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                             )
                             Log.d("Updated", "Done")
                         }
-
+                    if(model.revisionQty == model.qty){
+                        model.lineScanned = 1
+                        val coloradapter = orderRevisionLv.adapter as OrderRevisionAdapter
+                        coloradapter.notifyDataSetChanged()
+                    }
                 }else{
                     dialog.dismiss()
                     val customToast = CustomToast(this, this)
@@ -1190,6 +1194,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
 
 
                 datamodels.add(items)
+            
             //}
         }
         obtainList()
@@ -1374,6 +1379,11 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                     markedAsExcedent = false
                 }
                 activeModeId = pedido.Id
+                if(pedido.revisionQty == pedido.qty){
+                    pedido.lineScanned = 1
+                    val coloradapter = orderRevisionLv.adapter as OrderRevisionAdapter
+                    coloradapter.notifyDataSetChanged()
+                }
                 if ((pedido.revisionQty >= pedido.qty) && !markedAsExcedent){
 
 

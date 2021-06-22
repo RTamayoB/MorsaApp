@@ -34,7 +34,7 @@ import org.json.JSONArray
 import kotlin.concurrent.thread
 
 
-class CountActivity : AppCompatActivity() {
+class   CountActivity : AppCompatActivity() {
 
     var datamodels = ArrayList<CountDataModel>() //Array of data for the list of products
     lateinit var countLv : ListView //ListView view for the items
@@ -159,10 +159,57 @@ class CountActivity : AppCompatActivity() {
 
         countLv.setOnItemClickListener { parent, view, position, id ->
             val model : CountDataModel = countLv.getItemAtPosition(position) as CountDataModel
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle("Producto - "+model.code)
-            builder.setMessage("¿Reportar producto como no encontrado?")
-            builder.setPositiveButton("Reportar") { dialog, which ->
+            val qtybuilder = AlertDialog.Builder(this)
+            qtybuilder.setCancelable(false)
+            qtybuilder.setTitle("Especifica cantidad")
+            val input = EditText(applicationContext)
+            input.width = 10
+            input.inputType = InputType.TYPE_CLASS_NUMBER
+            qtybuilder.setView(input)
+            qtybuilder.setNegativeButton("Cancelar") { dialog, which ->
+                dialog.dismiss()
+            }
+            qtybuilder.setPositiveButton("Aceptar") { dialog, which ->
+                if(input.text.isNullOrEmpty()){
+                    Log.d("Damm","It null")
+                }
+                if(!input.text.isNullOrEmpty()){
+                    val product: HashMap<Int, Int> = HashMap()
+                    //Add to hashmap
+                    val value = input.text.toString()
+                    Log.d("Value", value)
+                    product[model.lineId] = value.toInt()
+                    thread {
+                        try {
+                            val deferredSendCount = sendCount(product)
+                            model.totalQty = value.toInt().toString()
+                            model.isCounted = true
+                            val adap = countLv.adapter as CountAdapter
+                            adap.notifyDataSetChanged()
+                            runOnUiThread {
+                                val customToast = CustomToast(applicationContext,this@CountActivity)
+                                customToast.show("Enviado", 24.0F, Toast.LENGTH_LONG)
+                                Log.d("Result of count", deferredSendCount)
+                            }
+                        }catch (e: Exception){
+                            Log.d("Error",e.toString())
+                        }
+                    }
+                }
+                else{
+                    runOnUiThread {
+                        val customToast = CustomToast(applicationContext,this@CountActivity)
+                        customToast.show("Ingrese una cantidad", 24.0F, Toast.LENGTH_LONG)
+                        dialog.dismiss()
+                    }
+                }
+
+            }
+            qtybuilder.setNeutralButton("Reportar") { dialog, which ->
+                val reportBuilder = AlertDialog.Builder(this)
+                reportBuilder.setTitle("Producto - "+model.code)
+                reportBuilder.setMessage("¿Reportar producto como no encontrado?")
+                reportBuilder.setPositiveButton("Reportar") { dialog, which ->
                     thread {
                         try {
                             val reportHashMap : HashMap<Int,Int> = HashMap()
@@ -170,6 +217,7 @@ class CountActivity : AppCompatActivity() {
                             val deferredSendCount = sendCount(reportHashMap)
                             runOnUiThread {
                                 model.isReported = true
+                                model.totalQty = "0"
                                 val adapter = countLv.adapter as CountAdapter
                                 adapter.notifyDataSetChanged()
                                 val customToast = CustomToast(this, this)
@@ -189,11 +237,13 @@ class CountActivity : AppCompatActivity() {
                             }
                         }
                     }
+                }
+                reportBuilder.setNegativeButton("Cancelar") {dialog, _ ->
+                    dialog.dismiss()
+                }
+                reportBuilder.show()
             }
-            builder.setNegativeButton("Cancelar") {dialog, _ ->
-                dialog.dismiss()
-            }
-            builder.show()
+            qtybuilder.show()
         }
     }
 
@@ -390,6 +440,9 @@ class CountActivity : AppCompatActivity() {
             val item = countLv.adapter.getItem(i) as CountDataModel
             if (decodedString == item.location) {
                 location = item.realLocation
+                item.isLocation
+                val adap = countLv.adapter as CountAdapter
+                adap.notifyDataSetChanged()
                 Log.d("Location", location)
                 showMessage = true
             }
@@ -402,7 +455,6 @@ class CountActivity : AppCompatActivity() {
         }
 
         Log.d("You Scanned", decodedString)
-        val builder = AlertDialog.Builder(this)
 
         //Based on the scanned code check if it corresponds to a Route
         val db =
@@ -426,58 +478,48 @@ class CountActivity : AppCompatActivity() {
                     item.isCounted = true
                     Log.d("Yes", "There are")
                     //Compute qty
-                }
-            }
-            try {
-                runBlocking {
-                    val deferredTheoriticalQty: Deferred<List<Any>> =
-                        GlobalScope.async { computeTheoreticalQty(lineId) }
-                    Log.d("Update", deferredTheoriticalQty.toString())
-                    if (deferredTheoriticalQty.await()[0] as Boolean) {
-                        //Got qty
-                        progressBar.isVisible = false
-                        val adap = countLv.adapter as CountAdapter
-                        adap.notifyDataSetChanged()
-                        builder.setCancelable(false)
-                        builder.setTitle("Especifica cantidad")
-                        val input = EditText(applicationContext)
-                        input.width = 10
-                        input.inputType = InputType.TYPE_CLASS_NUMBER
-                        builder.setView(input)
-                        builder.setNegativeButton("Cancelar") { dialog, which ->
-                            dialog.dismiss()
-                        }
-                        builder.setPositiveButton("Aceptar") { dialog, which ->
-                            val product: HashMap<Int, Int> = HashMap()
-                            //Add to hashmap
-                            val value = input.text.toString()
-                            Log.d("Value", value)
-                            product[lineId] = value.toInt()
-                            thread {
-                                try {
-                                    val deferredSendCount = sendCount(product)
-                                    runOnUiThread {
-                                        val customToast = CustomToast(applicationContext,this@CountActivity)
-                                        customToast.show("Enviado", 24.0F, Toast.LENGTH_LONG)
-                                        Log.d("Result of count", deferredSendCount)
+                    try {
+                        runBlocking {
+                            val deferredTheoriticalQty: Deferred<List<Any>> =
+                                GlobalScope.async { computeTheoreticalQty(lineId) }
+                            Log.d("Update", deferredTheoriticalQty.toString())
+                            if (deferredTheoriticalQty.await()[0] as Boolean) {
+                                //Got qty
+                                progressBar.isVisible = false
+                                val product: HashMap<Int, Int> = HashMap()
+                                //Add to hashmap
+                                Log.d("Value", item.totalQty)
+                                item.totalQty = (item.totalQty.toInt()+1).toString()
+                                product[lineId] = item.totalQty.toInt()
+                                val adap = countLv.adapter as CountAdapter
+                                adap.notifyDataSetChanged()
+                                thread {
+                                    try {
+                                        val deferredSendCount = sendCount(product)
+                                        runOnUiThread {
+                                            val customToast = CustomToast(applicationContext,this@CountActivity)
+                                            customToast.show("Enviado", 24.0F, Toast.LENGTH_LONG)
+                                            Log.d("Result of count", deferredSendCount)
+                                        }
+                                    }catch (e: Exception){
+                                        Log.d("Error",e.toString())
                                     }
-                                }catch (e: Exception){
-                                    Log.d("Error",e.toString())
+                                }
+
+
+                            } else {
+                                runOnUiThread {
+                                    val customToast = CustomToast(applicationContext, this@CountActivity)
+                                    customToast.show("Error obteniendo cantidad", 24.0F, Toast.LENGTH_LONG)
                                 }
                             }
                         }
-                        builder.show()
-
-                    } else {
-                        runOnUiThread {
-                            val customToast = CustomToast(applicationContext, this@CountActivity)
-                            customToast.show("Error obteniendo cantidad", 24.0F, Toast.LENGTH_LONG)
-                        }
+                    }catch (e: Exception){
+                        Log.d("Error",e.toString())
                     }
                 }
-            }catch (e: Exception){
-                Log.d("Error",e.toString())
             }
+
         }
         else if (checkProduct.count == 0 && isCode){
             val builder = AlertDialog.Builder(this)
