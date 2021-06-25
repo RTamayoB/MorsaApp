@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Vibrator
 import android.text.InputType
-import android.text.Layout
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -44,8 +43,6 @@ import java.lang.Exception
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.concurrent.thread
-import com.example.morsaapp.Key
-import com.example.morsaapp.datamodel.ReceptionDataModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.json.JSONObject
 
@@ -99,7 +96,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         db.close()
     }
 
-    private var activeOrderLinePosition : Int = 0
+    //private var activeOrderLinePosition : Int = 0
     private lateinit var popupListViewGlobal:ListView
     lateinit var popupViewGlobal : View
     lateinit var scanIssuesLv :ListView
@@ -122,7 +119,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
     lateinit var moveDataHashMap : HashMap<String, Any>
 
     //Decode Variables
-    val SCAN_ACTION = ScanManager.ACTION_DECODE
+    //val SCAN_ACTION = ScanManager.ACTION_DECODE
     lateinit var mVibrator: Vibrator
     lateinit var mScanManager: ScanManager
     lateinit var soundPool: SoundPool
@@ -919,7 +916,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                         if (number > model.qty) {
                             val moreBuilder = AlertDialog.Builder(this)
                             moreBuilder.setMessage("La cantidad ingresada es mayor a la establecida en la factura. ¿Desea registrar Sobrantes?")
-                            moreBuilder.setPositiveButton("Aceptar") { dialog, which ->
+                            moreBuilder.setPositiveButton("Aceptar") { _, _ ->
                                 setScannedQuantityByPop(number)
                                 model.revisionQty = number
                                 val arrayAdapter = orderRevisionLv.adapter as OrderRevisionAdapter
@@ -942,14 +939,14 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                 )
                                 Log.d("Updated", "Done")
                             }
-                            moreBuilder.setNegativeButton("Cancelar") { dialog, which ->
+                            moreBuilder.setNegativeButton("Cancelar") { dialog, _ ->
                                 dialog.dismiss()
                             }
                             moreBuilder.show()
                         } else if (number < model.qty) {
                             val moreBuilder = AlertDialog.Builder(this)
                             moreBuilder.setMessage("La cantidad ingresada es menor a la establecida en la factura. ¿Desea registrar Faltantes?")
-                            moreBuilder.setPositiveButton("Aceptar") { dialog, which ->
+                            moreBuilder.setPositiveButton("Aceptar") { _, _ ->
                                 setScannedQuantityByPop(number)
                                 model.revisionQty = number
                                 val arrayAdapter = orderRevisionLv.adapter as OrderRevisionAdapter
@@ -972,7 +969,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                 )
                                 Log.d("Updated", "Done")
                             }
-                            moreBuilder.setNegativeButton("Cancelar") { dialog, which ->
+                            moreBuilder.setNegativeButton("Cancelar") { dialog, _ ->
                                 dialog.dismiss()
                             }
                             moreBuilder.show()
@@ -1022,7 +1019,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
               reportDialog.setTitle("Anote la informacion del producto que desea reportar:")
               val reportView = layoutInflater.inflate(R.layout.extra_issues_popup, null)
               reportDialog.setView(reportView)
-              reportDialog.setPositiveButton("Enviar") {dialog, which ->
+              reportDialog.setPositiveButton("Enviar") {dialog, _ ->
                   val name = reportView.findViewById<EditText>(R.id.extra_product_edt).text
                   val qty = reportView.findViewById<EditText>(R.id.extra_qty_edt).text
                   val selectedId : Int = reportView.findViewById<RadioGroup>(R.id.extra_rdgrup).checkedRadioButtonId

@@ -10,11 +10,11 @@ import androidx.core.app.NotificationManagerCompat
 class BackLogReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
 
-        val intent = Intent(context, ReStockActivity::class.java).apply {
+        val intentre = Intent(context, ReStockActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
 
-        val pendingIntent : PendingIntent = PendingIntent.getActivity( context,0, intent, 0)
+        val pendingIntent : PendingIntent = PendingIntent.getActivity( context,0, intentre, 0)
 
         val builder = NotificationCompat.Builder(context, "1")
             .setSmallIcon(R.drawable.morsa_login_img)

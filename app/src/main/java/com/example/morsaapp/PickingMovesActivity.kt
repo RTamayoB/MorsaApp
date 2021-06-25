@@ -813,6 +813,7 @@ class PickingMovesActivity : AppCompatActivity() {
                                         if (!countingDone) {
                                             val racks = getHashMap("racks", this)
                                             racks[rackId] = true
+                                            Log.d("Saving rack", rackId)
                                             saveHashMap("racks", racks, this)
                                             val goBackToMenuIntent = Intent(
                                                 this,

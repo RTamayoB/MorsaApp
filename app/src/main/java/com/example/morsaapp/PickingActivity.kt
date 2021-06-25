@@ -164,6 +164,7 @@ class PickingActivity : AppCompatActivity() {
                             val customToast = CustomToast(this, this)
                             customToast.show("Exito", 24.0F, Toast.LENGTH_LONG)
 
+                            Log.d("Current racks", closedracks.toString())
                             //Delete the racks that dont appear on the list
                             for (i in 0 until pickingLv.adapter.count){
                                 val item = pickingLv.adapter.getItem(i) as PickingDataModel
@@ -178,6 +179,8 @@ class PickingActivity : AppCompatActivity() {
                                 }
                             }
                             saveRackHashMap(closedracks,this)
+
+                            Log.d("Remaining racks", closedracks.toString())
                         }
                     } else {
                         runOnUiThread {
@@ -242,6 +245,7 @@ class PickingActivity : AppCompatActivity() {
             racks.name = cursorRack.getString(cursorRack.getColumnIndex("display_name"))
             racks.id = cursorRack.getString(cursorRack.getColumnIndex("id"))
             racks.date = cursorRack.getString(cursorRack.getColumnIndex("create_date"))
+            racks.box = "Abierto"
             if(closedracks.isNullOrEmpty()){
                 racks.box = "Abierto"
             }
@@ -253,8 +257,6 @@ class PickingActivity : AppCompatActivity() {
                         } else {
                             racks.box = "Abierto"
                         }
-                    } else {
-                        racks.box = "Abierto"
                     }
                 }
             }
