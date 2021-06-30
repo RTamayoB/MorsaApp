@@ -781,7 +781,7 @@ public class OdooConn {
                 asList(asList(
                         asList("type", "=", "in_invoice"),
                         asList("purchase_id", "!=", false),
-                        asList("state","=","open"),
+                        asList("state","=","draft"),
                         asList("app_confirm","=",false)
                         //asList("id", "not in", idList)
                 )),

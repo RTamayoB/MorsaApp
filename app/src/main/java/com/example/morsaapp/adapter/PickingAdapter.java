@@ -14,7 +14,7 @@ import com.example.morsaapp.R;
 
 import java.util.ArrayList;
 
-public class PickingAdapter extends BaseAdapter implements Filterable{
+public class PickingAdapter extends BaseAdapter{
 
     private ArrayList<PickingDataModel> dataSet;
     private ArrayList<PickingDataModel> dataSetFull;
@@ -38,7 +38,7 @@ public class PickingAdapter extends BaseAdapter implements Filterable{
 
     @Override
     public long getItemId(int position) {
-        return 0;
+        return Integer.parseInt(dataSet.get(position).id);
     }
 
     @Override
@@ -64,6 +64,7 @@ public class PickingAdapter extends BaseAdapter implements Filterable{
         return convertView;
     }
 
+    /*
     @Override
     public Filter getFilter() {
         return mFilter;
@@ -98,5 +99,6 @@ public class PickingAdapter extends BaseAdapter implements Filterable{
             dataSet.addAll((ArrayList) results.values);
             notifyDataSetChanged();
         }
-    };
+
+    };*/
 }

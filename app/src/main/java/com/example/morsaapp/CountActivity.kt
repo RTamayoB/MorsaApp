@@ -441,11 +441,19 @@ class   CountActivity : AppCompatActivity() {
         }
 
         var showMessage : Boolean = false
+
+        for(j in 0 until countLv.adapter.count){
+            val module = countLv.adapter.getItem(j) as CountDataModel
+            module.isLocation = false
+        }
+        val adap2 = countLv.adapter as CountAdapter
+        adap2.notifyDataSetChanged()
+
         for (i in 0 until countLv.adapter.count) {
             val item = countLv.adapter.getItem(i) as CountDataModel
             if (decodedString == item.location) {
+                item.isLocation = true
                 location = item.realLocation
-                item.isLocation
                 val adap = countLv.adapter as CountAdapter
                 adap.notifyDataSetChanged()
                 Log.d("Location", location)
@@ -484,11 +492,6 @@ class   CountActivity : AppCompatActivity() {
                     Log.d("Yes", "There are")
                     //Compute qty
                     try {
-                        runBlocking {
-                            val deferredTheoriticalQty: Deferred<List<Any>> =
-                                GlobalScope.async { computeTheoreticalQty(lineId) }
-                            Log.d("Update", deferredTheoriticalQty.toString())
-                            if (deferredTheoriticalQty.await()[0] as Boolean) {
                                 //Got qty
                                 progressBar.isVisible = false
                                 val product: HashMap<Int, Int> = HashMap()
@@ -510,15 +513,6 @@ class   CountActivity : AppCompatActivity() {
                                         Log.d("Error",e.toString())
                                     }
                                 }
-
-
-                            } else {
-                                runOnUiThread {
-                                    val customToast = CustomToast(applicationContext, this@CountActivity)
-                                    customToast.show("Error obteniendo cantidad", 24.0F, Toast.LENGTH_LONG)
-                                }
-                            }
-                        }
                     }catch (e: Exception){
                         Log.d("Error",e.toString())
                     }

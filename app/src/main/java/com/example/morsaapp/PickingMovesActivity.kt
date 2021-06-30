@@ -312,9 +312,6 @@ class PickingMovesActivity : AppCompatActivity() {
     override fun onBackPressed() {
         super.onBackPressed()
         saveTimerHashMap(timers, this)
-        finish()
-        val intent  = Intent(this, PickingActivity::class.java)
-        startActivity(intent)
         unregisterReceiver(mScanReceiver)
     }
 
@@ -634,7 +631,7 @@ class PickingMovesActivity : AppCompatActivity() {
                     builder.setTitle("Cantidad a Mover")
                     builder.setMessage("Especifique cantidad:")
                     val numberPicker = NumberPicker(this)
-                    numberPicker.maxValue = 100
+                    numberPicker.maxValue = 1000
                     numberPicker.minValue = 1
                     builder.setView(numberPicker)
                     builder.setPositiveButton("Ok") { dialog, _ ->
@@ -815,15 +812,10 @@ class PickingMovesActivity : AppCompatActivity() {
                                             racks[rackId] = true
                                             Log.d("Saving rack", rackId)
                                             saveHashMap("racks", racks, this)
-                                            val goBackToMenuIntent = Intent(
-                                                this,
-                                                PickingActivity::class.java
-                                            )
                                             runOnUiThread {
                                                 progressBar.isVisible = false
                                             }
-                                            finish()
-                                            startActivity(goBackToMenuIntent)
+                                            super.onBackPressed()
                                         } else {
                                             runOnUiThread {
                                                 val customToast = CustomToast(this, this)

@@ -181,7 +181,7 @@ public class DBConnect extends SQLiteOpenHelper {
 
     public Cursor fillInvoiceListView(){
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT id, display_name, number, datetime_invoice, partner_id, amount_total, origin, purchase_id FROM "+ OdooData.TABLE_INVOICE+" WHERE state = 'open'",null);
+        return db.rawQuery("SELECT id, display_name, number, datetime_invoice, partner_id, amount_total, origin, purchase_id FROM "+ OdooData.TABLE_INVOICE+" WHERE state = 'draft'",null);
     }
 
     public Cursor fillRefundListView(){

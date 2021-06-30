@@ -1,4 +1,4 @@
-<resources>
+    <resources>
     <string name="app_name">MorsaApp</string>
     <string name="activity_intent_action">android.intent.ACTION_DECODE_DATA</string>
     <string name="activity_intent_filter_action_scan">com.morsaapp.SCANNER</string>

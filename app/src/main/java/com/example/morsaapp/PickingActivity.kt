@@ -138,13 +138,6 @@ class PickingActivity : AppCompatActivity() {
         refreshData()
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-        val goBackintent = Intent(this, MainMenuActivity::class.java)
-        startActivity(goBackintent)
-        finish()
-    }
-
     private fun refreshData(){
         val db = DBConnect(applicationContext, OdooData.DBNAME, null, prefs.getInt("DBver",1))
         if(db.deleteDataOnTable(OdooData.TABLE_RACK)){
@@ -222,26 +215,14 @@ class PickingActivity : AppCompatActivity() {
         Log.d("Picking Qty", cursorRack.count.toString())
         datamodels.clear()
         while (cursorRack.moveToNext()){
-            var idList = arrayListOf<String>()
-            Log.d("Picking IDs", cursorRack.getString(cursorRack.getColumnIndex("picking_ids")).toString())
             racks = PickingDataModel()
-            var id = cursorRack.getString(cursorRack.getColumnIndex("picking_ids"))
-            id = id.replace("[","")
-            id = id.replace("]","")
-            Log.d("IDs",id)
-            val temp = id.split(",")
-            Log.d("Temp", temp.toString())
-            val tempArrayList = arrayListOf<String>()
-            for (array in temp.indices){
-                Log.d("Value", temp[array])
-                tempArrayList.add(temp[array])
-            }
 
-            idList.addAll(tempArrayList)
-            var finalList = idList.toString()
-            finalList = finalList.replace("[","(")
-            finalList = finalList.replace("]",")")
-            racks.picking_ids = finalList
+            //Log.d("Picking IDs", cursorRack.getString(cursorRack.getColumnIndex("picking_ids")).toString())
+            var pickingIds = cursorRack.getString(cursorRack.getColumnIndex("picking_ids"))
+            pickingIds = pickingIds.replace("[","(")
+            pickingIds = pickingIds.replace("]",")")
+            racks.picking_ids = pickingIds
+            Log.d("Final PickingIds",racks.picking_ids)
             racks.name = cursorRack.getString(cursorRack.getColumnIndex("display_name"))
             racks.id = cursorRack.getString(cursorRack.getColumnIndex("id"))
             racks.date = cursorRack.getString(cursorRack.getColumnIndex("create_date"))
@@ -274,10 +255,11 @@ class PickingActivity : AppCompatActivity() {
         pickingLv.adapter = adapter
         adapter.notifyDataSetChanged()
         var list : ArrayList<String> = ArrayList()
-        for(i in 0 until pickingLv.count){
-            val e = pickingLv.getItemAtPosition(i) as PickingDataModel
-            Log.d("Rack Id", e.id)
-            list.add(e.id)
+        for(e in datamodels.indices){
+
+            Log.d("Rack "+datamodels[e].id, datamodels[e].name)
+            Log.d("Rack "+datamodels[e].id, datamodels[e].picking_ids)
+            list.add(datamodels[e].id)
         }
         Log.d("Full List", list.toString())
         val ite = timers.iterator()

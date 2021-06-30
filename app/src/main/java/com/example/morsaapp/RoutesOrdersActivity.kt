@@ -24,6 +24,7 @@ import com.example.morsaapp.data.DBConnect
 import com.example.morsaapp.data.OdooConn
 import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.StockBoxesDataModel
+import kotlinx.android.synthetic.main.loading_dialog.*
 import org.json.JSONArray
 import java.io.File
 import java.io.FileOutputStream
@@ -171,10 +172,12 @@ class RoutesOrdersActivity : AppCompatActivity() {
         finishRouteBtn.setOnClickListener {
             //Check that all products are scanned
             var allScanned = true
+            boxesProgressBar.isVisible = true
             for(i in 0 until boxesLv.adapter.count){
                 val item = boxesLv.adapter.getItem(i) as StockBoxesDataModel
                 if (!item.isScanned){
                     allScanned = false
+                    boxesProgressBar.isVisible = false
                     val customToast = CustomToast(this, this)
                     customToast.show("Escanee todos los productos", 24.0F, Toast.LENGTH_LONG)
                     break
@@ -187,21 +190,21 @@ class RoutesOrdersActivity : AppCompatActivity() {
                         val deferredRouteInfo: List<Any> = getRouteBoxes("1", routeId)
                         Log.d("GetPDF result", deferredRouteInfo.toString())
                         if (!(deferredRouteInfo[0] as Boolean)) {
-                            if (!(deferredRouteInfo[0] as Boolean)) {
-                                runOnUiThread {
-                                    val customToast = CustomToast(this, this)
-                                    customToast.show("Cajas pendientes", 24.0F, Toast.LENGTH_LONG)
-                                }
-                            } else {
-                                runOnUiThread {
-                                    val customToast = CustomToast(this, this)
-                                    customToast.show("No hay paquetes para mover a ruta", 24.0F, Toast.LENGTH_LONG)
-                                }
+                            runOnUiThread {
+                                boxesProgressBar.isVisible = false
+                                val customToast = CustomToast(this, this)
+                                customToast.show(deferredRouteInfo[1] as String, 24.0F, Toast.LENGTH_LONG)
+                            }
+                        } else {
+                            runOnUiThread {
+                                boxesProgressBar.isVisible = false
+                                val customToast = CustomToast(this, this)
+                                customToast.show("Ruta Liberada", 24.0F, Toast.LENGTH_LONG)
+                                super.onBackPressed()
                             }
 
-                        } else {
                             //Save Document
-
+                            /*
                             val sdf = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
                             val currentDateandTime = sdf.format(Date())
                             val fileName = "$currentDateandTime.pdf"
@@ -259,6 +262,7 @@ class RoutesOrdersActivity : AppCompatActivity() {
                             runOnUiThread {
                                 sendPlaquesBuilder.show()
                             }
+                            */
                         }
                     }catch (e: Exception){
                         Log.d("Error General",e.toString())
@@ -291,11 +295,7 @@ class RoutesOrdersActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         super.onBackPressed()
-        val returnIntent = Intent(applicationContext, RoutesActivity::class.java)
-        finish()
         unregisterReceiver(mScanReceiver)
-        startActivity(returnIntent)
-        //unregisterReceiver(mScanReceiver) //This may stop the working of the scanner, shutdown in the meantime
     }
 
     private fun populateListView(route : String?)

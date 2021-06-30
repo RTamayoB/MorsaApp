@@ -57,6 +57,10 @@ public class CountAdapter extends BaseAdapter implements Filterable {
         code.setText(item.code);
         qty.setText(item.totalQty);
 
+        if(item.isLocation){
+            location.setBackgroundColor(Color.CYAN);
+        }
+
         if(item.isCounted){
             location.setBackgroundColor(Color.parseColor("#008f39"));
             location.setTextColor(Color.WHITE);
@@ -65,10 +69,6 @@ public class CountAdapter extends BaseAdapter implements Filterable {
             qty.setBackgroundColor(Color.parseColor("#008f39"));
             qty.setTextColor(Color.WHITE);
             //convertView.setBackgroundColor(Color.parseColor("#008f39"));
-        }
-
-        if(item.isLocation){
-            location.setBackgroundColor(Color.CYAN);
         }
 
         if (item.isReported){
