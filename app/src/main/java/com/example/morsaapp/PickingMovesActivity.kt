@@ -20,7 +20,6 @@ import com.example.morsaapp.data.DBConnect
 import com.example.morsaapp.data.OdooConn
 import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.MissingProductsDatamodel
-import com.example.morsaapp.datamodel.PickingDataModel
 import com.example.morsaapp.datamodel.ProductsToLocationDataModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.gson.Gson
@@ -31,6 +30,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.apache.xmlrpc.XmlRpcException
 import org.json.JSONArray
+import java.io.IOException
+import java.io.OutputStreamWriter
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
@@ -526,6 +527,9 @@ class PickingMovesActivity : AppCompatActivity() {
                 Log.d("AfterParsed", locationParsed)
                 orders.setLocation(locationParsed)
                 orders.qty = cursor.getInt(4)
+                Log.d("Multiple", cursor.getString(cursor.getColumnIndex("product_multiple")))
+                orders.product_multiple = cursor.getInt(cursor.getColumnIndex("product_multiple"))
+                Log.d("Product Multiple ",orders.product_multiple.toString())
                 orders.total_qty = cursor.getInt(2)
                 orders.isChecked = false
                 orders.lineScanned = 0
@@ -600,6 +604,11 @@ class PickingMovesActivity : AppCompatActivity() {
             Log.d("Error de Red", xml.toString())
         }
 
+        for(j in 0 until pickingMovesLv.adapter.count){
+            val item2 = pickingMovesLv.adapter.getItem(j) as ProductsToLocationDataModel
+            item2.originScanned = false
+        }
+
         var scanResult = false
         for (i in 0 until pickingMovesLv.adapter.count){
             val item = pickingMovesLv.adapter.getItem(i) as ProductsToLocationDataModel
@@ -609,10 +618,6 @@ class PickingMovesActivity : AppCompatActivity() {
             }
             else if(decodedString == item.origin){
                 scanResult = true
-                for(j in 0 until pickingMovesLv.adapter.count){
-                    val item2 = pickingMovesLv.adapter.getItem(j) as ProductsToLocationDataModel
-                    item2.originScanned = false
-                }
                 item.originScanned = true
                 currentOrigin = decodedString
                 val adapterModifier = pickingMovesLv.adapter as ProductsToLocationAdapter
@@ -633,13 +638,14 @@ class PickingMovesActivity : AppCompatActivity() {
                     val numberPicker = NumberPicker(this)
                     numberPicker.maxValue = 1000
                     numberPicker.minValue = 1
+                    numberPicker.descendantFocusability= NumberPicker.FOCUS_BLOCK_DESCENDANTS
                     builder.setView(numberPicker)
                     builder.setPositiveButton("Ok") { dialog, _ ->
                         try {
-                            val num = numberPicker.value
-                            val expectedQty = num + item.qty
-                            if (expectedQty <= item.total_qty) {
-                                item.qty = item.qty+num
+                            val num = numberPicker.value * item.product_multiple
+                            Log.d("Num", num.toString())
+                            if (num <= item.total_qty) {
+                                item.qty = num
                                 //Change bar color
                                 //Add to hashmap
                                 //Sent qty
@@ -662,6 +668,7 @@ class PickingMovesActivity : AppCompatActivity() {
                                     }
                                 }catch (e: Exception){
                                     Log.d("Error", e.toString())
+                                    writeToFile(e.toString(),applicationContext)
                                 }
                                 if(isCountPicking){
                                     Log.d("IS COUNT", "TRUE")
@@ -688,7 +695,7 @@ class PickingMovesActivity : AppCompatActivity() {
                                     }
                                 }
 
-                                productsHashMap[item.id] = listOf(item.qty, item.total_qty)
+                                productsHashMap[item.id] = listOf(num, item.total_qty)
 
                                 val db = DBConnect(
                                     this,
@@ -806,6 +813,7 @@ class PickingMovesActivity : AppCompatActivity() {
 
                                         } catch (e: Exception) {
                                             Log.d("Error General", e.toString())
+                                            writeToFile(e.toString(), applicationContext)
                                         }
                                         if (!countingDone) {
                                             val racks = getHashMap("racks", this)
@@ -814,8 +822,8 @@ class PickingMovesActivity : AppCompatActivity() {
                                             saveHashMap("racks", racks, this)
                                             runOnUiThread {
                                                 progressBar.isVisible = false
+                                                onBackPressed()
                                             }
-                                            super.onBackPressed()
                                         } else {
                                             runOnUiThread {
                                                 val customToast = CustomToast(this, this)
@@ -958,5 +966,16 @@ class PickingMovesActivity : AppCompatActivity() {
         val stockPicking = odoo.getInspectionItems(pickingId)
         Log.d("OrderList", stockPicking)
         return stockPicking
+    }
+
+    private fun writeToFile(data: String, context: Context) {
+        try {
+            val outputStreamWriter =
+                OutputStreamWriter(context.openFileOutput("config.txt", MODE_PRIVATE))
+            outputStreamWriter.write(data)
+            outputStreamWriter.close()
+        } catch (e: IOException) {
+            Log.e("Exception", "File write failed: " + e.toString())
+        }
     }
 }

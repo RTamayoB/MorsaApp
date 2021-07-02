@@ -534,9 +534,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                                     "pickingId",
                                                                     pickingId.toInt()
                                                                 )
-                                                                startActivity(finishProcess)
-                                                                unregisterReceiver(mScanReceiver)
-                                                                finish()
+                                                                onBackPressed()
                                                             } catch (e: Exception) {
                                                                 Log.d("Error", e.toString())
                                                             }
@@ -556,9 +554,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                                     "pickingId",
                                                                     pickingId.toInt()
                                                                 )
-                                                                startActivity(finishProcess)
-                                                                unregisterReceiver(mScanReceiver)
-                                                                finish()
+                                                                onBackPressed()
                                                             } catch (e: Exception) {
                                                                 Log.d("Error", e.toString())
                                                             }
@@ -567,9 +563,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                 } else {
                                                     Log.d("Has return id", "true")
                                                     finishProcess.putExtra("pickingId", pickingId.toInt())
-                                                    startActivity(finishProcess)
-                                                    unregisterReceiver(mScanReceiver)
-                                                    finish()
+                                                    onBackPressed()
                                                 }
                                             }
                                         }
@@ -696,9 +690,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                             "pickingId",
                                                             pickingId.toInt()
                                                         )
-                                                        startActivity(finishProcess)
-                                                        unregisterReceiver(mScanReceiver)
-                                                        finish()
+                                                        onBackPressed()
                                                     } catch (e: Exception) {
                                                         Log.d("Error", e.toString())
                                                     }
@@ -718,9 +710,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                             "pickingId",
                                                             pickingId.toInt()
                                                         )
-                                                        startActivity(finishProcess)
-                                                        unregisterReceiver(mScanReceiver)
-                                                        finish()
+                                                        onBackPressed()
                                                     } catch (e: Exception) {
                                                         Log.d("Error", e.toString())
                                                     }
@@ -729,9 +719,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                         } else {
                                             Log.d("Has return id", "true")
                                             finishProcess.putExtra("pickingId", pickingId.toInt())
-                                            startActivity(finishProcess)
-                                            unregisterReceiver(mScanReceiver)
-                                            finish()
+                                            onBackPressed()
                                         }
                                     }
                                 }

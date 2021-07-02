@@ -56,11 +56,7 @@ public class DBConnect extends SQLiteOpenHelper {
         try{
             Log.d("OnUpgrade", "Upgrading");
             db.execSQL("DROP TABLE IF EXISTS "+OdooData.TABLE_STOCK_ITEMS);
-            db.execSQL("DROP TABLE IF EXISTS "+OdooData.TABLE_STOCK_RETURN);
-            db.execSQL("DROP TABLE IF EXISTS "+OdooData.TABLE_STOCK_RETURN_LINE);
             db.execSQL(OdooData.CREATE_TABLE_STOCK_ITEMS);
-            db.execSQL(OdooData.CREATE_TABLE_STOCK_RETURN);
-            db.execSQL(OdooData.CREATE_TABLE_STOCK_RETURN_LINE);
             SharedPreferences prefs = context.getSharedPreferences("startupPreferences", 0);
             int ver = prefs.getInt("DBver",1);
             prefs.edit().putInt("DBver",ver+1).apply();
@@ -277,7 +273,7 @@ public class DBConnect extends SQLiteOpenHelper {
     public Cursor pickingMovesById(String list){
         SQLiteDatabase db = this.getReadableDatabase();
 
-        return db.rawQuery("SELECT product_id, remaining_qty, total_qty, location_dest_id, transfer_qty, product_id, id, picking_id, location_id, product_description, name FROM "+ OdooData.TABLE_STOCK_ITEMS+" WHERE id = '"+list+"'",null);
+        return db.rawQuery("SELECT product_id, remaining_qty, total_qty, location_dest_id, transfer_qty, product_id, id, picking_id, location_id, product_description, name, product_multiple FROM "+ OdooData.TABLE_STOCK_ITEMS+" WHERE id = '"+list+"'",null);
     }
 
     public Cursor getPickingMoveIds(String list){

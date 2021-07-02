@@ -10,6 +10,7 @@ public class ProductsToLocationDataModel implements Comparable<ProductsToLocatio
     public boolean isChecked;
     public int qty;
     public int total_qty;
+    public int product_multiple;
     public int lineScanned;
 
     public int getId() {

@@ -74,24 +74,14 @@ class LocationActivity : AppCompatActivity() {
             pickingId = model.getId().toInt()
             intent.putExtra("pickingId",pickingId)
             startActivity(intent)
-            finish()
         }
 
         locationBtn.setOnClickListener {
-            val intent = Intent(applicationContext, MainMenuActivity::class.java)
-            startActivity(intent)
-            finish()
+            onBackPressed()
         }
 
         swipeRefreshLayout.isRefreshing = true
         refreshData()
-    }
-
-    override fun onBackPressed() {
-        super.onBackPressed()
-        val goBackintent = Intent(this, MainMenuActivity::class.java)
-        startActivity(goBackintent)
-        finish()
     }
 
     private fun refreshData(){

@@ -96,15 +96,6 @@ class ProductsToLocationActivity : AppCompatActivity() {
         registerReceiver(mScanReceiver, filter)
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-        val goBackintent = Intent(this, MainMenuActivity::class.java)
-        unregisterReceiver(mScanReceiver)
-        startActivity(goBackintent)
-        finish()
-
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_products_to_location)
@@ -322,7 +313,7 @@ class ProductsToLocationActivity : AppCompatActivity() {
                         adapterModifier.notifyDataSetChanged()
                         thread {
                             try {
-                                val moves: List<Any> = setMoves(item.id, num.toInt())
+                                val moves: List<Any> = setMoves(item.id, total)
                                 Log.d("Final Result", moves.toString())
                                 runOnUiThread {
                                     val customToast = CustomToast(this, this)

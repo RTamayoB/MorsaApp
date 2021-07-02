@@ -64,7 +64,6 @@ class RefundsActivity : AppCompatActivity() {
             intent.putExtra("Number", model.num)
             intent.putExtra("UserId", userId)
             startActivity(intent)
-            finish()
         }
 
         /**
@@ -86,15 +85,6 @@ class RefundsActivity : AppCompatActivity() {
         swipeRefreshLayout.isRefreshing = true
         refreshData()
     }
-
-    override fun onBackPressed() {
-        super.onBackPressed()
-        val goBackintent = Intent(this, MainMenuActivity::class.java)
-        startActivity(goBackintent)
-        finish()
-    }
-
-
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.reception_menu,menu)

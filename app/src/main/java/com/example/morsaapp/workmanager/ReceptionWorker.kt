@@ -21,7 +21,7 @@ class ReceptionWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, para
 
         Log.d("Data Received", "Id: $id, User: $user, Pass: $pass")
         try {
-            val sendConfirm: List<Any> = confirmInvoice(id, number, user, pass, context)
+            val sendConfirm: List<Any> = confirmInvoice(id, number.toString().toInt(), user, pass, context)
             if (sendConfirm[0] as Boolean) {
                 val bool: Boolean = sendConfirm[0] as Boolean
 
@@ -52,7 +52,7 @@ class ReceptionWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, para
         }
     }
 
-    private fun confirmInvoice(id: Int, number: String?, user: String?, pass: String?, context: Context): List<Any> {
+    private fun confirmInvoice(id: Int, number: Int?, user: String?, pass: String?, context: Context): List<Any> {
         val odooConn = OdooConn(user, pass, context)
         odooConn.authenticateOdoo()
         return odooConn.confirmInvoice(id, number) as List<Any>

@@ -170,10 +170,7 @@ class ReStockActivity : AppCompatActivity() {
         builder.setTitle("Salir")
         builder.setMessage("¿Desea salir del proceso?")
         builder.setPositiveButton("Si") { dialog, which ->
-            val goBackintent = Intent(this, MainMenuActivity::class.java)
-            unregisterReceiver(mScanReceiver)
-            finish()
-            startActivity(goBackintent)
+            super.onBackPressed()
         }
         builder.setNegativeButton("No") { dialog, which ->
             dialog.dismiss()

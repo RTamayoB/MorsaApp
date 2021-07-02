@@ -48,6 +48,7 @@ class InvoiceActivity : AppCompatActivity() {
 
         val intent : Intent = intent
         invoiceId = intent.getStringExtra("ID")
+        Log.d("InvoiceId", invoiceId.toString())
         val purchaseId = intent.getStringExtra("Purchase Id")
         val number = intent.getStringExtra("Number")
         val displayName = intent.getStringExtra("Display Name")
@@ -93,14 +94,13 @@ class InvoiceActivity : AppCompatActivity() {
                         progressBar.isVisible = true
                         thread{
                             try {
-                                val send = confirmInvoice(purchaseId.toInt(), number)
+                                Log.d("Confirm Data", "$purchaseId - $invoiceId")
+                                val send = confirmInvoice(purchaseId.toInt(), invoiceId.toString().toInt())
                                 if (send.isNotEmpty()) {
                                     runOnUiThread {
                                         progressBar.isVisible = false
+                                        onBackPressed()
                                     }
-                                    val intent = Intent(applicationContext, MainMenuActivity::class.java)
-                                    startActivity(intent)
-                                    finish()
                                 }
                             }catch (e : Exception){
                                 runOnUiThread {
@@ -249,7 +249,6 @@ class InvoiceActivity : AppCompatActivity() {
                     Log.d("Error de Red",xml.toString())
                 }
             }
-
         }
     }
 
@@ -292,7 +291,7 @@ class InvoiceActivity : AppCompatActivity() {
             this
         )
         odooConn.authenticateOdoo()
-        return odooConn.confirmInvoice(id,"") as List<Any>
+        return odooConn.confirmInvoice(id,0) as List<Any>
     }
 
     //Returns the purchases lines
@@ -307,7 +306,7 @@ class InvoiceActivity : AppCompatActivity() {
         return invoiceLine
     }
 
-    private fun confirmInvoice(id: Int, number: String?): List<Any> {
+    private fun confirmInvoice(id: Int, number: Int?): List<Any> {
         val odooConn = OdooConn(user, pass, this)
         odooConn.authenticateOdoo()
         return odooConn.confirmInvoice(id, number) as List<Any>

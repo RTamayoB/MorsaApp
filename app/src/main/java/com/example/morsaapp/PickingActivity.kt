@@ -107,7 +107,6 @@ class PickingActivity : AppCompatActivity() {
             intent.putExtra("pickingIds",pickingIds)
             intent.putExtra("rackId", rackId)
             intent.putExtra("orderType", orderType)
-            finish()
             startActivity(intent)
         }
 
@@ -156,7 +155,6 @@ class PickingActivity : AppCompatActivity() {
                             adapter.notifyDataSetChanged()
                             val customToast = CustomToast(this, this)
                             customToast.show("Exito", 24.0F, Toast.LENGTH_LONG)
-
                             Log.d("Current racks", closedracks.toString())
                             //Delete the racks that dont appear on the list
                             for (i in 0 until pickingLv.adapter.count){

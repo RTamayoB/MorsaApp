@@ -124,9 +124,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
                             val customToast = CustomToast(this, this)
                             customToast.show(result, 8.0F, Toast.LENGTH_LONG)
                         }
-                        val intent = Intent(applicationContext, MainMenuActivity::class.java)
-                        startActivity(intent)
-                        finish()
+                        onBackPressed()
                     }catch (e : XmlRpcException){
                         Log.d("XMLRPC ERROR", e.toString())
                         val customToast = CustomToast(this, this)
@@ -189,9 +187,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
             dialog.dismiss()
         }
         builder.setPositiveButton("Aceptar") {dialog, which ->
-            val intent = Intent(applicationContext, RefundsActivity::class.java)
-            startActivity(intent)
-            finish()
+            super.onBackPressed()
         }
         builder.show()
     }

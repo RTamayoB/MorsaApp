@@ -36,7 +36,7 @@ import org.json.JSONArray
 import kotlin.concurrent.thread
 
 
-class   CountActivity : AppCompatActivity() {
+class CountActivity : AppCompatActivity() {
 
     var datamodels = ArrayList<CountDataModel>() //Array of data for the list of products
     lateinit var countLv : ListView //ListView view for the items
@@ -564,6 +564,19 @@ class   CountActivity : AppCompatActivity() {
             val customToast = CustomToast(this, this)
             customToast.show("Codigo $decodedString no es producto ni ubicación", 24.0F, Toast.LENGTH_LONG)
         }
+    }
+
+    override fun onBackPressed() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Salir")
+        builder.setMessage("¿Desea salir del proceso?")
+        builder.setPositiveButton("Si") { dialog, which ->
+            super.onBackPressed()
+        }
+        builder.setNegativeButton("No") { dialog, which ->
+            dialog.dismiss()
+        }
+        builder.show()
     }
 
     //Function that conects to Odoo and sends the qty as a hashmap

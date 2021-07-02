@@ -266,6 +266,11 @@ class RoutesOrdersActivity : AppCompatActivity() {
                         }
                     }catch (e: Exception){
                         Log.d("Error General",e.toString())
+                        runOnUiThread {
+                            boxesProgressBar.isVisible = false
+                            val customToast = CustomToast(this, this)
+                            customToast.show("Error en Odoo" as String, 24.0F, Toast.LENGTH_LONG)
+                        }
                     }
                 }
             }

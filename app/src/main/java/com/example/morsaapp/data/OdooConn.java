@@ -571,7 +571,7 @@ public class OdooConn {
                         asList("picking_id","=",pickingId)
                 )),
                 new HashMap() {{
-                    put("fields", asList("product_id", "remaining_qty", "total_qty", "location_dest_id", "quantity_done", "product_id", "id", "picking_id", "name", "price_unit", "product_qty", "state", "location_id", "is_completed", "picking_originative_id", "transfer_qty", "product_description", "product_relabel"));
+                    put("fields", asList("product_id", "remaining_qty", "total_qty", "location_dest_id", "quantity_done", "product_id", "id", "picking_id", "name", "price_unit", "product_qty", "state", "location_id", "is_completed", "picking_originative_id", "transfer_qty", "product_description", "product_relabel", "product_multiple"));
                     HashMap context = new HashMap(){{
                         put("display_default_code", false);
                     }};
@@ -991,7 +991,7 @@ public class OdooConn {
 
 
 
-    public List confirmInvoice(Integer id, String number) throws XmlRpcException
+    public List confirmInvoice(Integer id, Integer number) throws XmlRpcException
     {
         List list = asList(
             (Object[])models.execute("execute_kw", asList(

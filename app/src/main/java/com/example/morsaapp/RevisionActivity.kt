@@ -60,7 +60,6 @@ class RevisionActivity : AppCompatActivity() {
             intent.putExtra("Name", name)
             intent.putExtra("InInspection",model.inInspection)
             startActivity(intent)
-            finish()
         }
 
         swipeRefreshLayout.setOnRefreshListener {
@@ -77,13 +76,6 @@ class RevisionActivity : AppCompatActivity() {
 
         swipeRefreshLayout.isRefreshing = true
         refreshData()
-    }
-
-    override fun onBackPressed() {
-        super.onBackPressed()
-        val goBackintent = Intent(this, MainMenuActivity::class.java)
-        startActivity(goBackintent)
-        finish()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

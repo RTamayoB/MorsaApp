@@ -46,38 +46,28 @@ class MainMenuActivity : AppCompatActivity() {
 
         receptionBtn.setOnClickListener {
             val intent = Intent(applicationContext, ReceptionActivity::class.java)
-            receptionBtn.isClickable = false
             startActivity(intent)
-            finish()
         }
 
         revisionBtn.setOnClickListener {
             val intent = Intent(applicationContext, RevisionActivity::class.java)
-            revisionBtn.isClickable = false
             startActivity(intent)
-            finish()
         }
 
         transferBtn.setOnClickListener {
             val intent = Intent(applicationContext, LocationActivity::class.java)
-            transferBtn.isClickable = false
             startActivity(intent)
-            finish()
         }
 
         reStockBtn.setOnClickListener {
             val intent = Intent(applicationContext, ReStockActivity::class.java)
-            reStockBtn.isClickable = false
             startActivity(intent)
-            finish()
         }
 
         pickingBtn.setOnClickListener {
             try {
                 val intent = Intent(applicationContext, PickingActivity::class.java)
-                pickingBtn.isClickable = false
                 startActivity(intent)
-                finish()
             }catch (e : Exception){
                 Log.d("Error", e.toString())
             }
@@ -85,16 +75,13 @@ class MainMenuActivity : AppCompatActivity() {
 
         countBtn.setOnClickListener {
             val intent = Intent(applicationContext, CountActivity::class.java)
-            countBtn.isClickable = false
             startActivity(intent)
         }
 
         routeBtn.setOnClickListener {
             try{
             val intent = Intent(applicationContext, RoutesActivity::class.java)
-                routeBtn.isClickable = false
             startActivity(intent)
-            finish()
             }catch (e : Exception){
                 Log.d("Error", e.toString())
             }
@@ -103,9 +90,7 @@ class MainMenuActivity : AppCompatActivity() {
         refundsBtn.setOnClickListener {
             try{
                 val intent = Intent(applicationContext, RefundsActivity::class.java)
-                refundsBtn.isClickable = false
                 startActivity(intent)
-                finish()
             }catch (e : Exception){
                 Log.d("Error", e.toString())
             }
@@ -115,7 +100,6 @@ class MainMenuActivity : AppCompatActivity() {
             try{
                 val intent = Intent(applicationContext, SettingsActivity::class.java)
                 startActivity(intent)
-
             }catch (e : Exception){
                 Log.d("Error", e.toString())
             }
@@ -184,13 +168,13 @@ class MainMenuActivity : AppCompatActivity() {
             prefs.edit().putInt("DBver",4).apply()
         }
 
-        if(prefs.getInt("DBver",1) != 5){
+        if(prefs.getInt("DBver",1) != 6){
             Log.d("DB ver before", prefs.getInt("DBver",1).toString())
             val db = DBConnect(
                 applicationContext,
                 OdooData.DBNAME,
                 null,
-                5
+                6
             ).writableDatabase
             Log.d("DB ver now", db.version.toString())
             prefs.edit().putInt("DBver",db.version).apply()

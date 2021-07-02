@@ -82,7 +82,6 @@ class ReceptionActivity : AppCompatActivity() {
             }
             */
             startActivity(intent)
-            finish()
         }
 
         /**
@@ -107,9 +106,6 @@ class ReceptionActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         super.onBackPressed()
-        val goBackintent = Intent(this, MainMenuActivity::class.java)
-        startActivity(goBackintent)
-        finish()
     }
 
 

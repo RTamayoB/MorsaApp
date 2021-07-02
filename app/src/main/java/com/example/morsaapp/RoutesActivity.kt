@@ -223,14 +223,6 @@ class RoutesActivity : AppCompatActivity() {
         return invoice
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-        val goBackintent = Intent(this, MainMenuActivity::class.java)
-        unregisterReceiver(mScanReceiver)
-        startActivity(goBackintent)
-        finish()
-    }
-
     /*
     private val myBroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -362,7 +354,6 @@ class RoutesActivity : AppCompatActivity() {
                     intent.putExtra("RouteId", routeId)
                     unregisterReceiver(mScanReceiver)
                     startActivity(intent)
-                    finish()
                 }
             }
         }catch (e: Exception){
