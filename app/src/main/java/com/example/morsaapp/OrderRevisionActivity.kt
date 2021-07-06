@@ -61,21 +61,26 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
     }
 
     override fun onBackPressed() {
-        val builder = AlertDialog.Builder(this)
-        builder.setCancelable(false)
-        builder.setTitle("Salir")
-        builder.setMessage("Interrumpir proceso de Inspeccion")
-        builder.setNegativeButton("Cancelar") {dialog, which ->
-            dialog.dismiss()
-        }
-        builder.setPositiveButton("Aceptar") {dialog, which ->
+        if (complete){
             super.onBackPressed()
-            val intent = Intent(applicationContext, RevisionActivity::class.java)
-            startActivity(intent)
-            unregisterReceiver(mScanReceiver)
-            finish()
         }
-        builder.show()
+        else {
+            val builder = AlertDialog.Builder(this)
+            builder.setCancelable(false)
+            builder.setTitle("Salir")
+            builder.setMessage("Interrumpir proceso de Inspeccion")
+            builder.setNegativeButton("Cancelar") { dialog, which ->
+                dialog.dismiss()
+            }
+            builder.setPositiveButton("Aceptar") { dialog, which ->
+                super.onBackPressed()
+                val intent = Intent(applicationContext, RevisionActivity::class.java)
+                startActivity(intent)
+                unregisterReceiver(mScanReceiver)
+                finish()
+            }
+            builder.show()
+        }
     }
 
     private fun deserialize(s : String) : HashMap<Int, ArrayList<IssuesPopupDataModel>>{
@@ -348,6 +353,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
     var labelCount : Int = 0
     var markedAsExcedent : Boolean = false
     lateinit var exceedDialog : AlertDialog.Builder
+    var complete = false
 
     lateinit var progressBar: ProgressBar
     val multiKeyMap: MutableMap<Key<String>, Int> = java.util.HashMap()
@@ -534,7 +540,13 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                                     "pickingId",
                                                                     pickingId.toInt()
                                                                 )
-                                                                onBackPressed()
+                                                                try {
+                                                                    complete = true
+                                                                    onBackPressed()
+                                                                }
+                                                                catch (e: Exception){
+                                                                    Log.d("Error on back", e.toString())
+                                                                }
                                                             } catch (e: Exception) {
                                                                 Log.d("Error", e.toString())
                                                             }
@@ -554,16 +566,30 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                                     "pickingId",
                                                                     pickingId.toInt()
                                                                 )
-                                                                onBackPressed()
+                                                                try {
+                                                                    complete = true
+                                                                    onBackPressed()
+                                                                }
+                                                                catch (e: Exception){
+                                                                    Log.d("Error on back", e.toString())
+                                                                }
                                                             } catch (e: Exception) {
                                                                 Log.d("Error", e.toString())
                                                             }
                                                         }
                                                     builder2.show()
                                                 } else {
-                                                    Log.d("Has return id", "true")
-                                                    finishProcess.putExtra("pickingId", pickingId.toInt())
-                                                    onBackPressed()
+                                                    runOnUiThread {
+                                                        Log.d("Has return id", "true")
+                                                        finishProcess.putExtra("pickingId", pickingId.toInt())
+                                                        try {
+                                                            complete = true
+                                                            onBackPressed()
+                                                        }
+                                                        catch (e: Exception){
+                                                            Log.d("Error on back", e.toString())
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
@@ -617,12 +643,14 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                 //val issuesToSend: HashMap<Int, HashMap<Int, Int>> = parseIssues()
 //                             Log.d("HashMap", issuesToSend.toString())
                                 val toSend = finalHashMap[pickingId.toInt()]
+                                Log.d("ToSend", toSend.toString())
                                 thread {
                                     try {
                                         val sendIssues: List<List<String>> = confirmIssues(
                                             pickingId.toInt(),
                                             toSend as HashMap<Int, HashMap<String, Any>>
                                         )
+                                        Log.d("SendIssues",sendIssues.toString())
                                         if (sendIssues.isEmpty()) {
                                             runOnUiThread {
                                                 val customToast = CustomToast(this, this)
@@ -690,7 +718,13 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                             "pickingId",
                                                             pickingId.toInt()
                                                         )
-                                                        onBackPressed()
+                                                        try {
+                                                            complete = true
+                                                            onBackPressed()
+                                                        }
+                                                        catch (e: Exception){
+                                                            Log.d("Error on back", e.toString())
+                                                        }
                                                     } catch (e: Exception) {
                                                         Log.d("Error", e.toString())
                                                     }
@@ -710,7 +744,13 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                                             "pickingId",
                                                             pickingId.toInt()
                                                         )
-                                                        onBackPressed()
+                                                        try {
+                                                            complete = true
+                                                            onBackPressed()
+                                                        }
+                                                        catch (e: Exception){
+                                                            Log.d("Error on back", e.toString())
+                                                        }
                                                     } catch (e: Exception) {
                                                         Log.d("Error", e.toString())
                                                     }
@@ -719,7 +759,12 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                         } else {
                                             Log.d("Has return id", "true")
                                             finishProcess.putExtra("pickingId", pickingId.toInt())
-                                            onBackPressed()
+                                            runOnUiThread {
+                                                val intent = Intent(applicationContext, RevisionActivity::class.java)
+                                                startActivity(intent)
+                                                finish()
+                                            }
+
                                         }
                                     }
                                 }

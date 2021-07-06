@@ -17,6 +17,7 @@ import com.example.morsaapp.data.OdooConn
 import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.*
 import com.google.gson.Gson
+import kotlinx.android.synthetic.main.activity_invoice.*
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -52,6 +53,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
     lateinit var popupViewGlobal : View
     private lateinit var popupListViewGlobal:ListView
     private var incidDataModel = ArrayList<IssuesPopupDataModel>()
+    private var pzs = 0
 
     private val mScanReceiver = object : BroadcastReceiver(){
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -107,6 +109,12 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
 
         val confirmPurchase = findViewById<Button>(R.id.button)
         confirmPurchase.setOnClickListener {
+            try {
+                onBackPressed()
+            }catch (e: Exception){
+                Log.d("Error on Back", e.toString())
+            }
+            /*
             val prefs = this.getSharedPreferences("backlogPrefs", 0)
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Recibir Productos")
@@ -139,6 +147,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
                     dialog.dismiss()
                 }
                 .show()
+            */
         }
 
         //Inspection
@@ -273,6 +282,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
             items.name = refundItemsCursor.getString(refundItemsCursor.getColumnIndex("name"))
             items.productId = myId.toInt()
             items.qty = refundItemsCursor.getInt(refundItemsCursor.getColumnIndex("qty"))
+            pzs += items.qty
             val acceptedQty = refundItemsCursor.getInt(refundItemsCursor.getColumnIndex("accepted_qty")).toInt()
             val rejectedQty = refundItemsCursor.getInt(refundItemsCursor.getColumnIndex("rejected_qty")).toInt()
             Log.d("Values ", "$acceptedQty-$rejectedQty")
@@ -288,6 +298,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
 
             datamodels.add(items)
         }
+        total_txt.text = pzs.toString()
         obtainList()
         refundItemsCursor.close()
         db.close()

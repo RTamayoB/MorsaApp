@@ -822,7 +822,12 @@ class PickingMovesActivity : AppCompatActivity() {
                                             saveHashMap("racks", racks, this)
                                             runOnUiThread {
                                                 progressBar.isVisible = false
-                                                onBackPressed()
+                                                try{
+                                                    onBackPressed()
+                                                }catch (e: Exception){
+                                                    Log.d("Error on Back", e.toString())
+                                                }
+
                                             }
                                         } else {
                                             runOnUiThread {

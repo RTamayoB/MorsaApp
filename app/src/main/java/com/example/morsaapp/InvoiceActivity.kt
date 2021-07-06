@@ -36,6 +36,7 @@ class InvoiceActivity : AppCompatActivity() {
     private var user : String? = ""
     private var pass : String? = ""
     private var invoiceId : String? = ""
+    private var complete : Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,11 +96,17 @@ class InvoiceActivity : AppCompatActivity() {
                         thread{
                             try {
                                 Log.d("Confirm Data", "$purchaseId - $invoiceId")
+                                val idChanged = invoiceId.toString()
                                 val send = confirmInvoice(purchaseId.toInt(), invoiceId.toString().toInt())
                                 if (send.isNotEmpty()) {
                                     runOnUiThread {
-                                        progressBar.isVisible = false
-                                        onBackPressed()
+                                        try {
+                                            progressBar.isVisible = false
+                                            complete = true
+                                            onBackPressed()
+                                        }catch (e : Exception){
+                                            Log.d("Error on Back", e.toString())
+                                        }
                                     }
                                 }
                             }catch (e : Exception){
@@ -167,19 +174,26 @@ class InvoiceActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        val builder = AlertDialog.Builder(this)
-        builder.setCancelable(false)
-        builder.setTitle("Salir")
-        builder.setMessage("Interrumpir proceso de Recepcion")
-        builder.setNegativeButton("Cancelar") {dialog, which ->
-            dialog.dismiss()
-        }
-        builder.setPositiveButton("Aceptar") {dialog, which ->
+        if(complete){
             val intent = Intent(applicationContext, ReceptionActivity::class.java)
             startActivity(intent)
             finish()
         }
-        builder.show()
+        else{
+            val builder = AlertDialog.Builder(this)
+            builder.setCancelable(false)
+            builder.setTitle("Salir")
+            builder.setMessage("Interrumpir proceso de Recepcion")
+            builder.setNegativeButton("Cancelar") {dialog, which ->
+                dialog.dismiss()
+            }
+            builder.setPositiveButton("Aceptar") {dialog, which ->
+                val intent = Intent(applicationContext, ReceptionActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
+            builder.show()
+        }
     }
 
     private fun refreshData(relatedId: String){

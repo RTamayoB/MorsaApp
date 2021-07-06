@@ -28,9 +28,9 @@ import kotlinx.android.synthetic.main.loading_dialog.*
 import org.json.JSONArray
 import java.io.File
 import java.io.FileOutputStream
-import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.Exception
 import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
 
@@ -197,10 +197,15 @@ class RoutesOrdersActivity : AppCompatActivity() {
                             }
                         } else {
                             runOnUiThread {
-                                boxesProgressBar.isVisible = false
-                                val customToast = CustomToast(this, this)
-                                customToast.show("Ruta Liberada", 24.0F, Toast.LENGTH_LONG)
-                                super.onBackPressed()
+                                try {
+                                    boxesProgressBar.isVisible = false
+                                    val customToast = CustomToast(this, this)
+                                    customToast.show("Ruta Liberada", 24.0F, Toast.LENGTH_LONG)
+                                    super.onBackPressed()
+                                }catch (e: Exception){
+                                    Log.d("Error on Back", e.toString())
+                                }
+
                             }
 
                             //Save Document
