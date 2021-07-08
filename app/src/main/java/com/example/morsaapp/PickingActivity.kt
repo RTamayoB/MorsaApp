@@ -6,6 +6,9 @@ import android.content.SharedPreferences
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.widget.ListView
 import android.widget.Toast
@@ -137,13 +140,33 @@ class PickingActivity : AppCompatActivity() {
         refreshData()
     }
 
+    override fun onResume() {
+        super.onResume()
+        Log.d("On Resume","Called")
+
+        try {
+            closedracks = getRackHashMap(this)
+            Log.d("ClosedRacks",closedracks.toString())
+            datamodels.clear()
+            adapter = PickingAdapter(this, datamodels)
+            populateListView()
+            for(picking in datamodels){
+                Log.d("Datamodel", picking.id + picking.box)
+            }
+            adapter.notifyDataSetChanged()
+        }catch (e: Exception) {
+            Log.d("Error re-fetching", e.toString())
+        }
+
+    }
+
     private fun refreshData(){
         val db = DBConnect(applicationContext, OdooData.DBNAME, null, prefs.getInt("DBver",1))
         if(db.deleteDataOnTable(OdooData.TABLE_RACK)){
             thread {
                 try {
                     val reloadRacks: String = syncRacks()
-                    Log.d("Returned Racks", reloadRacks)
+                    //Log.d("Returned Racks", reloadRacks)
                     val rackJson = JSONArray(reloadRacks)
                     val result = db.fillTable(rackJson, OdooData.TABLE_RACK)
                     if (result) {
@@ -155,7 +178,7 @@ class PickingActivity : AppCompatActivity() {
                             adapter.notifyDataSetChanged()
                             val customToast = CustomToast(this, this)
                             customToast.show("Exito", 24.0F, Toast.LENGTH_LONG)
-                            Log.d("Current racks", closedracks.toString())
+                            //Log.d("Current racks", closedracks.toString())
                             //Delete the racks that dont appear on the list
                             for (i in 0 until pickingLv.adapter.count){
                                 val item = pickingLv.adapter.getItem(i) as PickingDataModel
@@ -171,7 +194,7 @@ class PickingActivity : AppCompatActivity() {
                             }
                             saveRackHashMap(closedracks,this)
 
-                            Log.d("Remaining racks", closedracks.toString())
+                            //Log.d("Remaining racks", closedracks.toString())
                         }
                     } else {
                         runOnUiThread {
@@ -220,7 +243,7 @@ class PickingActivity : AppCompatActivity() {
             pickingIds = pickingIds.replace("[","(")
             pickingIds = pickingIds.replace("]",")")
             racks.picking_ids = pickingIds
-            Log.d("Final PickingIds",racks.picking_ids)
+            //Log.d("Final PickingIds",racks.picking_ids)
             racks.name = cursorRack.getString(cursorRack.getColumnIndex("display_name"))
             racks.id = cursorRack.getString(cursorRack.getColumnIndex("id"))
             racks.date = cursorRack.getString(cursorRack.getColumnIndex("create_date"))
@@ -249,14 +272,14 @@ class PickingActivity : AppCompatActivity() {
     }
 
     private fun obtainList() {
+
         adapter = PickingAdapter(this, datamodels)
         pickingLv.adapter = adapter
-        adapter.notifyDataSetChanged()
         var list : ArrayList<String> = ArrayList()
         for(e in datamodels.indices){
-
+            /*
             Log.d("Rack "+datamodels[e].id, datamodels[e].name)
-            Log.d("Rack "+datamodels[e].id, datamodels[e].picking_ids)
+            Log.d("Rack "+datamodels[e].id, datamodels[e].picking_ids)*/
             list.add(datamodels[e].id)
         }
         Log.d("Full List", list.toString())

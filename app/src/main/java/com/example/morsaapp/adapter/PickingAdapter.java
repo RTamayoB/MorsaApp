@@ -1,6 +1,7 @@
 package com.example.morsaapp.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,15 +39,13 @@ public class PickingAdapter extends BaseAdapter{
 
     @Override
     public long getItemId(int position) {
-        return Integer.parseInt(dataSet.get(position).id);
+        return 0;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         PickingDataModel item = (PickingDataModel) getItem(position);
 
-
-        if(convertView == null){
             convertView = LayoutInflater.from(mContext).inflate(R.layout.picking_item, null);
 
 
@@ -60,8 +59,22 @@ public class PickingAdapter extends BaseAdapter{
             date.setText(timeDate[0]);
             time.setText(timeDate[1]);
             box.setText(item.getBox());
-        }
-        return convertView;
+            if(item.getBox().equals("Cerrado")){
+                box.setTextColor(Color.RED);
+            }
+            else if(item.getBox().equals("Abierto")){
+                box.setTextColor(Color.GREEN);
+            }
+            else {
+                //Nothing
+            }
+
+            return convertView;
+    }
+
+    public void updateList(ArrayList<PickingDataModel> myData) {
+        this.dataSet.clear();
+        this.dataSet.addAll(myData);
     }
 
     /*

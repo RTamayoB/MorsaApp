@@ -105,6 +105,15 @@ class PickingMovesActivity : AppCompatActivity() {
         editor.apply()
     }
 
+    private fun saveRackHashMap(obj: Any?, context : Context) {
+        val prefs: SharedPreferences = context.getSharedPreferences("startupPreferences", 0)
+        val editor = prefs.edit()
+        val gson = Gson()
+        val json = gson.toJson(obj)
+        editor.putString("racks", json)
+        editor.apply()
+    }
+
     private fun getHashMap(map: String, context : Context): HashMap<String, Boolean> {
         val prefs: SharedPreferences = context.getSharedPreferences("startupPreferences", 0)
         val gson = Gson()
@@ -791,6 +800,17 @@ class PickingMovesActivity : AppCompatActivity() {
                             //Iterar por Hashmap para enviar los datos de el picking
                                 Log.d("Map", productsHashMap.toString())
                             var countingDone = false
+                            //Save Racks
+                            try{
+                                val racks = getHashMap("racks", this)
+                                racks[rackId] = true
+                                Log.d("Saving rack", rackId)
+                                saveRackHashMap(racks, this)
+                                Log.d("Rack Saved", getHashMap("racks", this).toString())
+                            }catch (e: Exception) {
+                                Log.d("Error saving racks", e.toString())
+                            }
+
                             for (product in productsHashMap) {
                                 val list = product.value
                                 val qty = list[0]
@@ -816,10 +836,6 @@ class PickingMovesActivity : AppCompatActivity() {
                                             writeToFile(e.toString(), applicationContext)
                                         }
                                         if (!countingDone) {
-                                            val racks = getHashMap("racks", this)
-                                            racks[rackId] = true
-                                            Log.d("Saving rack", rackId)
-                                            saveHashMap("racks", racks, this)
                                             runOnUiThread {
                                                 progressBar.isVisible = false
                                                 try{

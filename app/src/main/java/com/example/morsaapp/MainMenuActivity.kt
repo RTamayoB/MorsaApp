@@ -165,7 +165,7 @@ class MainMenuActivity : AppCompatActivity() {
 */
         if(!prefs.contains("DBver")){
             Log.d("Null","Yes")
-            prefs.edit().putInt("DBver",4).apply()
+            prefs.edit().putInt("DBver",6).apply()
         }
 
         if(prefs.getInt("DBver",1) != 6){
