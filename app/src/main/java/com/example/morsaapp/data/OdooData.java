@@ -8,7 +8,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 /**
- * This class encapsulates all the table names and what fields do we fetch from Odoo
+ * This class encapsulates all the table names and what fields we fetch from Odoo
  */
 public class OdooData {
 

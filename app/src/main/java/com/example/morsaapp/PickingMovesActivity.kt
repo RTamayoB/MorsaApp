@@ -622,10 +622,7 @@ class PickingMovesActivity : AppCompatActivity() {
         for (i in 0 until pickingMovesLv.adapter.count){
             val item = pickingMovesLv.adapter.getItem(i) as ProductsToLocationDataModel
             Log.d("Current product: ", item.productId)
-            if(scanResult){
-                break
-            }
-            else if(decodedString == item.origin){
+            if(decodedString == item.origin){
                 scanResult = true
                 item.originScanned = true
                 currentOrigin = decodedString
@@ -791,7 +788,8 @@ class PickingMovesActivity : AppCompatActivity() {
                 if(!donePickingProcess) {
                     //Confirmar envio de picking
                     val builder = AlertDialog.Builder(this)
-                    builder.setTitle("Confirmar Picking")
+                    builder.setTitle("¿Confirmar Picking?")
+                    builder.setMessage("¿Seguro? Ya no se podra editar el picking")
                     builder.setPositiveButton("Ok") { _, _ ->
                         try {
                             val customToast = CustomToast(this, this)

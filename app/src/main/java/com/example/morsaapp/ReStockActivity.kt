@@ -24,6 +24,7 @@ import com.example.morsaapp.adapter.ReStockAdapter
 import com.example.morsaapp.data.DBConnect
 import com.example.morsaapp.data.OdooConn
 import com.example.morsaapp.data.OdooData
+import com.example.morsaapp.datamodel.ProductsToLocationDataModel
 import com.example.morsaapp.datamodel.ReStockDataModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.GlobalScope
@@ -248,6 +249,7 @@ class ReStockActivity : AppCompatActivity() {
         Log.d("ReStock Qty", cursor.count.toString())
         datamodels.clear()
         while (cursor.moveToNext()) {
+            Log.d("LineQty", cursor.getInt(2).toString())
             orders = ReStockDataModel()
             orders.id = cursor.getInt(6)
             val mixedId  = cursor.getString(cursor.getColumnIndex("product_id"))
@@ -369,10 +371,18 @@ class ReStockActivity : AppCompatActivity() {
             Log.d("Error de Red",xml.toString())
         }
 
+        for(j in 0 until reStockLv.adapter.count){
+            val item2 = reStockLv.adapter.getItem(j) as ReStockDataModel
+            item2.originScanned = false
+        }
+
         for(i in 0 until reStockLv.adapter.count) {
             val item = reStockLv.adapter.getItem(i) as ReStockDataModel
-            Log.d("Item Id", item.reProductId)
+            Log.d("Item Id", item.Id.toString())
             if (decodedData == item.reOrigin) {
+                item.originScanned = true
+                val adapt = reStockLv.adapter as ReStockAdapter
+                adapt.notifyDataSetChanged()
                 scan3 = decodedData
                 val customToast = CustomToast(this, this)
                 customToast.show("Escanee un producto", 24.0F, Toast.LENGTH_LONG)
@@ -401,9 +411,15 @@ class ReStockActivity : AppCompatActivity() {
                 input.inputType = InputType.TYPE_CLASS_NUMBER
                 builder.setView(input)
                 builder.setPositiveButton("Ok") { dialog, which ->
+                    if(item.reTotalQty < 0){
+                        Log.d("Negative",item.reTotalQty.toString())
+                    }
                     Log.d("Input", input.text.toString())
                     val num = input.text.toString()
-                    if (item.reQty <= item.reTotalQty) {
+                    if(num.toInt() > item.reTotalQty){
+                        Log.d("Is Higher","Yes")
+                    }
+                    if (num.toInt() <= item.reTotalQty) {
                         qtyHold = num.toInt()
                         productsListHM[item.id] = num.toInt()
                         item.isCounted = 1
@@ -424,6 +440,7 @@ class ReStockActivity : AppCompatActivity() {
             }
 
             if (scan1 == item.reDestiny && scan2 == item.reProductId && scan3 != item.reOrigin) {
+                val scannedDestiny = scan1
                 scan1 = ""
                 scan2 = ""
                 scan3 = ""
@@ -434,33 +451,40 @@ class ReStockActivity : AppCompatActivity() {
                     item.reQty = qtyHold
                     val adapterModifier = reStockLv.adapter as ReStockAdapter
                     adapterModifier.notifyDataSetChanged()
+                    Log.d("Products Hashmap", productsListHM.toString())
                     for ((id,qty) in productsListHM){
-                        if(id == item.id){
-                            thread {
-                                try {
-                                    val deferredReStock: List<Any> = sendReStock(id, qty)
+                        for(j in 0 until reStockLv.adapter.count) {
+                            val product = reStockLv.adapter.getItem(j) as ReStockDataModel
 
-                                    Log.d("Final Result", deferredReStock.toString())
-                                    if (deferredReStock[1] == "Movimiento exitoso" as String) {
+                            Log.d("Comparing", "HMID: ${id.toString()} - ID: ${product.Id.toString()}" )
+                            if(id == product.Id && product.reDestiny == scannedDestiny){
+                                Log.d("Processing Line", id.toString())
+                                thread {
+                                    try {
+                                        val deferredReStock: List<Any> = sendReStock(id, qty)
+
+                                        Log.d("Final Result", deferredReStock.toString())
+                                        if (deferredReStock[1] == "Movimiento exitoso" as String) {
+                                            runOnUiThread {
+                                                val customToast = CustomToast(this, this)
+                                                customToast.show(deferredReStock[1].toString(), 24.0F, Toast.LENGTH_LONG)
+                                                product.isCounted = 2
+                                                val adapt = reStockLv.adapter as ReStockAdapter
+                                                adapt.notifyDataSetChanged()
+                                            }
+                                        } else {
+                                            runOnUiThread {
+                                                val customToast = CustomToast(this, this)
+                                                customToast.show("No se logro enviar la cantidad", 24.0F, Toast.LENGTH_LONG)
+                                            }
+                                        }
+                                    }catch (e: Exception) {
                                         runOnUiThread {
                                             val customToast = CustomToast(this, this)
-                                            customToast.show(deferredReStock[1].toString(), 24.0F, Toast.LENGTH_LONG)
-                                            item.isCounted = 2
-                                            val adapt = reStockLv.adapter as ReStockAdapter
-                                            adapt.notifyDataSetChanged()
+                                            customToast.show("Error $e", 24.0F, Toast.LENGTH_LONG)
                                         }
-                                    } else {
-                                        runOnUiThread {
-                                            val customToast = CustomToast(this, this)
-                                            customToast.show("No se logro enviar la cantidad", 24.0F, Toast.LENGTH_LONG)
-                                        }
+                                        Log.d("Error General", e.toString())
                                     }
-                                }catch (e: Exception) {
-                                    runOnUiThread {
-                                        val customToast = CustomToast(this, this)
-                                        customToast.show("Error $e", 24.0F, Toast.LENGTH_LONG)
-                                    }
-                                    Log.d("Error General", e.toString())
                                 }
                             }
                         }

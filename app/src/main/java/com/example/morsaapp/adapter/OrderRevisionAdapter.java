@@ -74,6 +74,9 @@ public class OrderRevisionAdapter extends BaseAdapter {
         if(item.lineScanned == 1){
             qty.setBackgroundColor(Color.parseColor("#008f39"));
             qty.setTextColor(Color.WHITE);
+
+            object.setBackgroundColor(Color.parseColor("#008f39"));
+            object.setTextColor(Color.WHITE);
         }
 
         return convertView;

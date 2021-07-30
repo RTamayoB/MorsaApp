@@ -54,6 +54,10 @@ public class ReStockAdapter extends BaseAdapter {
         destiny.setText(item.reDestiny);
         qty.setText(item.reQty+"/"+item.reTotalQty);
 
+        if(item.originScanned){
+            origin.setBackgroundColor(Color.CYAN);
+        }
+
         if(item.isCounted == 1){
             product.setTextColor(Color.WHITE);
             origin.setTextColor(Color.WHITE);

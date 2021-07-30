@@ -1009,6 +1009,24 @@ public class OdooConn {
         return  list;
     }
 
+    public List updateDashboardStatus(Integer invoiceId, String message) throws XmlRpcException
+    {
+        List list = asList(
+                (Object[])models.execute("execute_kw", asList(
+                        db,uid,pass,
+                        "account.invoice","update_dashboard_status",
+                        asList(
+                                invoiceId,
+                                message
+                        )
+                        )
+                )
+        );
+        Log.d("Update Dashboard", list.toString());
+
+        return list;
+    }
+
     public List confirmStockReturn(Integer id) throws XmlRpcException
     {
         List list = asList(

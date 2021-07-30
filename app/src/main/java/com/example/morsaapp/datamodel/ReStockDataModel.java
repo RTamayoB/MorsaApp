@@ -9,6 +9,7 @@ public class ReStockDataModel {
     public int reQty;
     public int reTotalQty;
     public int isCounted;
+    public boolean originScanned;
 
     public int getId() {
         return Id;
@@ -72,5 +73,13 @@ public class ReStockDataModel {
 
     public void setCounted(int counted) {
         isCounted = counted;
+    }
+
+    public boolean isOriginScanned() {
+        return originScanned;
+    }
+
+    public void setOriginScanned(boolean originScanned) {
+        this.originScanned = originScanned;
     }
 }

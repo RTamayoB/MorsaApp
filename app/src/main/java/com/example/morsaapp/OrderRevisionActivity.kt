@@ -501,6 +501,10 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                                             val finishProcess =
                                                 Intent(applicationContext, MainMenuActivity::class.java)
                                             if (!error) {
+                                                val db = DBConnect(applicationContext, OdooData.DBNAME, null, prefs.getInt("DBver",1)).writableDatabase
+                                                val values = ContentValues()
+                                                values.put("in_inspection","false")
+                                                db.update(OdooData.TABLE_STOCK,values,"id = $pickingId",null)
                                                 if (returnID) {
                                                     Log.d("Has return id", "true")
                                                     var rawReturnId = ""
@@ -1472,6 +1476,11 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                     scanPopupWindow = PopupWindow(popupView, width, height, focusable)
 
                     scanPopupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
+                }
+                if(pedido.revisionQty == pedido.qty){
+                    pedido.lineScanned = 1
+                    val changeColorAdapter = orderRevisionLv.adapter as OrderRevisionAdapter
+                    changeColorAdapter.notifyDataSetChanged()
                 }
             }
         }

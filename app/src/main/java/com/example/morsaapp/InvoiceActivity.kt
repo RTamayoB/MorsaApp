@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Message
 import android.util.Log
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
@@ -98,6 +99,7 @@ class InvoiceActivity : AppCompatActivity() {
                                 Log.d("Confirm Data", "$purchaseId - $invoiceId")
                                 val idChanged = invoiceId.toString()
                                 val send = confirmInvoice(purchaseId.toInt(), invoiceId.toString().toInt())
+                                val updateDash = updateDashboardStatus(invoiceId.toString().toInt(), "reception")
                                 if (send.isNotEmpty()) {
                                     runOnUiThread {
                                         try {
@@ -325,4 +327,11 @@ class InvoiceActivity : AppCompatActivity() {
         odooConn.authenticateOdoo()
         return odooConn.confirmInvoice(id, number) as List<Any>
     }
+
+    private fun updateDashboardStatus(invoiceId: Int, message: String): List<Any> {
+        val odooConn = OdooConn(user, pass, this)
+        odooConn.authenticateOdoo()
+        return odooConn.updateDashboardStatus(invoiceId,message) as List<Any>
+    }
+
 }

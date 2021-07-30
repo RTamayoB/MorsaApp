@@ -103,14 +103,16 @@ class PickingActivity : AppCompatActivity() {
         pickingLv.setOnItemClickListener {parent, view, position, id ->
             val intent = Intent(applicationContext, PickingMovesActivity::class.java)
             val model : PickingDataModel = pickingLv.getItemAtPosition(position) as PickingDataModel
-            val pickingIds = model.picking_ids
-            val rackId = model.id
-            orderType = model.orderType
-            Log.d("PickingIds", model.picking_ids.toString())
-            intent.putExtra("pickingIds",pickingIds)
-            intent.putExtra("rackId", rackId)
-            intent.putExtra("orderType", orderType)
-            startActivity(intent)
+            if(model.box == "Abierto"){
+                val pickingIds = model.picking_ids
+                val rackId = model.id
+                orderType = model.orderType
+                Log.d("PickingIds", model.picking_ids.toString())
+                intent.putExtra("pickingIds",pickingIds)
+                intent.putExtra("rackId", rackId)
+                intent.putExtra("orderType", orderType)
+                startActivity(intent)
+            }
         }
 
         syncPickingsFAB.setOnClickListener {
