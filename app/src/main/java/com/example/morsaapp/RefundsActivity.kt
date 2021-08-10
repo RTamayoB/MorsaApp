@@ -58,10 +58,12 @@ class RefundsActivity : AppCompatActivity() {
         refundsLv!!.setOnItemClickListener { _, _, position, _ ->
             val intent = Intent(applicationContext, RefundDetailsActivity::class.java)
             val model : ReceptionDataModel = refundsLv.getItemAtPosition(position) as ReceptionDataModel
+            userId = model.purchaseId.toInt()
             intent.putExtra("ID",model.getId())
             intent.putExtra("Display Name", model.getDisplayName())
             intent.putExtra("Name",model.getNum())
             intent.putExtra("Number", model.num)
+            Log.d("User", userId.toString())
             intent.putExtra("UserId", userId)
             startActivity(intent)
         }
@@ -190,7 +192,8 @@ class RefundsActivity : AppCompatActivity() {
             rawUser = rawUser.replace("]","")
             rawUser = rawUser.replace("\"","")
             val user = rawUser.split(",")
-            userId = user[0].toInt()
+            orders.purchaseId = user[0]
+            Log.d("UserList", userId.toString())
             orders.num = user[1]
             orders.displayName = refundCursor.getString(refundCursor.getColumnIndex("user_id"))
             /*

@@ -82,6 +82,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
 
         val intent : Intent = intent
         userId = intent.getIntExtra("UserId",1)
+        Log.d("UserId", userId.toString())
         pickingId = intent.getStringExtra("ID")!!
         //val purchaseId = intent.getStringExtra("Purchase Id")
         val number = intent.getStringExtra("Number")

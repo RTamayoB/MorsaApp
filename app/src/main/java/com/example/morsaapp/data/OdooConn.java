@@ -218,7 +218,7 @@ public class OdooConn {
         return list;
     }
 
-    public List<String> sendToCart(Integer moveId, Integer moveQty) throws XmlRpcException
+    public List sendToCart(Integer moveId, Integer moveQty) throws XmlRpcException
     {
         List list = asList((Object[])models.execute("execute_kw", asList(
                 db,uid,pass,
@@ -226,6 +226,25 @@ public class OdooConn {
                 asList(
                         moveId,
                         moveQty
+                )
+                )
+        ));
+
+
+//        Gson gson = new Gson();
+//        String returned = gson.toJson(list);
+
+        return list;
+    }
+
+
+    public List<Object> confirmPickingQty(HashMap<Integer, Integer> moves) throws XmlRpcException
+    {
+        List list = asList((Object[])models.execute("execute_kw", asList(
+                db,uid,pass,
+                "stock.move", "confirm_picking_qty", //Before was update_move_qty
+                asList(
+                        moves
                 )
                 )
         ));
