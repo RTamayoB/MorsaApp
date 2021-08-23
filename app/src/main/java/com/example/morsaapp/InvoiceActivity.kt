@@ -15,9 +15,7 @@ import com.example.morsaapp.data.OdooConn
 import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.InvoiceDataModel
 import com.example.morsaapp.datamodel.OrderRevisionDataModel
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import org.apache.xmlrpc.XmlRpcException
 import org.json.JSONArray
 import kotlin.collections.ArrayList
@@ -94,13 +92,13 @@ class InvoiceActivity : AppCompatActivity() {
                 .setPositiveButton("Aceptar"){ _, _ ->
                     try {
                         progressBar.isVisible = true
-                        thread{
+                        CoroutineScope(Dispatchers.IO).launch {
                             try {
                                 Log.d("Confirm Data", "$purchaseId - $invoiceId")
                                 val idChanged = invoiceId.toString()
                                 val send = confirmInvoice(purchaseId.toInt(), invoiceId.toString().toInt())
                                 val updateDash = updateDashboardStatus(invoiceId.toString().toInt(), "reception")
-                                if (send.isNotEmpty()) {
+                                if (send.isNotEmpty() && send[0] as Boolean) {
                                     runOnUiThread {
                                         try {
                                             progressBar.isVisible = false
@@ -111,11 +109,18 @@ class InvoiceActivity : AppCompatActivity() {
                                         }
                                     }
                                 }
+                                else{
+                                    runOnUiThread {
+                                        progressBar.isVisible = false
+                                        val customToast = CustomToast(applicationContext, this@InvoiceActivity)
+                                        customToast.show("Error al Recibir", 24.0F, Toast.LENGTH_LONG)
+                                    }
+                                }
                             }catch (e : Exception){
                                 runOnUiThread {
                                     progressBar.isVisible = false
                                     Log.d("ERROR", e.toString())
-                                    val customToast = CustomToast(this, this)
+                                    val customToast = CustomToast(applicationContext, this@InvoiceActivity)
                                     customToast.show("Error en Petición $e", 24.0F, Toast.LENGTH_LONG)
                                 }
                             }

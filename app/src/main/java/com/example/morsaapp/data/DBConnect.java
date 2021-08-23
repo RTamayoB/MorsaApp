@@ -115,11 +115,13 @@ public class DBConnect extends SQLiteOpenHelper {
      */
     public boolean fillTable(JSONArray data, String tableName){
         try {
+            Log.d("Table",tableName);
             SQLiteDatabase db = getWritableDatabase();
             for (int i = 0; i < data.length(); i++) {
                 JSONObject jsonObject = data.getJSONObject(i);
                 Iterator<String> keys = jsonObject.keys();
                 ContentValues contentValues = new ContentValues();
+                Log.d("Product",jsonObject.toString());
                 while (keys.hasNext()) {
                     String key = keys.next();
                     String value = jsonObject.get(key).toString();

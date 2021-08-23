@@ -6,13 +6,16 @@ import android.device.scanner.configuration.PropertyID
 import android.device.scanner.configuration.Triggering
 import android.media.AudioManager
 import android.media.SoundPool
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Vibrator
 import android.text.InputType
 import android.util.Log
-import android.widget.*
+import android.widget.EditText
+import android.widget.ListView
+import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.isVisible
 import androidx.preference.PreferenceManager
@@ -27,6 +30,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.apache.xmlrpc.XmlRpcException
 import org.json.JSONArray
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
 
 class ProductsToLocationActivity : AppCompatActivity() {

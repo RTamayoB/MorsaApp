@@ -7,7 +7,6 @@ import android.device.scanner.configuration.Triggering
 import android.graphics.Color
 import android.media.AudioManager
 import android.media.SoundPool
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Vibrator
 import android.text.InputType
@@ -18,6 +17,7 @@ import android.view.Menu
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.isVisible
 import androidx.preference.PreferenceManager
@@ -30,6 +30,7 @@ import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.IssuesPopupDataModel
 import com.example.morsaapp.datamodel.OrderRevisionDataModel
 import com.example.morsaapp.datamodel.ScanIssuesDataModel
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_main_menu.*
 import kotlinx.android.synthetic.main.no_product_popup.*
@@ -38,13 +39,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.apache.xmlrpc.XmlRpcException
 import org.json.JSONArray
-import java.io.*
-import java.lang.Exception
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
-import kotlin.concurrent.thread
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.json.JSONObject
+import java.io.*
+import kotlin.concurrent.thread
 
 
 class OrderRevisionActivity : AppCompatActivity(), Definable {

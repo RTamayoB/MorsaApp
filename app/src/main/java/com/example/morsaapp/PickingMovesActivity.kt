@@ -681,20 +681,6 @@ class PickingMovesActivity : AppCompatActivity() {
                                                 progressBar.isVisible = false
                                                 productsHashMap[item.id] = num
 
-                                                val db = DBConnect(
-                                                    applicationContext,
-                                                    OdooData.DBNAME,
-                                                    null,
-                                                    prefs.getInt("DBver", 1)
-                                                ).writableDatabase
-                                                val contentValues = ContentValues()
-                                                contentValues.put("remaining_qty", num)
-                                                db.update(
-                                                    OdooData.TABLE_STOCK_ITEMS,
-                                                    contentValues,
-                                                    "id=" + item.id,
-                                                    null
-                                                )
                                                 if (item.qty == item.total_qty) {
                                                     item.lineScanned = 1
                                                 } else {
@@ -719,38 +705,35 @@ class PickingMovesActivity : AppCompatActivity() {
                                             }
                                         }
 
+                                        if (isCountPicking) {
+                                            Log.d("IS COUNT", "TRUE")
+                                            val countPickingBuilder =
+                                                AlertDialog.Builder(applicationContext)
+                                            countPickingBuilder.setTitle("Conteo de Picking")
+                                            countPickingBuilder.setMessage("Favor de contar las piezas:")
+                                            val countQty = EditText(applicationContext)
+                                            countQty.width = 10
+                                            countQty.inputType = InputType.TYPE_CLASS_NUMBER
+                                            countPickingBuilder.setView(countQty)
+                                            countPickingBuilder.setPositiveButton("Confirmar") { _, _ ->
+                                                try {
+                                                    val deferredCount: List<Any> =
+                                                        countPicking(item.id, item.qty)
+                                                    Log.d(
+                                                        "Result of count picking",
+                                                        deferredCount.toString()
+                                                    )
+                                                } catch (e: Exception) {
+                                                    Log.d("Error", e.toString())
+                                                }
+                                            }
+                                        }
+
                                     }
                                 } catch (e: Exception) {
                                     Log.d("Error", e.toString())
                                     writeToFile(e.toString(), applicationContext)
                                 }
-
-                                if (isCountPicking) {
-                                    Log.d("IS COUNT", "TRUE")
-                                    val countPickingBuilder =
-                                        AlertDialog.Builder(applicationContext)
-                                    countPickingBuilder.setTitle("Conteo de Picking")
-                                    countPickingBuilder.setMessage("Favor de contar las piezas:")
-                                    val countQty = EditText(applicationContext)
-                                    countQty.width = 10
-                                    countQty.inputType = InputType.TYPE_CLASS_NUMBER
-                                    countPickingBuilder.setView(countQty)
-                                    countPickingBuilder.setPositiveButton("Confirmar") { _, _ ->
-                                        thread {
-                                            try {
-                                                val deferredCount: List<Any> =
-                                                    countPicking(item.id, item.qty)
-                                                Log.d(
-                                                    "Result of count picking",
-                                                    deferredCount.toString()
-                                                )
-                                            } catch (e: Exception) {
-                                                Log.d("Error", e.toString())
-                                            }
-                                        }
-                                    }
-                                }
-
                                 //val deferredToCart: Deferred<List<String>> = GlobalScope.async { sendtoCart(item.id, item.qty) }
 
                             } else {
@@ -824,75 +807,100 @@ class PickingMovesActivity : AppCompatActivity() {
                             Log.d("Map", productsHashMap.toString())
 
                             val items = pickingMovesLv.adapter as ProductsToLocationAdapter
-                            val check = AlertDialog.Builder(this)
-                            var message = ""
+
+                            val myMap = HashMap<Int, Int>()
+                            var linesScanned = true
                             for (h in 0 until items.count) {
                                 val product = pickingMovesLv.adapter.getItem(h) as ProductsToLocationDataModel
-                                productsHashMap[product.id] = product.qty
-                                message = message + product.stockMoveName
-                            }
-                            check.setMessage(message)
-                            check.setTitle("Check")
 
-                            CoroutineScope(Dispatchers.IO).launch {
-                                try {
-                                    val response = confirmPicking(productsHashMap)
-                                    if (response[0] as Boolean) {
-                                        runOnUiThread {
-                                            progressBar.isVisible = false
-                                            try {
-                                                //Save Racks
-                                                val racks = getHashMap("racks", applicationContext)
-                                                racks[rackId] = true
-                                                Log.d("Saving rack", rackId)
-                                                saveRackHashMap(racks, applicationContext)
-                                                Log.d(
-                                                    "Rack Saved",
-                                                    getHashMap(
-                                                        "racks",
-                                                        applicationContext
-                                                    ).toString()
+                                if(product.lineScanned == 1 || product.lineScanned == 2 || product.lineScanned == 3){
+                                    linesScanned = true
+                                    Log.d("Missing Line", product.stockMoveName)
+                                }
+                                productsHashMap[product.id] = product.qty
+                                myMap[product.id] = product.qty
+                            }
+
+                            if(linesScanned) {
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    try {
+                                        val response = confirmPicking(myMap)
+                                        if (response[0] as Boolean) {
+                                            runOnUiThread {
+                                                progressBar.isVisible = false
+                                                try {
+                                                    //Save Racks
+                                                    val racks =
+                                                        getHashMap("racks", applicationContext)
+                                                    racks[rackId] = true
+                                                    Log.d("Saving rack", rackId)
+                                                    saveRackHashMap(racks, applicationContext)
+                                                    Log.d(
+                                                        "Rack Saved",
+                                                        getHashMap(
+                                                            "racks",
+                                                            applicationContext
+                                                        ).toString()
+                                                    )
+                                                    onBackPressed()
+                                                } catch (e: Exception) {
+                                                    Log.d("Error on Back", e.toString())
+                                                }
+                                            }
+                                        } else {
+                                            runOnUiThread {
+                                                progressBar.isVisible = false
+                                                val customToast2 = CustomToast(
+                                                    applicationContext,
+                                                    this@PickingMovesActivity
                                                 )
-                                                onBackPressed()
-                                            } catch (e: Exception) {
-                                                Log.d("Error on Back", e.toString())
+                                                customToast2.show(
+                                                    "Error al finalizar Picking",
+                                                    24.0F,
+                                                    Toast.LENGTH_LONG
+                                                )
                                             }
                                         }
-                                    } else {
+                                    } catch (e: XmlRpcException) {
                                         runOnUiThread {
-                                            progressBar.isVisible = false
-                                            val customToast2 = CustomToast(
+                                            Log.d("XMLRPC ERROR", e.toString())
+                                            val customToast = CustomToast(
                                                 applicationContext,
                                                 this@PickingMovesActivity
                                             )
-                                            customToast2.show(
-                                                "Error al finalizar Picking",
+                                            customToast.show(
+                                                "Error en Odoo: $e",
+                                                24.0F,
+                                                Toast.LENGTH_LONG
+                                            )
+                                        }
+                                    } catch (e: Exception) {
+                                        runOnUiThread {
+                                            Log.d("ERROR", e.toString())
+                                            val customToast = CustomToast(
+                                                applicationContext,
+                                                this@PickingMovesActivity
+                                            )
+                                            customToast.show(
+                                                "Error en peticion: $e",
                                                 24.0F,
                                                 Toast.LENGTH_LONG
                                             )
                                         }
                                     }
-                                } catch (e: XmlRpcException) {
-                                    runOnUiThread {
-                                        Log.d("XMLRPC ERROR", e.toString())
-                                        val customToast = CustomToast(applicationContext, this@PickingMovesActivity)
-                                        customToast.show(
-                                            "Error en Odoo: $e",
-                                            24.0F,
-                                            Toast.LENGTH_LONG
-                                        )
-                                    }
-                                } catch (e: Exception) {
-                                    runOnUiThread {
-                                        Log.d("ERROR", e.toString())
-                                        val customToast = CustomToast(applicationContext, this@PickingMovesActivity)
-                                        customToast.show(
-                                            "Error en peticion: $e",
-                                            24.0F,
-                                            Toast.LENGTH_LONG
-                                        )
-                                    }
                                 }
+                            }
+                            else{
+                                progressBar.isVisible = false
+                                val customToast = CustomToast(
+                                    applicationContext,
+                                    this@PickingMovesActivity
+                                )
+                                customToast.show(
+                                    "Pedido incompleto",
+                                    24.0F,
+                                    Toast.LENGTH_LONG
+                                )
                             }
                         } catch (e: XmlRpcException) {
                             Log.d("XMLRPC ERROR", e.toString())
@@ -1032,7 +1040,7 @@ class PickingMovesActivity : AppCompatActivity() {
             outputStreamWriter.write(data)
             outputStreamWriter.close()
         } catch (e: IOException) {
-            Log.e("Exception", "File write failed: " + e.toString())
+            Log.e("Exception", "File write failed: $e")
         }
     }
 }

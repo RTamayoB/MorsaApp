@@ -27,6 +27,7 @@ import com.example.morsaapp.data.OdooConn
 import com.example.morsaapp.data.OdooData
 import com.example.morsaapp.datamodel.CountDataModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.android.synthetic.main.activity_count.*
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -250,6 +251,10 @@ class CountActivity : AppCompatActivity() {
             }
             qtybuilder.show()
         }
+
+        swipeRefreshLayout.setOnRefreshListener {
+            swipeRefreshLayout.isRefreshing = false
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -292,6 +297,7 @@ class CountActivity : AppCompatActivity() {
 
 
     private fun refreshData(){
+        resync_fab.isClickable = false
         val db = DBConnect(
             applicationContext,
             OdooData.DBNAME,
@@ -324,6 +330,7 @@ class CountActivity : AppCompatActivity() {
                             customToast.show("Sin Exito", 24.0F, Toast.LENGTH_LONG)
                         }
                     }
+                    resync_fab.isClickable = true
                 }catch (e: Exception){
                     runOnUiThread {
                         val customToast = CustomToast(this, this)
