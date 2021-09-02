@@ -641,7 +641,7 @@ class PickingMovesActivity : AppCompatActivity() {
                     Log.d("Products", "Enter to save product")
                     val builder = AlertDialog.Builder(this)
                     builder.setTitle("Cantidad a Mover")
-                    builder.setMessage("Especifique cantidad:")
+                    builder.setMessage("Especifique el número de cajas:")
                     val numberPicker = NumberPicker(this)
                     numberPicker.maxValue = 1000
                     numberPicker.minValue = 1
