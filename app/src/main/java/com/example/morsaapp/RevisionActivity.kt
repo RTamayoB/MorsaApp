@@ -200,12 +200,7 @@ class RevisionActivity : AppCompatActivity() {
                         cursor.getString(cursor.getColumnIndex("origin")) + "-" +
                         cursor.getString(cursor.getColumnIndex("origin_invoice_purchase"))
             )
-            if (cursor.getString(cursor.getColumnIndex("return_id")) == "false"){
-                orders.returnId = false
-            }
-            else{
-                orders.returnId = true
-            }
+            orders.returnId = cursor.getString(cursor.getColumnIndex("return_id")) != "false"
             if(orders.returnId){
                 orders.displayName = cursor.getString(cursor.getColumnIndex("origin"))
             }

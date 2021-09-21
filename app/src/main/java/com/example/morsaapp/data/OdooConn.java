@@ -541,7 +541,9 @@ public class OdooConn {
                         asList("move_arrangement_ids","=",false),
                         asList("picking_type_code", "=", "incoming"),
                         asList("state","=","done"),
+                        "|",
                         asList("group_id","!=",false),
+                        asList("transfer_order_id","!=",false),
                         "|",
                         asList("origin_invoice_purchase","!=",""),
                         asList("return_id","!=",false)
@@ -609,10 +611,12 @@ public class OdooConn {
                 db,uid,pass,
                 "stock.move","search_read",
                 asList(asList(
-                        asList("picking_originative_id.group_id","!=",false),
                         asList("picking_originative_id","!=",false),
                         asList("state","in",asList("confirmed", "assigned", "partially_available")),
-                        asList("picking_originative_id.partner_id","=",supplierId)
+                        asList("picking_originative_id.partner_id","=",supplierId),
+                        "|",
+                        asList("picking_originative_id.transfer_order_id","!=",false),
+                        asList("picking_originative_id.group_id","!=",false)
                 )),
                 new HashMap() {{
                     put("fields", asList("product_id", "remaining_qty", "total_qty", "location_dest_id", "quantity_done", "product_id", "id", "picking_id", "name", "price_unit", "product_qty", "state", "location_id", "is_completed", "picking_originative_id"));
