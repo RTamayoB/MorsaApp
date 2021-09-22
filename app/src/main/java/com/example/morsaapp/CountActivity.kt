@@ -182,13 +182,12 @@ class CountActivity : AppCompatActivity() {
                 if(!input.text.isNullOrEmpty()){
                     val product: HashMap<Int, Int> = HashMap()
                     //Add to hashmap
-                    val value = input.text.toString()
-                    Log.d("Value", value)
-                    product[model.lineId] = value.toInt()
+                    val value = (input.text.toString().toInt() * model.multiple)
+                    product[model.lineId] = value
                     thread {
                         try {
                             val deferredSendCount = sendCount(product)
-                            model.totalQty = value.toInt().toString()
+                            model.totalQty = value.toString()
                             model.isCounted = true
                             val adap = countLv.adapter as CountAdapter
                             adap.notifyDataSetChanged()
@@ -381,6 +380,7 @@ class CountActivity : AppCompatActivity() {
             items.code = cursor.getString(cursor.getColumnIndex("product_name"))+": "+cursor.getString(cursor.getColumnIndex("product_description")) //Was 1 (product_code)
             items.theoricalQty = cursor.getString(2)
             items.totalQty = "0"
+            items.multiple = cursor.getInt(cursor.getColumnIndex("multiple"))
 
 
             datamodels.add(items)
@@ -504,7 +504,7 @@ class CountActivity : AppCompatActivity() {
                                 val product: HashMap<Int, Int> = HashMap()
                                 //Add to hashmap
                                 Log.d("Value", item.totalQty)
-                                item.totalQty = (item.totalQty.toInt()+1).toString()
+                                item.totalQty = (item.totalQty.toInt()+(1*item.multiple)).toString()
                                 product[lineId] = item.totalQty.toInt()
                                 val adap = countLv.adapter as CountAdapter
                                 adap.notifyDataSetChanged()

@@ -8,6 +8,7 @@ public class CountDataModel /*implements Comparable<CountDataModel>*/ {
     public String code;
     public String theoricalQty;
     public String totalQty;
+    public Integer multiple;
     public boolean isCounted;
     public boolean isLocation;
     public boolean isReported;
@@ -59,6 +60,8 @@ public class CountDataModel /*implements Comparable<CountDataModel>*/ {
     public void setTotalQty(String totalQty) {
         this.totalQty = totalQty;
     }
+
+
 
     public boolean getIsCounted() {
         return isCounted;

@@ -283,6 +283,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
             items.name = refundItemsCursor.getString(refundItemsCursor.getColumnIndex("name"))
             items.productId = myId.toInt()
             items.qty = refundItemsCursor.getInt(refundItemsCursor.getColumnIndex("qty"))
+            items.multiple = refundItemsCursor.getInt(refundItemsCursor.getColumnIndex("multiple"))
             pzs += items.qty
             val acceptedQty = refundItemsCursor.getInt(refundItemsCursor.getColumnIndex("accepted_qty")).toInt()
             val rejectedQty = refundItemsCursor.getInt(refundItemsCursor.getColumnIndex("rejected_qty")).toInt()
@@ -376,7 +377,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
                     .setPositiveButton("Aceptar"){ dialog, _ ->
                         try{
                             val qty : HashMap<String, Int> = HashMap()
-                            qty["accepted"] = 1
+                            qty["accepted"] = 1*pedido.multiple
                             val refund = GlobalScope.async { doRefund(ID, qty) }
                             var result =""
                             runBlocking {
@@ -419,7 +420,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
                         confirmBuilder.setPositiveButton("Rechazar") { dialog, which ->
                             try{
                                 val qty : HashMap<String, Int> = HashMap()
-                                qty["rejected"] = 1
+                                qty["rejected"] = 1*pedido.multiple
                                 Log.d("Id", pedido.Id.toString())
                                 val refund = GlobalScope.async { doRefund(ID, qty) }
                                 var result =""

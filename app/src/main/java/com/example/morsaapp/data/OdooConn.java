@@ -785,7 +785,7 @@ public class OdooConn {
                         asList("is_scanned", "!=", true)) //Remember to change so doesnt use default x
                 ),
                 new HashMap() {{
-                    put("fields", asList("id", "location_id", "product_code", "theoretical_qty", "create_uid", "user_id","product_id,","product_name","is_scanned", "product_description"));
+                    put("fields", asList("id", "location_id", "product_code", "theoretical_qty", "create_uid", "user_id","product_id,","product_name","is_scanned", "product_description","multiple"));
                 }}
         )));
         Log.d("STOCK INVENTORY LINE", list.toString());
@@ -935,7 +935,7 @@ public class OdooConn {
                         asList("return_id.user_id","=", return_id)
                 )),
                 new HashMap(){{
-                    put("fields", asList("id", "name", "product_id", "qty", "state", "user_id", "accepted_qty", "rejected_qty"));
+                    put("fields", asList("id", "name", "product_id", "qty", "state", "user_id", "accepted_qty", "rejected_qty","multiple"));
                 }}
         )));
         Log.d("STOCK RETURN LINE", list.toString());

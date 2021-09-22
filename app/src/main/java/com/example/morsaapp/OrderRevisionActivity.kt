@@ -946,7 +946,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
             countBuilder.setMessage("Ingrese la cantidad:")
             countBuilder.setPositiveButton("Ingresar") { dialog, which ->
                 if(count.text.toString() != "") {
-                    val number = count.text.toString().toInt()
+                    val number = count.text.toString().toInt() * model.multiple
                         if (number > model.qty) {
                             val moreBuilder = AlertDialog.Builder(this)
                             moreBuilder.setMessage("La cantidad ingresada es mayor a la establecida en la factura. ¿Desea registrar Sobrantes?")
@@ -1220,6 +1220,7 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                 val replaced = idAsString.replace("[","")
                 Log.d("ProductId", replaced)
                 items.productId = replaced.toInt()
+                items.multiple = cursor.getInt(cursor.getColumnIndex("product_multiple"))
                 items.relabel = cursor.getString(cursor.getColumnIndex("product_relabel"))
                 items.incidencies = "0"
 
@@ -1430,8 +1431,8 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
                         .show()
                 }
                 else {
-                    setScannedQuantity(productId)
-                    pedido.revisionQty++
+                    setScannedQuantity(productId, pedido.multiple)
+                    pedido.revisionQty = pedido.revisionQty + (1* pedido.multiple)
                     val arrayAdapter = orderRevisionLv.adapter as OrderRevisionAdapter
                     arrayAdapter.dataSet[i] = pedido
                     arrayAdapter.notifyDataSetChanged()
@@ -1549,12 +1550,12 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
         Log.d("HashMap Result", finalHashMap.toString())
     }
 
-    fun setScannedQuantity(scanId: Int):Boolean{
+    fun setScannedQuantity(scanId: Int, multiple: Int):Boolean{
         var hmFinalPickingId = finalHashMap[pickingId.toInt()]
         var issuesQtyHm = hmFinalPickingId?.get(activeModeId)
         //If the id of the active move is not a key in hashmap, we will make a key from it and assign a hashmap with a "issues" key that will have a list with the scanned issue and 1 (default) issue.
         if(issuesQtyHm == null){
-            hmFinalPickingId?.put(activeModeId, hashMapOf("qty" to 1))
+            hmFinalPickingId?.put(activeModeId, hashMapOf("qty" to (1 * multiple)))
             //Test
         }
         //If the id of the active move is a key in hashmap.
@@ -1562,12 +1563,12 @@ class OrderRevisionActivity : AppCompatActivity(), Definable {
             var intQty=issuesQtyHm.get("qty")
             //qty is not a key, then make a key and assign a list with the scan issue and 1 (default)
             if (intQty == null) {
-                issuesQtyHm.put("qty",1)
+                issuesQtyHm.put("qty",1*multiple)
             }
             //qty is a key, take the previous value of that qty and add 1 to it.
             else{
                 //iterate and check which one correspond to the id we are manipulating
-                finalHashMap[pickingId.toInt()]?.get(activeModeId)?.put("qty",(intQty as Int)+1)
+                finalHashMap[pickingId.toInt()]?.get(activeModeId)?.put("qty",(intQty as Int)+(1*multiple))
 
             }
         }

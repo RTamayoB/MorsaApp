@@ -5,6 +5,7 @@ public class OrderRevisionDataModel {
     public String productName;
     public int qty;
     public int productId;
+    public int multiple;
     public String incidencies;
     public int revisionQty = 0;
     public String relabel;

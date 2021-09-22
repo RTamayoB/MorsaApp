@@ -221,7 +221,7 @@ public class DBConnect extends SQLiteOpenHelper {
     public Cursor fillRefundItemsListView(String subId){
         SQLiteDatabase db = this.getReadableDatabase();
 
-        return db.rawQuery("SELECT id, name , product_id , qty, state, user_id, accepted_qty, rejected_qty FROM "+ OdooData.TABLE_STOCK_RETURN_LINE/*+" WHERE user_id ='"+subId+"'"*/,null);
+        return db.rawQuery("SELECT id, name , product_id , qty, state, user_id, accepted_qty, rejected_qty, multiple FROM "+ OdooData.TABLE_STOCK_RETURN_LINE/*+" WHERE user_id ='"+subId+"'"*/,null);
     }
 
     public Cursor fillStockListView(){
@@ -312,7 +312,7 @@ public class DBConnect extends SQLiteOpenHelper {
 
     public Cursor fillStockitemsListView(String subId){
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT name, product_qty, price_unit, id , product_id, revision_qty, issues, product_description, product_relabel FROM "+ OdooData.TABLE_STOCK_ITEMS+" WHERE picking_id = '"+subId+"' ORDER BY name",null);
+        return db.rawQuery("SELECT name, product_qty, price_unit, id , product_id, revision_qty, issues, product_description, product_relabel, product_multiple FROM "+ OdooData.TABLE_STOCK_ITEMS+" WHERE picking_id = '"+subId+"' ORDER BY name",null);
     }
 
     public int changeStockState(String id){
@@ -343,7 +343,7 @@ public class DBConnect extends SQLiteOpenHelper {
 
     public Cursor getInventory(){
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT location_id, product_code, theoretical_qty, id, product_name, product_name, product_description FROM "+ OdooData.TABLE_INVENTORY_LINE+" WHERE is_scanned = 'false' ORDER BY location_id ASC",null);
+        Cursor cursor = db.rawQuery("SELECT location_id, product_code, theoretical_qty, id, product_name, product_name, product_description, multiple FROM "+ OdooData.TABLE_INVENTORY_LINE+" WHERE is_scanned = 'false' ORDER BY location_id ASC",null);
         return cursor;
     }
 

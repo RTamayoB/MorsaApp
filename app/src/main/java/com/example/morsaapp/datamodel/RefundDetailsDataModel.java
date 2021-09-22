@@ -6,6 +6,7 @@ public class RefundDetailsDataModel {
     public String productName;
     public int productId;
     public int qty;
+    public int multiple;
     public int revisionQty = 0;
     public int lineScanned = 0;
 
