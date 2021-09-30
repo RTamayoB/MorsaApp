@@ -49,6 +49,7 @@ public class DBConnect extends SQLiteOpenHelper {
         db.execSQL(OdooData.CREATE_TABLE_STOCK_RETURN);
         db.execSQL(OdooData.CREATE_TABLE_STOCK_RETURN_LINE);
         db.execSQL(OdooData.CREATE_TABLE_RES_USERS);
+        db.execSQL(OdooData.CREATE_TABLE_LOCATION);
     }
 
     @Override
@@ -357,6 +358,12 @@ public class DBConnect extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT id FROM "+ OdooData.TABLE_INVENTORY_LINE +" WHERE product_name = ? AND location_id = ?", new String[]{productCode, loc});
         return cursor;
+    }
+
+    //Get product of scanned location
+    public Cursor getProductToLocation(String productId, String location){
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT qty, product_id, location FROM "+ OdooData.TABLE_LOCATION +" WHERE product_id = ? AND location = ?", new String[]{productId, location});
     }
 
     public Cursor lookForUser(String user){

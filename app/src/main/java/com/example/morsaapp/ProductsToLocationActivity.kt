@@ -30,7 +30,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.apache.xmlrpc.XmlRpcException
 import org.json.JSONArray
-import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
 
@@ -263,59 +262,76 @@ class ProductsToLocationActivity : AppCompatActivity() {
             Log.d("Error de Red",xml.toString())
         }
 
+        //CHanged, now each row scanned will highlight blue to signal that is stored
+        /*
         for(i in 0 until productToLocationLv.adapter.count) {
             val item = productToLocationLv.adapter.getItem(i) as ProductsToLocationDataModel
             item.originScanned = false
-        }
+        }*/
 
         for(i in 0 until productToLocationLv.adapter.count){
             val item = productToLocationLv.adapter.getItem(i) as ProductsToLocationDataModel
             Log.d("Item Id", item.productId)
+            /*
             if(decodedString == item.location){
-                scan1 = decodedString
-                item.originScanned = true
-                val adapterModifier = productToLocationLv.adapter as ProductsToLocationAdapter
-                adapterModifier.notifyDataSetChanged()
+                //scan1 = decodedString
+                /*
                 val customToast = CustomToast(this, this)
-                customToast.show("Escanee un Producto", 24.0F, Toast.LENGTH_LONG)
-            }
+                customToast.show("Escanee un Producto", 24.0F, Toast.LENGTH_LONG)*/
+            }*/
 
             if (scannedProductIdSearch == item.productId){
-                scan2 = item.productId
-                val customToast = CustomToast(this, this)
-                customToast.show("Escanee una Ubicación", 24.0F, Toast.LENGTH_LONG)
-            }
+                //scan2 = item.productId
 
-            if(scan1 == item.location && scan2 == item.productId){
-                scan1 = ""
-                scan2 = ""
                 val builder = AlertDialog.Builder(this)
-                builder.setTitle("Cantidad a Mover")
+                builder.setTitle("Producto ${item.stockMoveName}")
                 builder.setMessage("Especifique cantidad:")
                 val input = EditText(this)
                 input.width = 10
                 input.inputType = InputType.TYPE_CLASS_NUMBER
                 builder.setView(input)
-                builder.setPositiveButton("Ok"){dialog, which ->
+                builder.setPositiveButton("Aceptar"){dialog, which ->
                     Log.d("Input", input.text.toString())
                     val num = input.text.toString()
-//                    if(num.toInt() > item.total_qty){
-//                        dialog.dismiss()
-//                    }
-                    val total = item.qty + num.toInt()
-                    if(total > item.total_qty){
+                    val qty = item.total_qty + num.toInt()
+                    if(qty > item.total_qty){
                         val customToast = CustomToast(this, this)
-                        customToast.show("Excedio la cantidad", 24.0F, Toast.LENGTH_LONG)
+                        customToast.show("Se requiere la cantidad exacta del producto", 24.0F, Toast.LENGTH_LONG)
                     }
                     else {
                         val db = DBConnect(this, OdooData.DBNAME, null, prefs.getInt("DBver", 1)).writableDatabase
                         val contentValues = ContentValues()
-                        contentValues.put("quantity_done", num.toInt())
-                        db.update(OdooData.TABLE_STOCK_ITEMS, contentValues, "id=" + item.id, null)
-                        item.qty = total
-                        val adapterModifier =
-                            productToLocationLv.adapter as ProductsToLocationAdapter
+                        contentValues.put("product_id", item.productId)
+                        contentValues.put("location", item.location)
+                        contentValues.put("qty", qty)
+                        db.insert(OdooData.TABLE_LOCATION, null, contentValues)
+                        item.qty = num.toInt()
+                        val adapterModifier = productToLocationLv.adapter as ProductsToLocationAdapter
+                        item.originScanned = true
                         adapterModifier.notifyDataSetChanged()
+                    }
+                    val customToast = CustomToast(this, this)
+                    customToast.show("Almacenado, escanee ubicación para enviar", 24.0F, Toast.LENGTH_LONG)
+                }
+                builder.setNegativeButton("Cancelar"){dialog, which ->
+                    dialog.dismiss()
+                }
+                builder.show()
+            }
+
+
+
+
+            val db = DBConnect(this, OdooData.DBNAME, null, prefs.getInt("DBver", 1))
+            val cursor = db.getProductToLocation(item.productId, item.location)
+            while(cursor.moveToNext()){
+                val total = cursor.getInt(cursor.getColumnIndex("qty"))
+                val productId = cursor.getString(cursor.getColumnIndex("product_id"))
+                if(cursor.getString(cursor.getColumnIndex("location")) == decodedString){
+                    val sendDialog = AlertDialog.Builder(this)
+                    sendDialog.setTitle("Enviar cantidad")
+                    sendDialog.setMessage("¿Enviar producto ${item.stockMoveName} con cantidad $total?")
+                    sendDialog.setPositiveButton("Aceptar") { dialog, which ->
                         thread {
                             try {
                                 val moves: List<Any> = setMoves(item.id, total)
@@ -327,6 +343,9 @@ class ProductsToLocationActivity : AppCompatActivity() {
                                         24.0F,
                                         Toast.LENGTH_LONG
                                     )
+                                    val del = DBConnect(this, OdooData.DBNAME, null, prefs.getInt("DBver", 1)).writableDatabase
+                                    del.execSQL("DELETE FROM ${OdooData.TABLE_LOCATION} WHERE product_id = $productId")
+                                    del.close()
                                 }
                             } catch (e: Exception) {
                                 runOnUiThread {
@@ -336,33 +355,33 @@ class ProductsToLocationActivity : AppCompatActivity() {
                                 Log.d("Error General", e.toString())
                             }
                         }
-                        if (total < item.total_qty) {
-                            item.isLineScanned = 2
-                            val adapterModifier = productToLocationLv.adapter as ProductsToLocationAdapter
-                            adapterModifier.notifyDataSetChanged()
-                        } else if (total == item.total_qty) {
-                            item.isLineScanned = 1
-                            val adapterModifier =
-                                productToLocationLv.adapter as ProductsToLocationAdapter
-                            adapterModifier.notifyDataSetChanged()
-                        } else {
-                            val customToast = CustomToast(this, this)
-                            customToast.show(
-                                "Excediste la cantidad total",
-                                24.0F,
-                                Toast.LENGTH_LONG
-                            )
-                            item.qty = 0
+                        when {
+                            total < item.total_qty -> {
+                                item.isLineScanned = 2
+                            }
+                            total == item.total_qty -> {
+                                item.isLineScanned = 1
+                            }
+                            else -> {
+                                val customToast = CustomToast(this, this)
+                                customToast.show(
+                                    "Excediste la cantidad total",
+                                    24.0F,
+                                    Toast.LENGTH_LONG
+                                )
+                                item.qty = 0
+                            }
                         }
+                        val adapterModifier = productToLocationLv.adapter as ProductsToLocationAdapter
+                        adapterModifier.notifyDataSetChanged()
                     }
+                    sendDialog.setNegativeButton("Cancelar") { dialog, which ->
+                        dialog.dismiss()
+                    }
+                    sendDialog.show()
                 }
-                builder.setNegativeButton("Cancel"){dialog, which ->
-                    dialog.dismiss()
-                }
-                builder.show()
             }
         }
-
     }
 
     private fun populateListView(data: String)
@@ -414,14 +433,17 @@ class ProductsToLocationActivity : AppCompatActivity() {
             Log.d("AfterParsed",locationParsed)
             orders.setLocation(locationParsed)
             orders.qty = cursor.getInt(4)
+
+            val getQtys = db.getProductToLocation(replaced, locationParsed)
+            while(getQtys.moveToNext()) {
+                if(getQtys.getString(getQtys.getColumnIndex("product_id")) == replaced){
+                    orders.qty = getQtys.getInt(getQtys.getColumnIndex("qty"))
+                    orders.originScanned = true
+                }
+            }
+
             orders.total_qty = cursor.getInt(2)
             orders.isChecked = false
-            if (orders.qty > 0 && orders.qty < orders.total_qty){
-                orders.isLineScanned = 2
-            }
-            if (orders.qty == orders.total_qty){
-                orders.isLineScanned = 1
-            }
             datamodels.add(orders)
         }
         obtainList()
@@ -449,7 +471,7 @@ class ProductsToLocationActivity : AppCompatActivity() {
         return odooConn.movesTest(location, pickingId)
     }
 
-    private fun setMoves(moveId : Int, moveQty : Int) : List<Any>
+    fun setMoves(moveId : Int, moveQty : Int) : List<Any>
     {
         val odooConn = OdooConn(
             prefs.getString("User", ""),

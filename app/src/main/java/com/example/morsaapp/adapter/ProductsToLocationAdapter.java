@@ -60,6 +60,9 @@ public class    ProductsToLocationAdapter extends BaseAdapter {
 
         //Color origin if scanned
         if(item.originScanned){
+            product.setBackgroundColor(Color.CYAN);
+            location.setBackgroundColor(Color.CYAN);
+            qty.setBackgroundColor(Color.CYAN);
             origin.setBackgroundColor(Color.CYAN);
         }
 
