@@ -182,7 +182,7 @@ class CountActivity : AppCompatActivity() {
                 if(!input.text.isNullOrEmpty()){
                     val product: HashMap<Int, Int> = HashMap()
                     //Add to hashmap
-                    val value = (input.text.toString().toInt() * model.multiple)
+                    val value = input.text.toString().toInt() * model.multiple.toInt()
                     product[model.lineId] = value
                     thread {
                         try {
@@ -504,7 +504,7 @@ class CountActivity : AppCompatActivity() {
                                 val product: HashMap<Int, Int> = HashMap()
                                 //Add to hashmap
                                 Log.d("Value", item.totalQty)
-                                item.totalQty = (item.totalQty.toInt()+(1*item.multiple)).toString()
+                                item.totalQty = (item.totalQty.toInt()+(1*item.multiple.toInt())).toString()
                                 product[lineId] = item.totalQty.toInt()
                                 val adap = countLv.adapter as CountAdapter
                                 adap.notifyDataSetChanged()
