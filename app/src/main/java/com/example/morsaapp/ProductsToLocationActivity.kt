@@ -293,19 +293,27 @@ class ProductsToLocationActivity : AppCompatActivity() {
                 builder.setPositiveButton("Aceptar"){dialog, which ->
                     Log.d("Input", input.text.toString())
                     val num = input.text.toString()
-                    val qty = item.total_qty + num.toInt()
+                    val qty = item.qty + num.toInt()
                     if(qty > item.total_qty){
                         val customToast = CustomToast(this, this)
                         customToast.show("Se requiere la cantidad exacta del producto", 24.0F, Toast.LENGTH_LONG)
                     }
                     else {
-                        val db = DBConnect(this, OdooData.DBNAME, null, prefs.getInt("DBver", 1)).writableDatabase
+                        val db2 = DBConnect(this, OdooData.DBNAME, null, prefs.getInt("DBver", 1))
                         val contentValues = ContentValues()
                         contentValues.put("product_id", item.productId)
                         contentValues.put("location", item.location)
                         contentValues.put("qty", qty)
-                        db.insert(OdooData.TABLE_LOCATION, null, contentValues)
-                        item.qty = num.toInt()
+                        val getQtys = db2.getProductToLocation(item.productId, item.location)
+                        if(getQtys.count > 0){
+                            Log.d("IN","Update")
+                            db2.writableDatabase.update(OdooData.TABLE_LOCATION,contentValues,"product_id = ${item.productId}", null)
+                        }
+                        else{
+                            Log.d("IN","Insert")
+                            db2.writableDatabase.insert(OdooData.TABLE_LOCATION, null, contentValues)
+                        }
+                        item.qty = qty
                         val adapterModifier = productToLocationLv.adapter as ProductsToLocationAdapter
                         item.originScanned = true
                         adapterModifier.notifyDataSetChanged()
@@ -339,13 +347,16 @@ class ProductsToLocationActivity : AppCompatActivity() {
                                 runOnUiThread {
                                     val customToast = CustomToast(this, this)
                                     customToast.show(
-                                        moves[1].toString(),
+                                        "Enviado",
                                         24.0F,
                                         Toast.LENGTH_LONG
                                     )
-                                    val del = DBConnect(this, OdooData.DBNAME, null, prefs.getInt("DBver", 1)).writableDatabase
-                                    del.execSQL("DELETE FROM ${OdooData.TABLE_LOCATION} WHERE product_id = $productId")
-                                    del.close()
+                                    if(total >= item.total_qty){
+                                        val del = DBConnect(this, OdooData.DBNAME, null, prefs.getInt("DBver", 1)).writableDatabase
+                                        del.execSQL("DELETE FROM ${OdooData.TABLE_LOCATION} WHERE product_id = $productId")
+                                        del.close()
+                                    }
+
                                 }
                             } catch (e: Exception) {
                                 runOnUiThread {
@@ -439,11 +450,17 @@ class ProductsToLocationActivity : AppCompatActivity() {
                 if(getQtys.getString(getQtys.getColumnIndex("product_id")) == replaced){
                     orders.qty = getQtys.getInt(getQtys.getColumnIndex("qty"))
                     orders.originScanned = true
+                    orders.isChecked = true
                 }
             }
 
             orders.total_qty = cursor.getInt(2)
-            orders.isChecked = false
+            if(orders.qty < orders.total_qty && orders.isChecked){
+                orders.lineScanned = 2
+            }
+            else if(orders.qty == orders.total_qty){
+                orders.lineScanned = 1
+            }
             datamodels.add(orders)
         }
         obtainList()
