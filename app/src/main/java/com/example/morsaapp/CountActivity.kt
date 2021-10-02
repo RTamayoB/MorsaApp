@@ -176,13 +176,10 @@ class CountActivity : AppCompatActivity() {
                 dialog.dismiss()
             }
             qtybuilder.setPositiveButton("Aceptar") { dialog, which ->
-                if(input.text.isNullOrEmpty()){
-                    Log.d("Damm","It null")
-                }
                 if(!input.text.isNullOrEmpty()){
                     val product: HashMap<Int, Int> = HashMap()
                     //Add to hashmap
-                    val value = input.text.toString().toInt() * model.multiple.toInt()
+                    val value : Int = input.text.toString().toInt() * model.multiple.toInt()
                     product[model.lineId] = value
                     thread {
                         try {

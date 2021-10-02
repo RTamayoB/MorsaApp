@@ -282,49 +282,75 @@ class ProductsToLocationActivity : AppCompatActivity() {
 
             if (scannedProductIdSearch == item.productId){
                 //scan2 = item.productId
+                try {
 
-                val builder = AlertDialog.Builder(this)
-                builder.setTitle("Producto ${item.stockMoveName}")
-                builder.setMessage("Especifique cantidad:")
-                val input = EditText(this)
-                input.width = 10
-                input.inputType = InputType.TYPE_CLASS_NUMBER
-                builder.setView(input)
-                builder.setPositiveButton("Aceptar"){dialog, which ->
-                    Log.d("Input", input.text.toString())
-                    val num = input.text.toString()
-                    val qty = item.qty + num.toInt()
-                    if(qty > item.total_qty){
+                    val builder = AlertDialog.Builder(this)
+                    builder.setTitle("Producto ${item.stockMoveName}")
+                    builder.setMessage("Especifique cantidad:")
+                    val input = EditText(this)
+                    input.width = 10
+                    input.inputType = InputType.TYPE_CLASS_NUMBER
+                    builder.setView(input)
+                    builder.setPositiveButton("Aceptar") { dialog, which ->
+                        Log.d("Input", input.text.toString())
+                        val num = input.text.toString()
+                        val qty = item.qty + num.toInt()
+                        if (qty > item.total_qty) {
+                            val customToast = CustomToast(this, this)
+                            customToast.show(
+                                "Se requiere la cantidad exacta del producto",
+                                24.0F,
+                                Toast.LENGTH_LONG
+                            )
+                        } else {
+                            val db2 =
+                                DBConnect(this, OdooData.DBNAME, null, prefs.getInt("DBver", 1))
+                            val contentValues = ContentValues()
+                            contentValues.put("location", item.location)
+                            contentValues.put("qty", qty)
+                            val getQtys = db2.getProductToLocation(item.productId, item.location)
+                            if (getQtys.count > 0) {
+                                Log.d("IN", "Update")
+                                db2.writableDatabase.update(
+                                    OdooData.TABLE_LOCATION,
+                                    contentValues,
+                                    "product_id = ?",
+                                    arrayOf(item.productId)
+                                )
+                            } else {
+                                Log.d("IN", "Insert")
+                                contentValues.put("product_id", item.productId)
+                                db2.writableDatabase.insert(
+                                    OdooData.TABLE_LOCATION,
+                                    null,
+                                    contentValues
+                                )
+                            }
+                            item.qty = qty
+                            val adapterModifier =
+                                productToLocationLv.adapter as ProductsToLocationAdapter
+                            item.originScanned = true
+                            adapterModifier.notifyDataSetChanged()
+                        }
                         val customToast = CustomToast(this, this)
-                        customToast.show("Se requiere la cantidad exacta del producto", 24.0F, Toast.LENGTH_LONG)
+                        customToast.show(
+                            "Almacenado, escanee ubicación para enviar",
+                            24.0F,
+                            Toast.LENGTH_LONG
+                        )
                     }
-                    else {
-                        val db2 = DBConnect(this, OdooData.DBNAME, null, prefs.getInt("DBver", 1))
-                        val contentValues = ContentValues()
-                        contentValues.put("product_id", item.productId)
-                        contentValues.put("location", item.location)
-                        contentValues.put("qty", qty)
-                        val getQtys = db2.getProductToLocation(item.productId, item.location)
-                        if(getQtys.count > 0){
-                            Log.d("IN","Update")
-                            db2.writableDatabase.update(OdooData.TABLE_LOCATION,contentValues,"product_id = ${item.productId}", null)
-                        }
-                        else{
-                            Log.d("IN","Insert")
-                            db2.writableDatabase.insert(OdooData.TABLE_LOCATION, null, contentValues)
-                        }
-                        item.qty = qty
-                        val adapterModifier = productToLocationLv.adapter as ProductsToLocationAdapter
-                        item.originScanned = true
-                        adapterModifier.notifyDataSetChanged()
+                    builder.setNegativeButton("Cancelar") { dialog, which ->
+                        dialog.dismiss()
                     }
+                    builder.show()
+                }catch (e: Exception){
                     val customToast = CustomToast(this, this)
-                    customToast.show("Almacenado, escanee ubicación para enviar", 24.0F, Toast.LENGTH_LONG)
+                    customToast.show(
+                        e.toString(),
+                        24.0F,
+                        Toast.LENGTH_LONG
+                    )
                 }
-                builder.setNegativeButton("Cancelar"){dialog, which ->
-                    dialog.dismiss()
-                }
-                builder.show()
             }
 
 
@@ -332,65 +358,81 @@ class ProductsToLocationActivity : AppCompatActivity() {
 
             val db = DBConnect(this, OdooData.DBNAME, null, prefs.getInt("DBver", 1))
             val cursor = db.getProductToLocation(item.productId, item.location)
-            while(cursor.moveToNext()){
-                val total = cursor.getInt(cursor.getColumnIndex("qty"))
-                val productId = cursor.getString(cursor.getColumnIndex("product_id"))
-                if(cursor.getString(cursor.getColumnIndex("location")) == decodedString){
-                    val sendDialog = AlertDialog.Builder(this)
-                    sendDialog.setTitle("Enviar cantidad")
-                    sendDialog.setMessage("¿Enviar producto ${item.stockMoveName} con cantidad $total?")
-                    sendDialog.setPositiveButton("Aceptar") { dialog, which ->
-                        thread {
-                            try {
-                                val moves: List<Any> = setMoves(item.id, total)
-                                Log.d("Final Result", moves.toString())
-                                runOnUiThread {
+            if(cursor.count > 0) {
+                while (cursor.moveToNext()) {
+                    val total = cursor.getInt(cursor.getColumnIndex("qty"))
+                    val productId = cursor.getString(cursor.getColumnIndex("product_id"))
+                    if (cursor.getString(cursor.getColumnIndex("location")) == decodedString) {
+                        val sendDialog = AlertDialog.Builder(this)
+                        sendDialog.setTitle("Enviar cantidad")
+                        sendDialog.setMessage("¿Enviar producto ${item.stockMoveName} con cantidad $total?")
+                        sendDialog.setPositiveButton("Aceptar") { dialog, which ->
+                            thread {
+                                try {
+                                    val moves: List<Any> = setMoves(item.id, total)
+                                    Log.d("Final Result", moves.toString())
+                                    runOnUiThread {
+                                        val customToast = CustomToast(this, this)
+                                        customToast.show(
+                                            "Enviado",
+                                            24.0F,
+                                            Toast.LENGTH_LONG
+                                        )
+                                        if (total >= item.total_qty) {
+                                            val del = DBConnect(
+                                                this,
+                                                OdooData.DBNAME,
+                                                null,
+                                                prefs.getInt("DBver", 1)
+                                            ).writableDatabase
+                                            del.execSQL("DELETE FROM ${OdooData.TABLE_LOCATION} WHERE product_id = $productId")
+                                            del.close()
+                                        }
+
+                                    }
+                                } catch (e: Exception) {
+                                    runOnUiThread {
+                                        val customToast = CustomToast(this, this)
+                                        customToast.show("Error: $e", 24.0F, Toast.LENGTH_LONG)
+                                    }
+                                    Log.d("Error General", e.toString())
+                                }
+                            }
+                            when {
+                                total < item.total_qty -> {
+                                    item.isLineScanned = 2
+                                }
+                                total == item.total_qty -> {
+                                    item.isLineScanned = 1
+                                }
+                                else -> {
                                     val customToast = CustomToast(this, this)
                                     customToast.show(
-                                        "Enviado",
+                                        "Excediste la cantidad total",
                                         24.0F,
                                         Toast.LENGTH_LONG
                                     )
-                                    if(total >= item.total_qty){
-                                        val del = DBConnect(this, OdooData.DBNAME, null, prefs.getInt("DBver", 1)).writableDatabase
-                                        del.execSQL("DELETE FROM ${OdooData.TABLE_LOCATION} WHERE product_id = $productId")
-                                        del.close()
-                                    }
-
+                                    item.qty = 0
                                 }
-                            } catch (e: Exception) {
-                                runOnUiThread {
-                                    val customToast = CustomToast(this, this)
-                                    customToast.show("Error: $e", 24.0F, Toast.LENGTH_LONG)
-                                }
-                                Log.d("Error General", e.toString())
                             }
+                            val adapterModifier =
+                                productToLocationLv.adapter as ProductsToLocationAdapter
+                            adapterModifier.notifyDataSetChanged()
                         }
-                        when {
-                            total < item.total_qty -> {
-                                item.isLineScanned = 2
-                            }
-                            total == item.total_qty -> {
-                                item.isLineScanned = 1
-                            }
-                            else -> {
-                                val customToast = CustomToast(this, this)
-                                customToast.show(
-                                    "Excediste la cantidad total",
-                                    24.0F,
-                                    Toast.LENGTH_LONG
-                                )
-                                item.qty = 0
-                            }
+                        sendDialog.setNegativeButton("Cancelar") { dialog, which ->
+                            dialog.dismiss()
                         }
-                        val adapterModifier = productToLocationLv.adapter as ProductsToLocationAdapter
-                        adapterModifier.notifyDataSetChanged()
+                        sendDialog.show()
                     }
-                    sendDialog.setNegativeButton("Cancelar") { dialog, which ->
-                        dialog.dismiss()
-                    }
-                    sendDialog.show()
                 }
+            }
+            else{
+                val customToast = CustomToast(this, this)
+                customToast.show(
+                    "Ubicación no tiene producto escaneado",
+                    24.0F,
+                    Toast.LENGTH_LONG
+                )
             }
         }
     }
