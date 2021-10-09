@@ -41,6 +41,7 @@ public class OdooConn {
     public OdooConn(String user, String pass, Context context) throws MalformedURLException {
 
         SharedPreferences serverPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+
         //Check if data changed
         Log.d("Server Data", serverPrefs.getString("url","URL")+"-"+serverPrefs.getString("db","DB"));
 
@@ -605,12 +606,14 @@ public class OdooConn {
         return  returned;
     }
 
-    public String getLocationsItems(int supplierId) throws XmlRpcException
+    public String getLocationsItems(int supplierId, String startDate, String endDate) throws XmlRpcException
     {
         List list = asList((Object[])models.execute("execute_kw", asList(
                 db,uid,pass,
                 "stock.move","search_read",
                 asList(asList(
+                        asList("date","<=",endDate),
+                        asList("date",">=",startDate),
                         asList("picking_originative_id","!=",false),
                         asList("state","in",asList("confirmed", "assigned", "partially_available")),
                         asList("picking_originative_id.partner_id","=",supplierId),

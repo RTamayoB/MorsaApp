@@ -379,12 +379,12 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
                             val qty : HashMap<String, Int> = HashMap()
                             qty["accepted"] = 1*pedido.multiple
                             val refund = GlobalScope.async { doRefund(ID, qty) }
-                            var result =""
+                            var result : List<Any> = emptyList()
                             runBlocking {
-                                Log.d("Refund Result", refund.await())
+                                Log.d("Refund Result", refund.await()[1].toString())
                                 result = refund.await()
                             }
-                            if(result.equals("[true, Successful Update]")){
+                            if(result[0] as Boolean){
                                 item.revisionQty++
                                 if(item.revisionQty < item.qty && item.revisionQty > 0){
                                     item.lineScanned = 1
@@ -399,7 +399,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
                             }
                             else{
                                 val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
-                                customToast.show("Error en Petición", 14.0F, Toast.LENGTH_LONG)
+                                customToast.show("Error al enviar cantidad", 14.0F, Toast.LENGTH_LONG)
                             }
                             dialog.dismiss()
                         }catch(e : Exception){
@@ -423,12 +423,12 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
                                 qty["rejected"] = 1*pedido.multiple
                                 Log.d("Id", pedido.Id.toString())
                                 val refund = GlobalScope.async { doRefund(ID, qty) }
-                                var result =""
+                                var result = emptyList<Any>()
                                 runBlocking {
-                                    Log.d("Refund Result", refund.await())
+                                    Log.d("Refund Result", refund.await()[1].toString())
                                     result = refund.await()
                                 }
-                                if(result.equals("[true, Successful Update]")){
+                                if(result[0] as Boolean){
                                     item.revisionQty++
                                     if(item.revisionQty < item.qty && item.revisionQty > 0){
                                         item.lineScanned = 1
@@ -443,7 +443,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
                                 }
                                 else{
                                     val customToast = CustomToast(applicationContext, this@RefundDetailsActivity)
-                                    customToast.show("Error en Petición", 14.0F, Toast.LENGTH_LONG)
+                                    customToast.show("Error al enviar cantidad", 14.0F, Toast.LENGTH_LONG)
                                 }
                                 dialog.dismiss()
                             }catch(e : Exception){
@@ -571,7 +571,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
         return invoiceLine
     }
 
-    fun doRefund(productId : Int, qty : HashMap<String, Int>) : String{
+    fun doRefund(productId : Int, qty : HashMap<String, Int>) : List<Any>{
         val odoo = OdooConn(
             prefs.getString("User", ""),
             prefs.getString("Pass", ""),
@@ -579,7 +579,7 @@ class RefundDetailsActivity : AppCompatActivity(), Definable {
         )
         odoo.authenticateOdoo()
         val invoiceLine = odoo.doRefund(productId, qty)
-        return invoiceLine.toString()
+        return invoiceLine as List<Any>
     }
 
     override fun showPopup(value: Int, moveId: Int, Name: String?) {

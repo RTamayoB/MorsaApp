@@ -13,12 +13,16 @@
             app:useSimpleSummaryProvider="true" />
 
     </PreferenceCategory>
-    <PreferenceCategory android:title="Rango de Busqueda (Dias)">
+    <PreferenceCategory android:title="Rango de Busqueda - Acomodo">
 
         <EditTextPreference
-            app:key="inspection_days"
-            app:title="Inpección"
-            android:inputType="number"
+            app:key="location_start"
+            app:title="Fecha Inicio"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="location_end"
+            app:title="Fecha Final"
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 

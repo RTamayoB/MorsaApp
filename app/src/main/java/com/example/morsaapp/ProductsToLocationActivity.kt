@@ -52,6 +52,7 @@ class ProductsToLocationActivity : AppCompatActivity() {
     lateinit var barcodeStr : String
 
     lateinit var prefs : SharedPreferences
+    lateinit var serverPrefs: SharedPreferences
 
     var completeName : String = ""
     lateinit var progressBar : ProgressBar
@@ -70,7 +71,7 @@ class ProductsToLocationActivity : AppCompatActivity() {
                 Log.i("debug", "----codetype--$temp")
                 barcodeStr = String(barcode, 0, barcodelen)
                 Log.d("Result", barcodeStr)*/
-                val serverPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+                serverPrefs = PreferenceManager.getDefaultSharedPreferences(context)
                 val value = intent.getStringExtra(serverPrefs.getString("scanner_key","data"))
                 displayScanResult(value, "")
                 //mScanManager.stopDecode()
@@ -108,6 +109,7 @@ class ProductsToLocationActivity : AppCompatActivity() {
         supportActionBar?.title = "Picking para Acomodo"
 
         prefs = this.getSharedPreferences("startupPreferences", 0)
+        serverPrefs = PreferenceManager.getDefaultSharedPreferences(this)
         progressBar = findViewById(R.id.progressBar_location)
 
         //initScan()
@@ -551,7 +553,10 @@ class ProductsToLocationActivity : AppCompatActivity() {
             this
         )
         odoo.authenticateOdoo()
-        val stockPicking = odoo.getLocationsItems(pickingOriginativeId)
+        val stockPicking = odoo.getLocationsItems(
+            pickingOriginativeId,
+            serverPrefs.getString("location_start","2000-01-01"),
+            serverPrefs.getString("location_end","2021-12-31"))
         Log.d("OrderList", stockPicking)
         return stockPicking
     }
